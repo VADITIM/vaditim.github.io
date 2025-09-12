@@ -1,0 +1,24 @@
+$purple: #7e55dd;
+$black: rgb(65, 65, 65);
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.rotate-right {
+    transform: rotateY(35deg);
+}
+
+@mixin rX($angle) {
+    transform: rotateY(#{$angle}deg);
+}
+
+@mixin rY($angle) {
+    transform: rotateY(#{$angle}deg);
+}
+
+@mixin rZ($angle) {
+    transform: rotateY(#{$angle}deg);
+}
