@@ -1,0 +1,60 @@
+@import "../style/variables.scss";
+
+
+.container {
+  @extend .center;
+	position: relative;
+  height: 100svh;
+  width: 20rem;
+  color: black;
+	overflow: visible;
+}
+
+.background {
+	position: absolute;
+	min-width: 100%;
+	min-height: 100%;
+	background-color: rgb(255, 221, 28);
+	clip-path: polygon(0 0, 100% 0, 70% 100%, 0% 100%);
+	z-index: -1;
+}
+
+.skills-container {
+	display: flex;
+	position: relative;
+	min-width: 100%;
+	min-height: 50%;
+	perspective: 1000px;
+}
+
+.skills-line {
+	@include rotate(0, -40, 0);
+	position: absolute;
+	min-height: 100%;
+	min-width: 2rem;
+	margin: 0 2rem;
+	background-color: $black;
+	border: solid 4px $purple;
+}
+
+.options-container {
+	display: inherit;
+	justify-content: space-around;
+	flex-direction: column;
+	min-width: 100%;
+	min-height: 100%;
+	perspective: 1000px;
+}
+
+.skill {
+	@extend .center;
+	@include rotate(0, 20, -2);
+	width: 120%;
+	height: 3rem;
+	background-color: green;
+	overflow: visible;
+	margin: 1rem 4.5rem;
+	border-radius: 3px;
+	border-bottom: 3px solid $purple;
+	border-right: 3px solid $purple;
+}

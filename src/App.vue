@@ -1,12 +1,9 @@
 <template>
-  <div>
-    <IntroPage/>
-  </div>
+  <IntroPage />
 </template>
 
 <script setup lang="ts">
-  import IntroPage from './components/IntroPage.vue'
+import IntroPage from './components/IntroPage.vue'
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

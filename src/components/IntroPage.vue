@@ -1,9 +1,9 @@
 <template>
-  <comp />
+  <Roles />
 </template>
 
 <script setup lang="ts">
-import comp from '../components/comp.vue'
+import Roles from './Roles.vue'
 
 </script>
 

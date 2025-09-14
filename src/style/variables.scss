@@ -11,14 +11,7 @@ $black: rgb(65, 65, 65);
     transform: rotateY(35deg);
 }
 
-@mixin rX($angle) {
-    transform: rotateY(#{$angle}deg);
-}
 
-@mixin rY($angle) {
-    transform: rotateY(#{$angle}deg);
-}
-
-@mixin rZ($angle) {
-    transform: rotateY(#{$angle}deg);
+@mixin rotate($angleX, $angleY, $angleZ ) {
+    transform: rotateX(#{$angleX}deg) rotateY(#{$angleY}deg) rotateZ(#{$angleZ}deg);
 }
