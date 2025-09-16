@@ -4,57 +4,187 @@
 .container {
   @extend .center;
 	position: relative;
-  height: 100svh;
+  height: 100vh;
   width: 20rem;
   color: black;
 	overflow: visible;
+
+	@include mobile {
+		height: 100vh;
+		width: 100vw;
+	}
 }
 
 .background {
 	position: absolute;
-	min-width: 100%;
-	min-height: 100%;
+	width: 100%;
+	height: 100%;
 	background-color: rgb(255, 221, 28);
 	clip-path: polygon(0 0, 100% 0, 70% 100%, 0% 100%);
 	z-index: -1;
+
+	@include mobile {
+		top: 0;
+		width: 100vw;
+		height: 15%;
+		clip-path: polygon(0 0, 100% 0, 100% 80%, 0% 100%);
+	}
 }
 
 .skills-container {
 	display: flex;
-	position: relative;
-	min-width: 100%;
-	min-height: 50%;
+	width: fit-content;
+	height: fit-content;
 	perspective: 1000px;
+
+	@include mobile {
+		position: absolute;
+		justify-content: center;
+		align-items: center;
+		height: 15%;
+		bottom: 15%;
+		width: 100%;
+	}
 }
 
 .skills-line {
 	@include rotate(0, -40, 0);
+
 	position: absolute;
-	min-height: 100%;
-	min-width: 2rem;
+	height: 100%;
+	width: 2rem;
 	margin: 0 2rem;
-	background-color: $black;
+	background-color: $blacktrans;
 	border: solid 4px $purple;
+
+	@include mobile {
+		@include rotate(0, -0, 0);
+
+		width: 100%;
+		height: 2rem;
+		margin: 0 0;
+	}
 }
 
 .options-container {
 	display: inherit;
-	justify-content: space-around;
+	justify-content: space-between;
 	flex-direction: column;
-	min-width: 100%;
-	min-height: 100%;
+	width: 100%;
+	height: 100%;
 	perspective: 1000px;
+
+	@include mobile {
+		position: absolute;
+		display: flex;
+		justify-content: flex-start;
+		flex-direction: row;
+		flex-wrap: wrap;
+		top: -100%;
+		width: 100%;
+		height: 10%;
+	}
 }
 
 .skill {
-	@extend .center;
 	@include rotate(0, 20, -2);
+	@include flex(start, start);
 	width: 120%;
 	height: 3rem;
-	background-color: green;
-	overflow: visible;
+	background-color: $blacktrans;
+	color: white;
 	margin: 1rem 4.5rem;
 	border-radius: 3px;
 	border-bottom: 3px solid $purple;
 	border-right: 3px solid $purple;
+	padding-inline-start: 1rem;
+	padding-block-start: .5rem;
+	font-size: 2rem;
+	font-family: "Mono";
+	filter: drop-shadow(5px 5px 10px #9b75f580);
+
+	transition:
+		height 0.2s ease-in-out 0s,  
+		width 0.2s ease-in-out 0.22s;      
+
+	@for $index from 1 through 10 {
+		&:nth-last-child(#{$index}) {
+			z-index: #{1 + ($index)};
+		}
+	}
+
+ 	&:hover {
+		width: 140%;
+		height: 11.5rem;
+
+		transition:
+			width 0.2s ease-in-out 0s,      
+			height 0.2s ease-in-out 0.22s;   
+	  }
+
+	&:hover .skill-option {
+		left: -5%;
+
+		@for $delay from 1 through 10 {
+			&:nth-child(#{$delay}) {
+				transition: 
+					left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+			}
+		}
+	}
+
+	@include mobile {
+		@include rotate(0, 0, 0);
+
+		text-align: start;
+		margin: 1rem 1rem;
+		font-size: 1rem;
+		width: 35%;
+		height: 2rem;
+
+		&:hover  {
+			width: 35%;
+			height: 5.5rem;
+	  }
+	}
+}
+
+.skill-options-container {
+	display: flex;
+	justify-content: start;
+	align-items: start;
+	flex-direction: column;
+	gap: .5rem;
+	position: absolute;
+	top: 3.5rem;
+	width: 100%;
+	height: 100%;
+	font-family: "Cutive";
+	font-size: 1.5rem;
+
+	@include mobile {
+		display: none;
+	}
+}
+
+.skill-option {
+	display: flex;
+	position: relative;
+	left: -150%;
+	width: fit-content;
+	height: fit-content;
+	background-color: $blacktrans;
+	border: solid 2.5px $purple;
+	padding-left: 1rem;
+	padding-right: 1rem;
+	border-bottom: none;
+	border-right: none;
+	border-radius: 3px;
+
+	@for $delay from 1 through 10 {
+		&:nth-last-child(#{$delay}) {
+			transition: 
+				left .4s ease-in-out #{0s + ($delay * 0.07s)};
+		}
+	}
 }
