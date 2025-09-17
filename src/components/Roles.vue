@@ -29,12 +29,15 @@ import { toggle, isOpen, closeAll } from '../modules/mobile-hover';
 const skillRef = ref<HTMLElement | null>(null)
 
 function onPointerDownOutside(e: PointerEvent) {
-	const target = e.target as HTMLElement | null
-	if (!target) return
-	const openSkill = target.closest('.skill.open')
-	if (!openSkill) {
-		closeAll()
-	}
+    const target = e.target as HTMLElement | null
+
+    if (!target) return
+		
+    const skillElement = target.closest('.skill')
+		
+    if (!skillElement) {
+        closeAll()
+    }
 }
 
 onMounted(() => document.addEventListener('pointerdown', onPointerDownOutside))
