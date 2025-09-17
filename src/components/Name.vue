@@ -48,6 +48,6 @@ onMounted(() => {
 })
 </script>
 
-<style>
-@import "../style/name.scss";
+<style lang="scss">
+@use "../style/name.scss" as *;
 </style>

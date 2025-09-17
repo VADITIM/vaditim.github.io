@@ -1,4 +1,4 @@
-@import "../style/variables.scss";
+@use "../style/variables.scss" as *;
 
 
 .container {
@@ -12,6 +12,7 @@
 	@include mobile {
 		height: 100vh;
 		width: 100vw;
+		overflow: hidden;
 	}
 }
 
@@ -21,13 +22,12 @@
 	height: 100%;
 	background-color: rgb(255, 221, 28);
 	clip-path: polygon(0 0, 100% 0, 70% 100%, 0% 100%);
-	z-index: -1;
 
 	@include mobile {
 		top: 0;
 		width: 100vw;
-		height: 15%;
-		clip-path: polygon(0 0, 100% 0, 100% 80%, 0% 100%);
+		height: 12%;
+		clip-path: polygon(0 0, 100% 0, 100% 40%, 0% 100%);
 	}
 }
 
@@ -39,10 +39,7 @@
 
 	@include mobile {
 		position: absolute;
-		justify-content: center;
-		align-items: center;
-		height: 15%;
-		bottom: 15%;
+		bottom: 5%;
 		width: 100%;
 	}
 }
@@ -58,11 +55,10 @@
 	border: solid 4px $purple;
 
 	@include mobile {
-		@include rotate(0, -0, 0);
-
-		width: 100%;
-		height: 2rem;
-		margin: 0 0;
+		@include rotate(0, 40, 0);
+		display: flex;
+		right: 0;
+		margin: 0 .5rem;
 	}
 }
 
@@ -75,14 +71,10 @@
 	perspective: 1000px;
 
 	@include mobile {
-		position: absolute;
+		position: relative;
+		right: -10%;
 		display: flex;
-		justify-content: flex-start;
-		flex-direction: row;
-		flex-wrap: wrap;
-		top: -100%;
-		width: 100%;
-		height: 10%;
+		flex-direction: column;
 	}
 }
 
@@ -105,7 +97,9 @@
 
 	transition:
 		height 0.2s ease-in-out 0s,  
-		width 0.2s ease-in-out 0.22s;      
+		width 0.2s ease-in-out 0.22s,
+		border-color .4s ease-in-out,
+		filter .4s ease-in-out;
 
 	@for $index from 1 through 10 {
 		&:nth-last-child(#{$index}) {
@@ -113,57 +107,107 @@
 		}
 	}
 
- 	&:hover {
-		width: 140%;
-		height: 11.5rem;
+	@include allDesktops {
+			&:hover {
+				width: 140%;
+				height: 11.5rem;
+				border-color: $yellow;
+				filter: drop-shadow(5px 5px 10px #f5e67580);
 
-		transition:
-			width 0.2s ease-in-out 0s,      
-			height 0.2s ease-in-out 0.22s;   
-	  }
+				transition:
+					width 0.2s ease-in-out 0s,      
+					height 0.2s ease-in-out 0.22s,   
+					border-color .4s ease-in-out,
+					filter .4s ease-in-out;
+				}
 
-	&:hover .skill-option {
-		left: -5%;
+			&:hover .skill-option {
+				left: -5%;
 
-		@for $delay from 1 through 10 {
-			&:nth-child(#{$delay}) {
-				transition: 
-					left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+				@for $delay from 1 through 10 {
+					&:nth-child(#{$delay}) {
+						transition: 
+							left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+					}
+				}
 			}
-		}
+
+			&:hover .skill-options-container {
+				left: 0%;
+
+				transition:
+					left 0s ease 0s;
+			}
 	}
 
+
+
 	@include mobile {
-		@include rotate(0, 0, 0);
+		@include rotate(-5, -30, 0);
 
-		text-align: start;
+		@include flex (end, end);
+		position: relative;
 		margin: 1rem 1rem;
+		align-self: flex-end;
+		right: 20%;
 		font-size: 1rem;
-		width: 35%;
-		height: 2rem;
+		width: 65%;
+		height: 1.8rem;
+		padding-right: .5rem;
 
-		&:hover  {
-			width: 35%;
-			height: 5.5rem;
+		&.open  {
+			width: 85%;
+			height: 9.5rem;
+			border-color: $yellow;
+			filter: drop-shadow(5px 5px 10px #f5e67580);
 	  }
+
+		&.open .skill-option {
+			left: auto;
+			right: -5%;
+
+			@for $delay from 1 through 10 {
+				&:nth-child(#{$delay}) {
+					transition: 
+						right .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+				}
+			}
+		}
+		
+		&.open .skill-options-container {
+			left: auto;
+			right: 0;
+
+			transition:
+				left 0s ease 0s,
+				right 0s ease 0s;
+		}
 	}
 }
 
 .skill-options-container {
+	position: absolute;
 	display: flex;
 	justify-content: start;
 	align-items: start;
 	flex-direction: column;
-	gap: .5rem;
-	position: absolute;
+	left: -100%;
 	top: 3.5rem;
 	width: 100%;
 	height: 100%;
+	gap: .5rem;
 	font-family: "Cutive";
 	font-size: 1.5rem;
 
+	transition:
+		left 0s ease 2s,
+		right 0s ease 2s;
+
 	@include mobile {
-		display: none;
+		top: 1rem;
+		left: auto;
+		right: -100%;
+		font-size: 1.25rem;
 	}
 }
 
@@ -171,20 +215,34 @@
 	display: flex;
 	position: relative;
 	left: -150%;
+	right: 0;
 	width: fit-content;
 	height: fit-content;
 	background-color: $blacktrans;
-	border: solid 2.5px $purple;
+	border: solid 2.5px $yellow;
 	padding-left: 1rem;
 	padding-right: 1rem;
 	border-bottom: none;
 	border-right: none;
 	border-radius: 3px;
 
+
 	@for $delay from 1 through 10 {
 		&:nth-last-child(#{$delay}) {
 			transition: 
 				left .4s ease-in-out #{0s + ($delay * 0.07s)};
+		}
+	}
+	
+	@include mobile {
+		left: auto;
+		right: -150%;
+
+		@for $delay from 1 through 10 {
+			&:nth-last-child(#{$delay}) {
+				transition: 
+					right .4s ease-in-out #{0s + ($delay * 0.07s)};
+			}
 		}
 	}
 }

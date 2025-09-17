@@ -12,8 +12,7 @@ import Name from './Name.vue'
 </script>
 
 <style lang="scss" scoped>
-@import "../style/style.scss";
-@import "../style/variables.scss";
+@use "../style/variables.scss" as *;
 
 .wid {
   width: 100%;
@@ -29,7 +28,7 @@ import Name from './Name.vue'
 
 
   &::before {
-    content: "desktop"; // Default content
+    content: "desktop";
 
     @include mobile {
       content: "mobile";

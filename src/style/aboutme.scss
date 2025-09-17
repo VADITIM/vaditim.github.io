@@ -1,0 +1,15 @@
+@use "../style/variables.scss" as *;
+
+.container {
+  @extend .center;
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  background-color: rgba(206, 48, 48, 0.252);
+  overflow-x: hidden;
+
+  @include mobile {
+    width: 100%;
+  }
+  
+}
