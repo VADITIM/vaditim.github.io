@@ -7,8 +7,15 @@
 @font-face { font-family: "Starlight"; src: url('../assets/fonts/Starlight\ demo.ttf') format('truetype'); }
 
 $mobile: 435px; //360px
-$tablet: 1330px; //1200px
+$tablet: 840px; //1200px
+$tabletLandscape: 1200px; //1200px
 $small-desktop: 1600px;
+
+
+@mixin allTablets {
+  @media screen and (min-width: #{$mobile}) and (max-width: #{$tabletLandscape}) {
+    @content;
+  }}
 
 @mixin mobile {
   @media screen and (max-width: #{$mobile}) {
@@ -22,8 +29,14 @@ $small-desktop: 1600px;
   }
 }
 
+@mixin tabletLandscape {
+  @media screen and (min-width: #{$tablet}) and (max-width: #{$tabletLandscape}) {
+    @content;
+  }
+}
+
 @mixin smallDesktop {
-  @media screen and (min-width: #{$tablet}) and (max-width: #{$small-desktop}){
+  @media screen and (min-width: #{$tabletLandscape}) and (max-width: #{$small-desktop}) {
     @content;
   }
 }
@@ -35,11 +48,10 @@ $small-desktop: 1600px;
 }
 
 @mixin allDesktops {
-  @media screen and (min-width: #{$tablet}) {
+  @media screen and (min-width: #{$tabletLandscape}) {
     @content;
   }
 }
-
 
 $purple: #7e55dd;
 $black: #414141;

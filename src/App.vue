@@ -7,6 +7,3 @@
 import IntroPage from './components/IntroPage.vue'
 import InfoPage from './components/InfoPage.vue'
 </script>
-
-<style scoped>
-</style>

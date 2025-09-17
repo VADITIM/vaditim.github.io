@@ -40,6 +40,11 @@ import Name from './Name.vue'
       color: orange;
     }
 
+    @include tabletLandscape {
+      content: "tablet-landscape";
+      color: rgb(57, 57, 199);
+    }
+
     @include smallDesktop {
       content: "small-desktop";
       color: yellow;

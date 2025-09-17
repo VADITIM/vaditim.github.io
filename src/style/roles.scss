@@ -33,13 +33,12 @@
 
 .skills-container {
 	display: flex;
-	width: fit-content;
-	height: fit-content;
 	perspective: 1000px;
 
 	@include mobile {
 		position: absolute;
-		bottom: 5%;
+		height: 60%;
+		top: 30%;
 		width: 100%;
 	}
 }
@@ -55,10 +54,16 @@
 	border: solid 4px $purple;
 
 	@include mobile {
-		@include rotate(0, 40, 0);
 		display: flex;
+		transform: translateY(50%) rotateY(40deg);
 		right: 0;
+		height: 50%;
+		transform-origin: center center;
 		margin: 0 .5rem;
+
+		transition:
+			height .4s ease-in-out,
+			transform .4s ease-in-out;
 	}
 }
 
@@ -74,6 +79,7 @@
 		position: relative;
 		right: -10%;
 		display: flex;
+		justify-content: center;
 		flex-direction: column;
 	}
 }
@@ -140,12 +146,43 @@
 			}
 	}
 
+	@include tabletLandscape {
+		&.open {
+			width: 140%;
+			height: 11.5rem;
+			border-color: $yellow;
+			filter: drop-shadow(5px 5px 10px #f5e67580);
 
+			transition:
+				width 0.2s ease-in-out 0s,      
+				height 0.2s ease-in-out 0.22s,   
+				border-color .4s ease-in-out,
+				filter .4s ease-in-out;
+			}
+
+		&.open .skill-option {
+			left: -5%;
+
+			@for $delay from 1 through 10 {
+				&:nth-child(#{$delay}) {
+					transition: 
+						left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+				}
+			}
+		}
+
+		&.open .skill-options-container {
+			left: 0%;
+
+			transition:
+				left 0s ease 0s;
+		}
+	}
 
 	@include mobile {
 		@include rotate(-5, -30, 0);
-
 		@include flex (end, end);
+
 		position: relative;
 		margin: 1rem 1rem;
 		align-self: flex-end;
@@ -185,6 +222,15 @@
 	}
 }
 
+.skills-container:has(.skill.open) .skills-line {
+  @include mobile {
+    transform: translateY(50%) rotateY(40deg) scaleY(2); // Keep same translateY, only scale
+
+    transition:
+      transform .4s ease-in-out;
+  }
+}
+
 .skill-options-container {
 	position: absolute;
 	display: flex;
@@ -203,6 +249,10 @@
 		left 0s ease 2s,
 		right 0s ease 2s;
 
+	@include allTablets {
+		height: 30%;
+	}
+		
 	@include mobile {
 		top: 1rem;
 		left: auto;
