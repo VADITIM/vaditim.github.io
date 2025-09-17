@@ -159,7 +159,7 @@
 		}
 	}
 
-	@include tabletLandscape {
+	@include allTablets {
 		&.open {
 			width: 140%;
 			height: 11.5rem;
