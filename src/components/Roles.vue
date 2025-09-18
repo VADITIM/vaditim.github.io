@@ -3,10 +3,12 @@
 		<div class="background"></div>
 
 		<div class="skills-container" ref="skillRef">
-			<div class="skills-line"></div>
+			<div class="skills-line-container">
+				<div class="skills-line"></div>
+			</div>
 			<div class="options-container">
 				<div v-for="(skill, index) in skills" :key="index" class="skill" :class="{ open: isOpen(skill.name) }"
-					@click="toggle(skill.name)" v-if="isOpen">
+					@click="toggle(skill.name)">
 					<span class="skill-title"> {{ skill.name }} </span>
 
 					<div class="skill-options-container">
@@ -29,19 +31,22 @@ import { toggle, isOpen, closeAll } from '../modules/mobile-hover';
 const skillRef = ref<HTMLElement | null>(null)
 
 function onPointerDownOutside(e: PointerEvent) {
-    const target = e.target as HTMLElement | null
+	const target = e.target as HTMLElement | null
 
-    if (!target) return
-		
-    const skillElement = target.closest('.skill')
-		
-    if (!skillElement) {
-        closeAll()
-    }
+	if (!target) return
+
+	const skillElement = target.closest('.skill')
+
+	if (!skillElement) {
+		closeAll()
+	}
 }
 
 onMounted(() => document.addEventListener('pointerdown', onPointerDownOutside))
 onBeforeUnmount(() => document.removeEventListener('pointerdown', onPointerDownOutside))
+
+
+
 
 </script>
 

@@ -1,6 +1,6 @@
 <template>
-  <IntroPage class="flex" />
-  <InfoPage class="flex" />
+  <IntroPage />
+  <InfoPage />
 </template>
 
 <script setup lang="ts">

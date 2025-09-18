@@ -43,6 +43,10 @@
 	}
 }
 
+.skills-line-container {
+	perspective: 1000px;
+}
+
 .skills-line {
 	@include rotate(0, -40, 0);
 
@@ -141,7 +145,7 @@
 		}
 
 		&:hover .skill-option {
-			left: -5%;
+			left: -3%;
 
 			@for $delay from 1 through 10 {
 				&:nth-child(#{$delay}) {
@@ -174,7 +178,7 @@
 		}
 
 		&.open .skill-option {
-			left: -5%;
+			left: -3%;
 
 			@for $delay from 1 through 10 {
 				&:nth-child(#{$delay}) {
@@ -208,7 +212,7 @@
 	  }
 
 		&.open .skill-option {
-			left: -5%;
+			left: -3%;
 
 			@for $delay from 1 through 10 {
 				&:nth-child(#{$delay}) {
@@ -272,7 +276,6 @@
 	border-bottom: none;
 	border-right: none;
 	border-radius: 3px;
-
 
 	@for $delay from 1 through 10 {
 		&:nth-last-child(#{$delay}) {
