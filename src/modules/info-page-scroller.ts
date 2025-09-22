@@ -17,9 +17,9 @@ export function ScrollInfoPage() {
       stagger: 0.1,
       scrollTrigger: {
         trigger: ".scroller",
-        start: "top 50%", 
-        end: "bottom 20%",
-      //   markers: true,
+        start: "top 30%", 
+        end: "bottom 0%",
+        // markers: true,
         scrub: true,
         toggleActions: "play none none reverse"
       },
@@ -37,9 +37,9 @@ export function ScrollInfoPage() {
       stagger: 0.1,
       scrollTrigger: {
         trigger: ".scroller",
-        start: "top 30%", 
-        end: "bottom 0%",
-      //   markers: true,
+        start: "top 50%", 
+        end: "bottom 2%",
+        // markers: true,
         scrub: true,
         toggleActions: "play none none reverse"
       },

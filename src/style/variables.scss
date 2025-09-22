@@ -10,6 +10,7 @@ $mobile: 435px; //360px
 $tablet: 840px; //1200px
 $tabletLandscape: 1200px; //1200px
 $small-desktop: 1600px;
+$large-desktop: 2000px;
 
 
 @mixin allTablets {
@@ -43,6 +44,12 @@ $small-desktop: 1600px;
 
 @mixin desktop {
   @media screen and (min-width: #{$small-desktop}) {
+    @content;
+  }
+}
+
+@mixin largeDesktop {
+  @media screen and (min-width: #{$large-desktop}) {
     @content;
   }
 }
@@ -84,4 +91,16 @@ $yellow: rgb(255, 221, 28);
 
 @mixin rotate($angleX, $angleY, $angleZ ) {
   transform: rotateX(#{$angleX}deg) rotateY(#{$angleY}deg) rotateZ(#{$angleZ}deg);
+}
+
+@mixin threeDElement($depth: 25, $color: $purple) {
+  $shadows: ();
+
+  @for $i from 1 through $depth {
+    $darkness: if($i <= 5, $i * 10%, 50%);
+    $shadow: #{$i}px #{-$i}px 0 darken($color, $darkness);
+    $shadows: append($shadows, $shadow, comma);
+  }
+  
+  text-shadow: $shadows;
 }

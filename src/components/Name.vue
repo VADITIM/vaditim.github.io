@@ -21,39 +21,12 @@
 </template>
 
 <script setup lang="ts">
-import VanillaTilt from 'vanilla-tilt';
+  import { firstName, lastName, InitializeFloatingElements, firstNameRef, lastNameRef, InitializeTilt } from '../modules/Name';
 
-import { ref, onMounted } from 'vue';
-import { createFloatingAnimation, initFloatingElements } from '../modules/floating-elements';
-
-const firstNameRef = ref<HTMLElement>();
-const lastNameRef = ref<HTMLElement>();
-
-const firstName: string[] = ['v', 'a', 'd', 'i', 'm'];
-const lastName: string[] = ['n', 'i', 'e', 'd', 'e', 'n', 't', 'a', 'l']
-
-
-onMounted(() => {
-  initFloatingElements()
-
-  createFloatingAnimation(".first-name")
-  createFloatingAnimation(".last-name")
-
-  if (firstNameRef.value) {
-    VanillaTilt.init(firstNameRef.value, {
-      max: 50,
-      speed: 900
-    })
-  }
-  if (lastNameRef.value) {
-    VanillaTilt.init(lastNameRef.value, {
-      max: 50,
-      speed: 900
-    })
-  }
-})
+  InitializeTilt();
+  InitializeFloatingElements();
 </script>
 
 <style lang="scss">
-@use "../style/name.scss" as *;
+  @use "../style/name.scss" as *;
 </style>
