@@ -75,18 +75,3 @@ export function createAdvancedFloating(selector: string, options: {
     })
   })
 }
-
-export function initFloatingElements() {
-  createFloatingAnimation('.background-float', {
-    amplitude: 15,
-    duration: 4
-  })
-
-  createAdvancedFloating('.dynamic-float', {
-    minAmplitude: 5,
-    maxAmplitude: 25,
-    minDuration: 2.5,
-    maxDuration: 5,
-    rotationRange: 3
-  })
-}

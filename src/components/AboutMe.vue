@@ -16,5 +16,5 @@
 </script>
 
 <style lang="scss" scoped>
-@use "../style/aboutme.scss" as *;
+  @use "../style/aboutme.scss" as *;
 </style>

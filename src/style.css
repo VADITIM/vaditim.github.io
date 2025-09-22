@@ -40,3 +40,14 @@ html {
 html::-webkit-scrollbar {
   display: flex; /* Chrome, Safari, Opera */
 }
+
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}

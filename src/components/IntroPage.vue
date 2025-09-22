@@ -1,72 +1,21 @@
 <template>
-  <div class="wid"> </div>
   <Name />
   <Roles />
-
   <div class="scroller"></div>
 </template>
 
 <script setup lang="ts">
-import Roles from './Roles.vue'
-import Name from './Name.vue'
+  import Roles from './Roles.vue'
+  import Name from './Name.vue'
 
-import { onMounted } from 'vue';
-import { ScrollIntroPage } from '../modules/intro-page-scroller';
+  import { onMounted } from 'vue';
+  import { ScrollIntroPage } from '../modules/intro-page-scroller';
 
-onMounted(() => {
-  ScrollIntroPage();
-})
-
+  onMounted(() => {
+    ScrollIntroPage();
+  })
 </script>
 
 <style lang="scss" scoped>
-@use "../style/variables.scss" as *;
-
-.scroller {
-  position: absolute;
-  top: 100vh;
-}
-
-.wid {
-  width: 100%;
-  height: 2rem;
-  position: fixed;
-  top: 2%;
-  justify-content: center;
-  display: flex;
-  font-size: 2rem;
-  align-items: center;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-
-  &::before {
-    content: "desktop";
-
-    @include mobile {
-      content: "mobile";
-      color: red;
-    }
-
-    @include tablet {
-      content: "tablet";
-      color: orange;
-    }
-
-    @include tabletLandscape {
-      content: "tablet-landscape";
-      color: rgb(57, 57, 199);
-    }
-
-    @include smallDesktop {
-      content: "small-desktop";
-      color: yellow;
-    }
-
-    @include desktop {
-      content: "desktop";
-      color: green;
-    }
-  }
-}
+  @use "../style/variables.scss" as *;
 </style>
