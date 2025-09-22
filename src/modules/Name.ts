@@ -1,6 +1,5 @@
-
 import { ref, onMounted } from 'vue';
-import { createAdvancedFloating, createFloatingAnimation } from '../modules/floating-elements';
+import { createFloatingAnimation } from '../modules/floating-elements';
 import VanillaTilt from 'vanilla-tilt';
 
 export const firstNameRef = ref<HTMLElement>();
@@ -24,21 +23,33 @@ export const InitializeFloatingElements = () => {
    })
 }
 
-export const InitializeTilt =() => {
+export const InitializeTilt = () => {
    onMounted(() => {
-   if (firstNameRef.value) 
-   {
-      VanillaTilt.init(firstNameRef.value, {
-         max: 50,
-         speed: 900
-      })
-   }
-   if (lastNameRef.value) 
-   {
-      VanillaTilt.init(lastNameRef.value, {
-         max: 50,
-         speed: 900
-      })
-   }
-})
+      // Check if it's an iOS device
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+      
+      // Only initialize tilt on non-iOS devices
+      if (!isIOS) {
+         if (firstNameRef.value) 
+         {
+            VanillaTilt.init(firstNameRef.value, {
+               max: 50,
+               speed: 900,
+               perspective: 1000,
+               scale: 1.05
+            })
+         }
+         if (lastNameRef.value) 
+         {
+            VanillaTilt.init(lastNameRef.value, {
+               max: 50,
+               speed: 900,
+               perspective: 1000,
+               scale: 1.05
+            })
+         }
+      } else {
+         console.log('Tilt disabled on iOS device')
+      }
+   })
 }

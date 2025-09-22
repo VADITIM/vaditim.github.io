@@ -11,26 +11,28 @@
 }
 
 .name-container {
+	@extend .disable-selection;
 	position: absolute;
 	display: flex;
 	flex-direction: column;
-	right: 10%;
+	right: 12%;
 	width: fit-content;
 	top: 50%;
 	transform: translateY(-50%);
-	color: $purple;
+	color: $purple !important;
 	font-family: Wosker;
 	perspective: 1000px;
 	font-size: 18rem;
 	gap: 0rem;
 	margin: 0;
 
+
 	@include mobile {
-		left: 28%;
+		left: -.5rem;
 		top: 10%;
 		transform: translateY(0);
 		width: 100%;
-		font-size: 3.5rem;
+		font-size: 4.8rem;
 		z-index: 3;
 	}
 	
@@ -42,8 +44,8 @@
 	}
 	
 	@include tabletLandscape {
-		right: 3%;
-		font-size: 11rem;
+		right: 5%;
+		font-size: 10rem;
 	}
 		
 	@include smallDesktop {
@@ -59,7 +61,6 @@
 }
 
 .first-name {
-	@include rotate(-5, -35, 2);
 	@include rotate(-22, -30, -12);
 	display: flex;
 	position: relative;
@@ -67,8 +68,8 @@
 	height: 13rem;
 	
 	@include mobile {
-		@include rotate(-10, -30, -8);
-		height: 2rem;
+		@include rotate(-20, 0, -8);
+		height: 3.5rem;
 		margin: 0 1rem;
 		margin-bottom: 1rem;
 	}
@@ -87,11 +88,16 @@
 }
 
 .last-name {
-	@include rotate(-5, -35, 2);
 	@include rotate(-22, -30, -12);
 	display: flex;
 	align-items: center;
 	height: 13rem;
+
+	@include mobile {
+		@include rotate(-20, 0, -8);
+		height: 3.5rem;
+		margin: 0 1rem;
+	}
 
 	@include tablet {
 		height: fit-content
@@ -101,16 +107,11 @@
 		height: fit-content
 	}
 
-	@include mobile {
-		@include rotate(-10, -30, -8);
-		height: 2rem;
-		margin: 0 1rem;
-	}
 }
 
 .letter {
-	@include threeDElement(25);
-	filter: drop-shadow(0px 0px 1px #e9ec12);
+	@include threeDElement(20);
+	filter: drop-shadow(0px 0px .1rem #ffffff) !important;
 	margin: 0;
 	padding: 0;
 	line-height: 1;
@@ -119,7 +120,7 @@
 		color .6s ease;
 
 	&:hover {
-		color: rgb(255, 221, 28);
+		color: rgb(255, 221, 28) !important;
 	}
 
 	@include mobile {
@@ -134,7 +135,7 @@
 	bottom: -10%;
 	width: 100%;
 	height: 2rem;
-	background-color: $yellow;
+	background-color: $yellow !important;
 	clip-path: polygon(0 90%, 100% 0, 100% 100%, 0 100%);
 
 	@include mobile {
@@ -142,6 +143,6 @@
 		bottom: -30%;
 		height: 1rem;
 		scale: .7;
-		right: 1rem;
+		right: -8rem;
 	}
 }
