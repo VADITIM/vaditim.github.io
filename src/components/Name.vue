@@ -21,9 +21,10 @@
 </template>
 
 <script setup lang="ts">
-
 import VanillaTilt from 'vanilla-tilt';
+
 import { ref, onMounted } from 'vue';
+import { createFloatingAnimation, initFloatingElements } from '../modules/floating-elements';
 
 const firstNameRef = ref<HTMLElement>();
 const lastNameRef = ref<HTMLElement>();
@@ -33,6 +34,11 @@ const lastName: string[] = ['n', 'i', 'e', 'd', 'e', 'n', 't', 'a', 'l']
 
 
 onMounted(() => {
+  initFloatingElements()
+
+  createFloatingAnimation(".first-name")
+  createFloatingAnimation(".last-name")
+
   if (firstNameRef.value) {
     VanillaTilt.init(firstNameRef.value, {
       max: 50,
