@@ -19,7 +19,7 @@ export function ScrollInfoPage() {
         trigger: ".scroller",
         start: "top 50%", 
         end: "bottom 20%",
-        markers: true,
+      //   markers: true,
         scrub: true,
         toggleActions: "play none none reverse"
       },
@@ -39,7 +39,7 @@ export function ScrollInfoPage() {
         trigger: ".scroller",
         start: "top 30%", 
         end: "bottom 0%",
-        markers: true,
+      //   markers: true,
         scrub: true,
         toggleActions: "play none none reverse"
       },
