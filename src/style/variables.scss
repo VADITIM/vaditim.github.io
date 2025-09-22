@@ -88,6 +88,13 @@ $yellow: rgb(255, 221, 28);
   transform: rotateY(35deg);
 }
 
+.disable-selection {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 
 @mixin rotate($angleX, $angleY, $angleZ ) {
   transform: rotateX(#{$angleX}deg) rotateY(#{$angleY}deg) rotateZ(#{$angleZ}deg);
