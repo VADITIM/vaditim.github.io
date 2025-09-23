@@ -1,6 +1,7 @@
 <template>
     <div class="backgroundInfoBottom"></div>
     <div class="backgroundInfoTop"></div>
+    <div class="intro-background"></div>
 </template>
 
 <script setup lang="ts">

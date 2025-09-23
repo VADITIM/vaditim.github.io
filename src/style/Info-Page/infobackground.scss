@@ -2,10 +2,10 @@
 
 .backgroundInfoTop {
   position: absolute;
-  top: 100%;
+  top: 100vh;
   left: -100%;
   width: 10%;
-  height: 100%;
+  height: 100vh;
   background-color: blue;
   clip-path: polygon(0 0, 100% 0, 40% 100%, 0% 100%);
 
@@ -20,10 +20,10 @@
 
 .backgroundInfoBottom {
   position: absolute;
-  top: 100%;
+  top: 100vh;
   left: -100%;
   width: 12%;
-  height: 100%;
+  height: 100vh;
   background-color: rgb(24, 24, 177);
   clip-path: polygon(0 0, 54% 0, 100% 100%, 0% 100%);
 
@@ -34,4 +34,18 @@
   @include mobile {
     width: 30%;
   }
+}
+
+.intro-background {
+  position: absolute;
+  
+	left: 0;
+	width: 15%;
+	height: 100vh;
+	background-color: rgb(255, 221, 28);
+	clip-path: polygon(0 0, 70% 0, 40% 100%, 0% 100%);
+
+	@include mobile {
+		width: 40%;
+	}
 }

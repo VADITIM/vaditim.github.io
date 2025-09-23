@@ -1,45 +1,138 @@
 @use "../variables.scss" as *;
 
+
+// POSITIONING GROUPS
+.card1, .card3, .back-card1, .back-card3 {
+  left: 18%;
+
+  @include mobile {
+    left: 36%;
+  }
+}
+
+.card2, .card4, .back-card2, .back-card4 {
+  right: 18%;
+
+  @include mobile {
+    right: 21%;
+  }
+}
+
+.back-card1, .back-card2 {
+  bottom: 53.5%;
+  
+  @include mobile {
+    bottom: 49%;
+  }
+}
+
+.back-card3, .back-card4 {
+  bottom: 19.5%;
+  
+  @include mobile {
+    bottom: 26%;
+  }
+}
+
+.card1, .card2 {
+  bottom: 39%;
+}
+
+.card3, .card4 {
+  bottom: 5%;
+  
+  @include mobile {
+    bottom: 16.5%;
+  }
+}
+
 .container {
   @extend .center;
   position: relative;
   min-width: 100vw;
   min-height: 100vh;
-  // background-color: rgba(206, 48, 48, 0.252);
   overflow-x: hidden;
 }
-
 
 .cards-container {
   @extend .center;
   position: absolute;
-  width: 70vh;
-  height: 70vh;
-  // background-color: rgba(0, 128, 0, 0.185);
-
-  @include tablet {
-    width: 50vw;
-    height: 50vw;
-  }
-
-  @include mobile {
-    width: 50vw;
-    height: 50vw;
-  }
+  width: 90vh;
+  height: 90vh;  
+  overflow: hidden;
 }
 
-
-.card1, .card2, .card3, .card4,
-.back-card1, .back-card2, .back-card3, .back-card4 {
+// MODULAR MIXINS
+@mixin card-base($border-color, $rotation-x: -30, $rotation-y: -50, $rotation-z: 0) {
+  @extend .center;
+  @include rotate($rotation-x, $rotation-y, $rotation-z);
   position: absolute;
-  width: 20rem;
-  height: 20rem;
+  width: 32vh;
+  height: 32vh;
   color: white;
   font-family: Mono;
   font-size: 2rem;
   opacity: 1;
+  background-color: #131313be;
+  border: 10px double $border-color;
+  z-index: 5;
+  cursor: pointer;
+  
+  transition: 
+    1s ease all, 
+    z-index 2s ease;
+
+  @include mobile {
+    width: 20vh;
+    height: 20vh;
+
+    font-size: 1rem;
+  }
 }
 
+@mixin back-card-base($border-color, $bg-color, $rotation-x: -30, $rotation-y: 50, $rotation-z: 0) {
+  @extend .center;
+  @include rotate($rotation-x, $rotation-y, $rotation-z);
+  position: absolute;
+  width: 32vh;
+  height: 32vh;
+  color: white;
+  font-family: Mono;
+  font-size: 2rem;
+  opacity: 1;
+  background-color: $bg-color;
+  border: 10px double $border-color;
+
+  transition: 
+    .8s ease all .3s;
+
+  @include mobile {
+    width: 20vh;
+    height: 20vh;
+  }
+}
+
+@mixin card-open-state($rotation-x: -360, $side: left) {
+  @include rotate($rotation-x, 0, 0);
+  background-color: #131313e1;
+  color: transparent;
+  opacity: 1;
+  scale: 2;
+  visibility: visible;
+  z-index: 10;
+  bottom: 17.5%;
+  transition: opacity 0.5s ease 1s, visibility 0s linear 1s, 1 ease all;
+  
+  @if $side == left {
+    left: 31%;
+    bottom: 23%;
+  } @else {
+    right: 31%;
+    bottom: 23%;
+  }
+}
+
+// SHARED STYLES
 .card-content {
   @extend .center;
   width: 100%;
@@ -49,181 +142,67 @@
   opacity: 0;
   font-size: 1rem;
   visibility: hidden;
-
-  transition:
-    opacity 0.5s ease 0s, 
-    visibility 0s linear 0s;
+  
+  transition: opacity 0.5s ease 0s, visibility 0s linear 0s;
 
   &.visible {
     opacity: 1;
     visibility: visible;
-    transition:
-      opacity 0.5s ease .6s, 
-      visibility 0s linear .6s;
+    transition: opacity 0.5s ease .6s, visibility 0s linear .6s;
   }
 
-  & span {
+  span {
     position: absolute;
     margin: 1rem;
     top: 0;
   }
 }
 
-
-// CARD 1 ------------------------------------------------------------
-
+// CARD DEFINITIONS USING MIXINS
 .card1 {
-  @extend .center;
-  @include rotate(-30, -50, 0);
-  bottom: 35%;
-  left: 18%;
-  background-color: #131313be;
-  border: 10px double #3664fc;
-  z-index: 5;
-  cursor: pointer;
-
-  transition:
-    1s ease all,
+  @include card-base(#3664fc, -30, -50, 0);
 }
 
 .back-card1 {
-  @extend .center;
-  @include rotate(-30, 50, 0);
-  position: absolute;
-  bottom: 50%;
-  left: 18%;
-  background-color: #1E40AF80;
-  border: 10px double #3664fc;
-
-  transition: 
-    .8s ease all .3s;
+  @include back-card-base(#3664fc, #1E40AF80, -30, 50, 0);
 }
 
 .card1-open {
-  bottom: 18%;
-  left: 31%;
-  scale: 2.2;
-  z-index: 10;
-  background-color: #131313e1;
-  color: transparent;
-
-  @include rotate(-360, 0, 0)
+  @include card-open-state(-360, left);
 }
 
-// CARD 2 ------------------------------------------------------------
-
 .card2 {
-  @extend .center;
-  @include rotate(-30, 50, 0);
-  bottom: 35%;
-  right: 18%;
-  background-color: #131313be;
-  border: 10px double #0bc993;
-  z-index: 5;
-  cursor: pointer;
-
-  transition:
-    1s ease all, z-index 2s ease;
+  @include card-base(#0bc993, -30, 50, 0);
 }
 
 .back-card2 {
-  @include rotate(-30, -50, 0);
-  position: absolute;
-  bottom: 50%;
-  right: 18%;
-  background-color: #04785780;
-  border: 10px double #0bc993;
-
-  transition: 
-    .8s ease all .3s;
+  @include back-card-base(#0bc993, #04785780, -30, -50, 0);
 }
 
 .card2-open {
-  bottom: 18%;
-  right: 31%;
-  scale: 2.2;
-  z-index: 10;
-  background-color: #131313e1;
-  color: transparent;
-
-  @include rotate(-360, 0, 0)
+  @include card-open-state(-360, right);
 }
 
-// CARD 3 ------------------------------------------------------------
-
 .card3 {
-  @extend .center;
-  @include rotate(-30, -50, 0);
-  bottom: 0;
-  left: 18%;
-  background-color: #131313be;
-  border: 10px double #F59E0B;
-  z-index: 5;
-  cursor: pointer;
-
-  transition:
-    1s ease all, z-index 2s ease;
+  @include card-base(#F59E0B, -30, -50, 0);
 }
 
 .back-card3 {
-  @include rotate(-30, 50, 0);
-  position: absolute;
-  bottom: 15%;
-  left: 18%;
-  background-color: #F59E0B80;
-  border: 10px double #F59E0B;
-
-  transition: 
-    .8s ease all .3s;
+  @include back-card-base(#F59E0B, #F59E0B80, -30, 50, 0);
 }
 
 .card3-open {
-  bottom: 18%;
-  left: 31%;
-  scale: 2.2;
-  z-index: 10;
-  background-color: #131313e1;
-  color: transparent;
-
-  @include rotate(360, 0, 0)
+  @include card-open-state(360, left);
 }
-
-// CARD 4 ------------------------------------------------------------
 
 .card4 {
-  @extend .center;
-  @include rotate(-30, 50, 0);
-  bottom: 0;
-  right: 18%;
-  background-color: #131313be;
-  border: 10px double #9532e6;
-  z-index: 5;
-  cursor: pointer;
-
-  transition:
-    1s ease all, z-index 2s ease;
+  @include card-base(#9532e6, -30, 50, 0);
 }
 
-.back-card4  {
-  @include rotate(-30, -50, 0);
-  position: absolute;
-  bottom: 15%;
-  right: 18%;
-  background-color: #6B21A880;
-  border: 10px double #9532e6;
-
-  transition: 
-    .8s ease all .3s;
+.back-card4 {
+  @include back-card-base(#9532e6, #6B21A880, -30, -50, 0);
 }
 
 .card4-open {
-  bottom: 18%;
-  right: 31%;
-  scale: 2.2;
-  z-index: 10;
-  background-color: #131313e1;
-  color: transparent;
-
-  @include rotate(360, 0, 0)
+  @include card-open-state(360, right);
 }
-
