@@ -12,6 +12,5 @@
 </script>
 
 <style lang="scss" scoped>
-@use "../style/variables.scss" as *;
-@use "../style/projects.scss" as *;
+@use "@/style/Work-Page/projects.scss" as *;
 </style>

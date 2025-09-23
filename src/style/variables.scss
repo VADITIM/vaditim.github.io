@@ -6,11 +6,24 @@
 @font-face { font-family: "Think"; src: url('../assets/fonts/Think.ttf') format('truetype'); }
 @font-face { font-family: "Starlight"; src: url('../assets/fonts/Starlight\ demo.ttf') format('truetype'); }
 
+
+// Variables -------------------------------------------------------------------------
+
+
 $mobile: 435px; //360px
 $tablet: 840px; //1200px
 $tabletLandscape: 1200px; //1200px
 $small-desktop: 1600px;
 $large-desktop: 2000px;
+
+$purple: #7e55dd;
+$black: #414141;
+$black2: #525252;
+$blacktrans: #222222d8;
+$yellow: rgb(255, 221, 28);
+
+
+// Media Queries -------------------------------------------------------------------------
 
 
 @mixin allTablets {
@@ -60,11 +73,9 @@ $large-desktop: 2000px;
   }
 }
 
-$purple: #7e55dd;
-$black: #414141;
-$black2: #525252;
-$blacktrans: #222222d8;
-$yellow: rgb(255, 221, 28);
+
+// Includes -------------------------------------------------------------------------
+
 
 .center {
   display: flex;
@@ -72,21 +83,6 @@ $yellow: rgb(255, 221, 28);
   align-items: center;
 }
 
-@mixin absoluteCenter($top: 50%, $left: 50%) {
-  top: $top;
-  left: $left;
-  transform: translate(-50%, -50%);
-}
-
-@mixin flex($string1, $string2) {
-  display: flex;
-  justify-content: $string1;
-  align-items: $string2;
-}
-
-.rotate-right {
-  transform: rotateY(35deg);
-}
 
 .disable-selection {
   user-select: none;
@@ -94,6 +90,9 @@ $yellow: rgb(255, 221, 28);
   -moz-user-select: none;
   -ms-user-select: none;
 }
+
+
+// Methods -------------------------------------------------------------------------
 
 
 @mixin rotate($angleX, $angleY, $angleZ ) {
@@ -110,4 +109,17 @@ $yellow: rgb(255, 221, 28);
   }
   
   text-shadow: $shadows;
+}
+
+@mixin absoluteCenter($top: 50%, $left: 50%) {
+  position: absolute;
+  top: $top;
+  left: $left;
+  transform: translate(-50%, -50%);
+}
+
+@mixin flex($string1: center, $string2: center) {
+  display: flex;
+  justify-content: $string1;
+  align-items: $string2;
 }

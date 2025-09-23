@@ -25,8 +25,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { skills, GetOptionName } from '../modules/roles';
-import { toggle, isOpen, closeAll } from '../modules/mobile-hover';
+import { skills, GetOptionName } from '../../modules/roles';
+import { toggle, isOpen, closeAll } from '../../modules/mobile-hover';
 
 const skillRef = ref<HTMLElement | null>(null)
 
@@ -51,5 +51,5 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown', onPointerDownO
 </script>
 
 <style lang="scss" scoped>
-@use "../style/roles.scss" as *;
+@use "../../style/Intro-Page/roles.scss" as *;
 </style>

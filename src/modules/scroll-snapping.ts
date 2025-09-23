@@ -4,9 +4,18 @@ export const container = ref<HTMLElement>()
 
 let isAnimating: boolean = false
 let scrollTimeout: number
+let animationId: number
+let lastScrollY: number = 0
+let userScrolled: boolean = false
 
 const SnapToNearest = () => {
-  if (isAnimating) return
+  if (isAnimating && !userScrolled) return
+
+  // Cancel any existing animation if user scrolled
+  if (isAnimating && userScrolled) {
+    cancelAnimationFrame(animationId)
+    isAnimating = false
+  }
 
   const scrollY: number = window.scrollY
   const proximityDistance: number = 400
@@ -24,8 +33,15 @@ const SnapToNearest = () => {
       const startTime = performance.now()
 
       isAnimating = true
+      userScrolled = false
 
       const AnimateScroll = (currentTime: number) => {
+        // Stop animation if user scrolled during animation
+        if (userScrolled) {
+          isAnimating = false
+          return
+        }
+
         const elapsed = currentTime - startTime
         const progress = Math.min(elapsed / duration, 1)
 
@@ -37,32 +53,49 @@ const SnapToNearest = () => {
         window.scrollTo(0, current)
 
         if (progress < 1) {
-          requestAnimationFrame(AnimateScroll)
+          animationId = requestAnimationFrame(AnimateScroll)
         } else {
           isAnimating = false
         }
       }
 
-      requestAnimationFrame(AnimateScroll)
+      animationId = requestAnimationFrame(AnimateScroll)
     }
   })
 }
 
 export function InitializeScrollSnap() {
    const handleScroll = () => {
-   if (isAnimating) return
+   const currentScrollY = window.scrollY
+   
+   // Detect if user is actively scrolling (scroll position changed significantly)
+   if (Math.abs(currentScrollY - lastScrollY) > 10) {
+     userScrolled = true
+   }
+   
+   lastScrollY = currentScrollY
+   
+   // Don't start new snap animation if currently animating, unless user scrolled
+   if (isAnimating && !userScrolled) return
 
    clearTimeout(scrollTimeout)
-   scrollTimeout = setTimeout(SnapToNearest, 400)
+   scrollTimeout = setTimeout(() => {
+     userScrolled = false // Reset flag before snapping
+     SnapToNearest()
+   }, 400)
    }
 
    onMounted(() => {
+   lastScrollY = window.scrollY
    window.addEventListener('scroll', handleScroll)
    })
 
    onBeforeUnmount(() => {
    window.removeEventListener('scroll', handleScroll)
    clearTimeout(scrollTimeout)
+   if (animationId) {
+     cancelAnimationFrame(animationId)
+   }
    })
 }
 

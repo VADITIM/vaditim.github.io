@@ -1,0 +1,229 @@
+@use "../variables.scss" as *;
+
+.container {
+  @extend .center;
+  position: relative;
+  min-width: 100vw;
+  min-height: 100vh;
+  // background-color: rgba(206, 48, 48, 0.252);
+  overflow-x: hidden;
+}
+
+
+.cards-container {
+  @extend .center;
+  position: absolute;
+  width: 70vh;
+  height: 70vh;
+  // background-color: rgba(0, 128, 0, 0.185);
+
+  @include tablet {
+    width: 50vw;
+    height: 50vw;
+  }
+
+  @include mobile {
+    width: 50vw;
+    height: 50vw;
+  }
+}
+
+
+.card1, .card2, .card3, .card4,
+.back-card1, .back-card2, .back-card3, .back-card4 {
+  position: absolute;
+  width: 20rem;
+  height: 20rem;
+  color: white;
+  font-family: Mono;
+  font-size: 2rem;
+  opacity: 1;
+}
+
+.card-content {
+  @extend .center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  color: white;
+  opacity: 0;
+  font-size: 1rem;
+  visibility: hidden;
+
+  transition:
+    opacity 0.5s ease 0s, 
+    visibility 0s linear 0s;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.5s ease .6s, 
+      visibility 0s linear .6s;
+  }
+
+  & span {
+    position: absolute;
+    margin: 1rem;
+    top: 0;
+  }
+}
+
+
+// CARD 1 ------------------------------------------------------------
+
+.card1 {
+  @extend .center;
+  @include rotate(-30, -50, 0);
+  bottom: 35%;
+  left: 18%;
+  background-color: #131313be;
+  border: 10px double #3664fc;
+  z-index: 5;
+  cursor: pointer;
+
+  transition:
+    1s ease all,
+}
+
+.back-card1 {
+  @extend .center;
+  @include rotate(-30, 50, 0);
+  position: absolute;
+  bottom: 50%;
+  left: 18%;
+  background-color: #1E40AF80;
+  border: 10px double #3664fc;
+
+  transition: 
+    .8s ease all .3s;
+}
+
+.card1-open {
+  bottom: 18%;
+  left: 31%;
+  scale: 2.2;
+  z-index: 10;
+  background-color: #131313e1;
+  color: transparent;
+
+  @include rotate(-360, 0, 0)
+}
+
+// CARD 2 ------------------------------------------------------------
+
+.card2 {
+  @extend .center;
+  @include rotate(-30, 50, 0);
+  bottom: 35%;
+  right: 18%;
+  background-color: #131313be;
+  border: 10px double #0bc993;
+  z-index: 5;
+  cursor: pointer;
+
+  transition:
+    1s ease all, z-index 2s ease;
+}
+
+.back-card2 {
+  @include rotate(-30, -50, 0);
+  position: absolute;
+  bottom: 50%;
+  right: 18%;
+  background-color: #04785780;
+  border: 10px double #0bc993;
+
+  transition: 
+    .8s ease all .3s;
+}
+
+.card2-open {
+  bottom: 18%;
+  right: 31%;
+  scale: 2.2;
+  z-index: 10;
+  background-color: #131313e1;
+  color: transparent;
+
+  @include rotate(-360, 0, 0)
+}
+
+// CARD 3 ------------------------------------------------------------
+
+.card3 {
+  @extend .center;
+  @include rotate(-30, -50, 0);
+  bottom: 0;
+  left: 18%;
+  background-color: #131313be;
+  border: 10px double #F59E0B;
+  z-index: 5;
+  cursor: pointer;
+
+  transition:
+    1s ease all, z-index 2s ease;
+}
+
+.back-card3 {
+  @include rotate(-30, 50, 0);
+  position: absolute;
+  bottom: 15%;
+  left: 18%;
+  background-color: #F59E0B80;
+  border: 10px double #F59E0B;
+
+  transition: 
+    .8s ease all .3s;
+}
+
+.card3-open {
+  bottom: 18%;
+  left: 31%;
+  scale: 2.2;
+  z-index: 10;
+  background-color: #131313e1;
+  color: transparent;
+
+  @include rotate(360, 0, 0)
+}
+
+// CARD 4 ------------------------------------------------------------
+
+.card4 {
+  @extend .center;
+  @include rotate(-30, 50, 0);
+  bottom: 0;
+  right: 18%;
+  background-color: #131313be;
+  border: 10px double #9532e6;
+  z-index: 5;
+  cursor: pointer;
+
+  transition:
+    1s ease all, z-index 2s ease;
+}
+
+.back-card4  {
+  @include rotate(-30, -50, 0);
+  position: absolute;
+  bottom: 15%;
+  right: 18%;
+  background-color: #6B21A880;
+  border: 10px double #9532e6;
+
+  transition: 
+    .8s ease all .3s;
+}
+
+.card4-open {
+  bottom: 18%;
+  right: 31%;
+  scale: 2.2;
+  z-index: 10;
+  background-color: #131313e1;
+  color: transparent;
+
+  @include rotate(360, 0, 0)
+}
+
