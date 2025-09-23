@@ -8,16 +8,14 @@ export function ScrollInfoPage() {
 
   gsap.fromTo(".backgroundInfoTop", 
     {
-      autoAlpha: 0,
     },
     {
-      autoAlpha: 1,
       left: 0,
       duration: 1,
       stagger: 0.1,
       scrollTrigger: {
         trigger: ".scroller",
-        start: "top 30%", 
+        start: "top 60%", 
         end: "bottom 0%",
         // markers: true,
         scrub: true,
@@ -28,17 +26,33 @@ export function ScrollInfoPage() {
   
   gsap.fromTo(".backgroundInfoBottom", 
     {
-      autoAlpha: 0,
     },
     {
-      autoAlpha: 1,
       left: 0,
       duration: 1,
       stagger: 0.1,
       scrollTrigger: {
         trigger: ".scroller",
-        start: "top 50%", 
-        end: "bottom 2%",
+        start: "top 60%", 
+        end: "bottom 10%",
+        // markers: true,
+        scrub: true,
+        toggleActions: "play none none reverse"
+      },
+    }
+  )  
+
+  gsap.fromTo(".intro-background", 
+    {
+    },
+    {
+      xPercent: -108.2,
+      duration: 1,
+      stagger: 0.1,
+      scrollTrigger: {
+        trigger: ".scroller",
+        start: "top 40%", 
+        end: "bottom 0%",
         // markers: true,
         scrub: true,
         toggleActions: "play none none reverse"

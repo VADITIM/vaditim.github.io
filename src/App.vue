@@ -1,3 +1,10 @@
+<!-- 
+1280 x 720
+tabletland 1180 x 820
+tablet 820 x 1180
+
+-->
+
 <template>
   <main class="app-container" ref="container">
     <IntroPage />
