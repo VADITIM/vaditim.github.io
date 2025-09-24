@@ -21,5 +21,5 @@ import { cards } from '../../modules/cards';
 </script>
 
 <style lang="scss" scoped>
-@use "@/style/Info-Page/aboutme.scss" as *;
+@use "@/style/Info-Page/cards.scss" as *;
 </style>

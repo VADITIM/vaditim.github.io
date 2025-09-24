@@ -61,7 +61,7 @@ gsap.fromTo(".info-background-bottom",
       trigger: ".scrollerW",
       start: "top 35%", 
       end: "bottom 0%",
-      markers: true,
+      // markers: true,
       scrub: true,
       toggleActions: "play none none reverse"
    },
