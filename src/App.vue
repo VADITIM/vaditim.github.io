@@ -18,9 +18,9 @@ tablet 820 x 1180
   import InfoPage from './components/Info-Page/InfoPage.vue'
   import WorkPage from './components/Work-Page/WorkPage.vue'
 
-  import { container, InitializeScrollSnap } from './modules/scroll-snapping'
+  // import { container, InitializeScrollSnap } from './modules/scroll-snapping'
 
-  InitializeScrollSnap();
+  // InitializeScrollSnap();
 </script>
 
 <style scoped lang="scss">

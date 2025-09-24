@@ -2,6 +2,7 @@
   <InfoBackground />
   <AboutMe />
   <div class="scroller"></div>
+  <div class="info-scroller-bottom"></div>
 </template>
 
 <script setup lang="ts">
@@ -20,5 +21,10 @@ onMounted(() => {
 .scroller {
   position: absolute;
   top: 0;
+}
+
+.info-scroller-bottom {
+  position: absolute;
+  top: 200vh;
 }
 </style>

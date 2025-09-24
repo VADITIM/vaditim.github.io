@@ -3,16 +3,35 @@
 .backgroundWorkTop {
   position: absolute;
   top: 200vh;
-  right: 0;
-  // left: -100%;
+  right: -200%;
   width: 15%;
   height: 100vh;
   background-color: rgb(134, 12, 12);
   clip-path: polygon(61% 0, 100% 0, 100% 100%, 0 100%);
   z-index: 1;
+}
 
-  transition: 
-    all 1s ease;
+.backgroundWorkBottom {
+  position: absolute;
+  top: 200vh;
+  right: -200%;
+  width: 12%;
+  height: 100vh;
+  background-color: red;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 35% 100%);
+  z-index: 2;
+}
+
+
+
+.info-background-top {
+  position: absolute;
+  top: 200vh;
+  left: -100%;
+  width: 9.8%;
+  height: 100vh;
+  background-color: blue;
+  clip-path: polygon(0 0, 40% 0, 0 100%, 0 100%);
 
   @include tablet {
     width: 30%;
@@ -23,20 +42,14 @@
   }
 }
 
-.backgroundWorkBottom {
+.info-background-bottom {
   position: absolute;
   top: 200vh;
-  right: 0;
-  // left: -100%;
-  width: 12%;
+  left: -100%;
+  width: 22.2%;
   height: 100vh;
-  background-color: red;
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 35% 100%);
-  z-index: 2;
-
-  transition: 
-    all 1s ease;
-
+  background-color: rgb(24, 24, 177);
+  clip-path: polygon(0 0, 54% 0, 85% 100%, 0% 100%);
 
   @include tablet {
     width: 30%;
