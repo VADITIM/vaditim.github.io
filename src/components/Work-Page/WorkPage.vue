@@ -2,7 +2,7 @@
   <WorkBackground />
   <Projects />
 
-  <div class="scroller"></div>
+  <div class="scrollerW"></div>
 </template>
 
 <script setup lang="ts">
@@ -11,4 +11,8 @@ import WorkBackground from './WorkBackground.vue';
 </script>
 
 <style lang="scss" scoped>
+.scrollerW {
+  position: absolute;
+  top: 200vh;
+}
 </style>

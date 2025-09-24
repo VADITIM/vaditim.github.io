@@ -90,7 +90,7 @@ gsap.fromTo(".skill",
     scrollTrigger: {
       trigger: ".scroller",
       start: "top 60%", 
-      end: "bottom 0%",
+      end: "bottom -5.9%",
       // markers: true,
       scrub: true,
       toggleActions: "play none none reverse"
@@ -107,7 +107,7 @@ gsap.fromTo(".skill",
     scrollTrigger: {
       trigger: ".scroller",
       start: "top 60%", 
-      end: "bottom 10%",
+      end: "bottom 5%",
       // markers: true,
       scrub: true,
       toggleActions: "play none none reverse"
