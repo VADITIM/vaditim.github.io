@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { ScrollWorkPage } from "../../modules/work-page-scroller";
+import { ScrollWorkPage } from "../../modules/work-page-background-scroller";
 
 onMounted(() => {
     ScrollWorkPage();

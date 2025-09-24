@@ -51,7 +51,7 @@
   position: relative;
   min-width: 100vw;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 .cards-container {
@@ -59,7 +59,10 @@
   position: absolute;
   width: 90vh;
   height: 90vh;  
-  overflow: hidden;
+  overflow: visible;
+
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 // MODULAR MIXINS
@@ -124,11 +127,11 @@
   transition: opacity 0.5s ease 1s, visibility 0s linear 1s, 1 ease all;
   
   @if $side == left {
-    left: 31%;
-    bottom: 23%;
+    left: 31% !important;
+    bottom: 23% !important;
   } @else {
-    right: 31%;
-    bottom: 23%;
+    right: 31% !important;
+    bottom: 23% !important;
   }
 }
 

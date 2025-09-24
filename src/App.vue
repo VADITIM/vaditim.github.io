@@ -28,5 +28,6 @@ tablet 820 x 1180
 
 .app-container> * {
   @extend .center;
+  overflow-y: visible;
 }
 </style>
