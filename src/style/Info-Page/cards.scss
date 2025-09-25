@@ -1,52 +1,8 @@
 @use "../variables.scss" as *;
 
 
-// POSITIONING GROUPS
-.card1, .card3, .back-card1, .back-card3 {
-  left: 18%;
-
-  @include mobile {
-    left: 36%;
-  }
-}
-
-.card2, .card4, .back-card2, .back-card4 {
-  right: 18%;
-
-  @include mobile {
-    right: 21%;
-  }
-}
-
-.back-card1, .back-card2 {
-  bottom: 53.5%;
-  
-  @include mobile {
-    bottom: 49%;
-  }
-}
-
-.back-card3, .back-card4 {
-  bottom: 19.5%;
-  
-  @include mobile {
-    bottom: 26%;
-  }
-}
-
-.card1, .card2 {
-  bottom: 39%;
-}
-
-.card3, .card4 {
-  bottom: 5%;
-  
-  @include mobile {
-    bottom: 16.5%;
-  }
-}
-
 .container {
+  @extend .disable-selection;
   @extend .center;
   position: relative;
   min-width: 100vw;
@@ -64,6 +20,58 @@
   overscroll-behavior: none;
   touch-action: none;
 }
+
+// POSITIONING GROUPS
+.card1, .card3, .back-card1, .back-card3 {
+  // left: 18%;
+  left: -100%;
+
+  @include mobile {
+    left: 36%;
+  }
+}
+
+.card2, .card4, .back-card2, .back-card4 {
+  right: 18%;
+  right: -100%;
+
+  @include mobile {
+    right: 21%;
+  }
+}
+
+.back-card1, .back-card2 {
+  bottom: 53.5%;
+  bottom: 100%;
+  
+  @include mobile {
+    bottom: 49%;
+  }
+}
+
+.back-card3, .back-card4 {
+  bottom: 19.5%;
+  bottom: 100%;
+  
+  @include mobile {
+    bottom: 26%;
+  }
+}
+
+.card1, .card2 {
+  bottom: 39%;
+  bottom: 100%;
+}
+
+.card3, .card4 {
+  bottom: 5%;
+  bottom: -100%;
+  
+  @include mobile {
+    bottom: 16.5%;
+  }
+}
+
 
 // MODULAR MIXINS
 @mixin card-base($border-color, $rotation-x: -30, $rotation-y: -50, $rotation-z: 0) {
@@ -106,12 +114,15 @@
   background-color: $bg-color;
   border: 10px double $border-color;
 
-  transition: 
-    .8s ease all .3s;
-
   @include mobile {
     width: 20vh;
     height: 20vh;
+  }
+}
+
+@for $i from 1 through 4 {
+  .back-card#{$i} {
+    transition: .8s ease all #{0.6 + (4 - $i) * 0.15}s;
   }
 }
 
@@ -165,6 +176,11 @@
 .card1 {
   @include card-base(#3664fc, -30, -50, 0);
 }
+
+.back-card-done {
+  transition: .8s ease all 0s;
+}
+
 
 .back-card1 {
   @include back-card-base(#3664fc, #1E40AF80, -30, 50, 0);

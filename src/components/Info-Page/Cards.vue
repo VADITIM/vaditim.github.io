@@ -16,7 +16,14 @@
 
 <script setup lang="ts">
 import { cards } from '../../modules/cards';
+import { CardsAnimations, BackCardsAnimations} from '../../modules/card-animations';
+import { onMounted } from 'vue';
 
+onMounted(() => {
+  CardsAnimations();
+  BackCardsAnimations();
+
+})
 
 </script>
 
