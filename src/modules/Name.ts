@@ -1,5 +1,5 @@
 import { ref, onMounted } from 'vue';
-import { createFloatingAnimation } from '../modules/floating-elements';
+import { createFloatingAnimation } from './animations/floating-elements';
 import VanillaTilt from 'vanilla-tilt';
 
 export const firstNameRef = ref<HTMLElement>();

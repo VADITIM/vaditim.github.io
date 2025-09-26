@@ -3,6 +3,9 @@ import { container } from '../../modules/scroll-snapping';
   <div class="name-headline-container">
     <div class="name">VADIM</div>
   </div>
+  <div class="about-me-container">
+    <div class="about-me">About Me</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -14,18 +17,36 @@ import { container } from '../../modules/scroll-snapping';
 
 .name-headline-container {
   position: fixed;
-  margin: 2rem 5rem;
+  margin: 0rem 2rem;
   top: 0;
-  left: 100%;
+  left: 130%;
   width: 4rem;
   height: 4rem;
   perspective: 1000px;
 }
 
 .name {
-  @include rotate(0, -230, 0);
+  @include rotate(0, -260, 0);
   color: red;
-  font-family: DT;
-  font-size: 3rem;
+  font-family: Exo;
+  font-size: 5rem;
+  filter: drop-shadow(1px 1px 10px black);
+}
+
+.about-me-container {
+  @include absoluteCenter(55%, 120%);
+  margin: 2rem 5rem;
+  width: 10rem;
+  height: 10rem;
+  perspective: 1000px;
+}
+
+.about-me {
+  color: red;
+  font-family: Mono;
+  font-size: 5.5rem;
+  line-height: 1;
+  filter: drop-shadow(2px 2px 2px black);
+
 }
 </style>

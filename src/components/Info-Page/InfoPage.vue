@@ -4,6 +4,7 @@
     <Quotes />
     <Cards />
     <NameHeadline />
+    <Contact />
     <div class="scroller"></div>
     <div class="info-scroller-bottom"></div>
   </div>
@@ -16,8 +17,9 @@ import NameHeadline from './NameHeadline.vue';
 import Quotes from './Quotes.vue';
 
 import { onMounted } from 'vue';
-import { InfoPageAnimations } from '../../modules/info-page-animations';
+import { InfoPageAnimations } from '../../modules/animations/info-page-animations';
 import { ScrollInfoPage } from '../../modules/info-page-background-scroller';
+import Contact from './Contact.vue';
 
 onMounted(() => {
   ScrollInfoPage();

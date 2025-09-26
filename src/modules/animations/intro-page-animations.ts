@@ -45,7 +45,7 @@ export function IntroPageAnimations() {
    gsap.fromTo(".name-container", 
    {
       autoAlpha: 1,
-      xPercent: 0
+      xPercent: 0,
    },
    {
       autoAlpha: 0,
