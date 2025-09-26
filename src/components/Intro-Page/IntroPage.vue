@@ -11,7 +11,7 @@
 
   import { onMounted } from 'vue';
   import { ScrollIntroPage } from '../../modules/intro-page-background-scroller';
-  import { IntroPageAnimations } from '../../modules/intro-page-animations';
+  import { IntroPageAnimations } from '../../modules/animations/intro-page-animations';
   import IntroBackground from './IntroBackground.vue';
 
   onMounted(() => {

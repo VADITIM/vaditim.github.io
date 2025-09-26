@@ -104,7 +104,7 @@ export function ScrollInfoPage() {
       trigger: ".info-scroller-bottom",
       start: "top 45%", 
       end: "bottom 15%",
-      markers: true,
+      // markers: true,
       scrub: true,
       toggleActions: "play none none reverse"
     },

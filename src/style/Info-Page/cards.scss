@@ -120,12 +120,6 @@
   }
 }
 
-@for $i from 1 through 4 {
-  .back-card#{$i} {
-    transition: .8s ease all #{0.6 + (4 - $i) * 0.15}s;
-  }
-}
-
 @mixin card-open-state($rotation-x: -360, $side: left) {
   @include rotate($rotation-x, 0, 0);
   background-color: #131313e1;
