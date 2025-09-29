@@ -10,7 +10,7 @@
   import Name from './Name.vue'
 
   import { onMounted } from 'vue';
-  import { ScrollIntroPage } from '../../modules/intro-page-background-scroller';
+  import { ScrollIntroPage } from '../../modules/animations/background/intro-page-background-scroller';
   import { IntroPageAnimations } from '../../modules/animations/intro-page-animations';
   import IntroBackground from './IntroBackground.vue';
 

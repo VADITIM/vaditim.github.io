@@ -1,7 +1,7 @@
 <template>
   <div class="info-page-container">
     <InfoBackground />
-    <Quotes />
+    <!-- <Quotes /> -->
     <Cards />
     <NameHeadline />
     <Contact />
@@ -18,7 +18,7 @@ import Quotes from './Quotes.vue';
 
 import { onMounted } from 'vue';
 import { InfoPageAnimations } from '../../modules/animations/info-page-animations';
-import { ScrollInfoPage } from '../../modules/info-page-background-scroller';
+import { ScrollInfoPage } from '../../modules/animations/background/info-page-background-scroller';
 import Contact from './Contact.vue';
 
 onMounted(() => {
