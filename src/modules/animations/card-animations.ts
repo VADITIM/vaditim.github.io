@@ -102,8 +102,8 @@ export function BackCardsAnimations() {
 
       // state
       let currentEnterTl: gsap.core.Timeline | null = null;
-      let pendingEnterDelay = false; // timeline started but waiting on the stagger delays
-      let isAnimating = false;       // true when the first tween has started and until complete
+      let pendingEnterDelay = false; 
+      let isAnimating = false;       
       let atStart = true;
       let atFinal = false;
 
@@ -116,15 +116,13 @@ export function BackCardsAnimations() {
       function createEnterTimeline() {
         const tl = gsap.timeline({ defaults: { overwrite: "auto" } });
 
-        // schedule with the delays you had
         tl.to(".back-card1", { ...finalPos.card1, duration: 0.8 }, 1.55);
         tl.to(".back-card2", { ...finalPos.card2, duration: 0.8 }, 1.4);
         tl.to(".back-card3", { ...finalPos.card3, duration: 0.8 }, 1.25);
         tl.to(".back-card4", { ...finalPos.card4, duration: 0.8 }, 1.1);
 
-        // when the very first tween actually begins this fires
         tl.eventCallback("onStart", () => {
-          pendingEnterDelay = false; // delay window is over
+          pendingEnterDelay = false; 
           isAnimating = true;
           atStart = false;
         });
@@ -138,7 +136,6 @@ export function BackCardsAnimations() {
       }
 
       function playEnterWithDelay() {
-        // clear any previous plan or tweens so we start clean
         if (currentEnterTl) {
           currentEnterTl.kill();
           currentEnterTl = null;
@@ -150,15 +147,13 @@ export function BackCardsAnimations() {
           ".back-card4",
         ]);
 
-        pendingEnterDelay = true; // lock the delay now
+        pendingEnterDelay = true; 
 
-        // create a fresh timeline and start it. the scheduled delays will hold the actual motion.
         currentEnterTl = createEnterTimeline();
         currentEnterTl.restart();
       }
 
       function playEnterNoDelay() {
-        // used when we want to move immediately toward final from current position
         if (currentEnterTl) {
           currentEnterTl.kill();
           currentEnterTl = null;
@@ -188,13 +183,11 @@ export function BackCardsAnimations() {
       }
 
       function animateToStartNoDelay() {
-        // stop any pending enter timeline so no stray callbacks or delayed starts happen
         if (currentEnterTl) {
           currentEnterTl.kill();
           currentEnterTl = null;
         }
 
-        // stop other tweens so we animate cleanly from current live values
         gsap.killTweensOf([
           ".back-card1",
           ".back-card2",

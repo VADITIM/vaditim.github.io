@@ -35,6 +35,7 @@ import { container } from '../../modules/scroll-snapping';
 
 .about-me-container {
   @include absoluteCenter(55%, 120%);
+  @include rotate(0, 180, 0);
   margin: 2rem 5rem;
   width: 10rem;
   height: 10rem;

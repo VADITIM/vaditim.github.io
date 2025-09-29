@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { firstName, lastName, InitializeFloatingElements, firstNameRef, lastNameRef, InitializeTilt } from '../../modules/Name';
+import { firstName, lastName, InitializeFloatingElements, firstNameRef, lastNameRef, InitializeTilt } from '../../modules/name';
 
 InitializeTilt();
 InitializeFloatingElements();
