@@ -1,4 +1,3 @@
-import { container } from '../../modules/scroll-snapping';
 <template>
   <div class="name-headline-container">
     <div class="name">VADIM</div>
@@ -31,6 +30,10 @@ import { container } from '../../modules/scroll-snapping';
   font-family: Exo;
   font-size: 5rem;
   filter: drop-shadow(1px 1px 10px black);
+
+  @include mobile {
+    font-size: 2.4rem;
+  }
 }
 
 .about-me-container {

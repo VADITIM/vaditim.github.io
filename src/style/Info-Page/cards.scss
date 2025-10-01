@@ -8,6 +8,11 @@
   min-width: 100vw;
   min-height: 100vh;
   overflow-x: visible;
+  pointer-events: none;
+
+  @include mobile {
+    overflow: hidden;
+  }
 }
 
 .cards-container {
@@ -16,9 +21,12 @@
   width: 90vh;
   height: 90vh;  
   overflow: visible;
-
-  overscroll-behavior: none;
-  touch-action: none;
+  pointer-events: none;
+  
+  @include mobile {
+    touch-action: pan-y;
+    overscroll-behavior: auto;
+  }
 }
 
 // POSITIONING GROUPS
@@ -27,8 +35,13 @@
   left: -100%;
 
   @include mobile {
-    left: 36%;
+    left: 28.5%;
   }
+
+  @include tablet {
+    left: 25%;
+  }
+
 }
 
 .card2, .card4, .back-card2, .back-card4 {
@@ -37,7 +50,17 @@
 
   @include mobile {
     right: 21%;
+    right: 28.5%;
   }
+  
+  @include tablet {
+
+  }
+
+  @include tabletLandscape {
+    
+  }
+
 }
 
 .back-card1, .back-card2 {
@@ -46,6 +69,14 @@
   
   @include mobile {
     bottom: 49%;
+  }
+
+  @include tablet {
+
+  }
+
+  @include tabletLandscape {
+
   }
 }
 
@@ -56,11 +87,34 @@
   @include mobile {
     bottom: 26%;
   }
+  
+  @include tablet {
+
+  }
+
+  @include tabletLandscape {
+    
+  }
+
 }
 
 .card1, .card2 {
   bottom: 39%;
   bottom: 100%;
+
+  @include mobile {
+    bottom: 39.5%;
+    bottom: 109.5%;
+  }
+  
+  @include tablet {
+    bottom: 40%;
+  }
+
+  @include tabletLandscape {
+    
+  }
+
 }
 
 .card3, .card4 {
@@ -70,6 +124,15 @@
   @include mobile {
     bottom: 16.5%;
   }
+  
+  @include tablet {
+
+  }
+
+  @include tabletLandscape {
+    
+  }
+
 }
 
 
@@ -88,6 +151,7 @@
   border: 10px double $border-color;
   z-index: 5;
   cursor: pointer;
+  pointer-events: auto;
   
   transition: 
     1s ease all, 
@@ -98,6 +162,11 @@
     height: 20vh;
 
     font-size: 1rem;
+  }
+
+  @include tablet {
+    width: 25vh;
+    height: 25vh;
   }
 }
 
@@ -113,11 +182,19 @@
   opacity: 1;
   background-color: $bg-color;
   border: 10px double $border-color;
+  // Allow back cards to receive interactions
+  pointer-events: auto;
 
   @include mobile {
     width: 20vh;
     height: 20vh;
   }
+  
+  @include tablet {
+    width: 25vh;
+    height: 25vh;
+  }
+
 }
 
 @mixin card-open-state($rotation-x: -360, $side: left) {
@@ -137,6 +214,18 @@
   } @else {
     right: 31% !important;
     bottom: 23% !important;
+  }
+
+  @include mobile {
+    scale: 1.6;
+
+    @if $side == left {
+      left: 38% !important;
+      bottom: 40% !important;
+    } @else {
+      right: 37% !important;
+      bottom: 40% !important;
+    }
   }
 }
 
