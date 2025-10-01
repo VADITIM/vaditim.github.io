@@ -12,7 +12,10 @@
 	@include mobile {
 		height: 100vh;
 		width: 100vw;
-		overflow: hidden;
+	}
+
+	@include allTablets {
+		width: 30rem;
 	}
 }
 
@@ -25,6 +28,13 @@
 		height: 60%;
 		top: 30%;
 		width: 100%;
+	}
+
+	@include allTablets {
+		position: relative;
+		top: -5%;
+		left: -20%;
+		width: 65%;
 	}
 }
 
@@ -60,7 +70,7 @@
 
 .skills-container:has(.skill.open) .skills-line {
   @include mobile {
-    transform: translateY(50%) rotateY(40deg) scaleY(2); // Keep same translateY, only scale
+    transform: translateY(50%) rotateY(40deg) scaleY(2);
 		border-top: solid 2px $purple;
 		border-bottom: solid 2px $purple;
     transition:
@@ -74,7 +84,7 @@
 	justify-content: space-between;
 	flex-direction: column;
 	width: 100%;
-	height: 100%;
+	height: 95%;
 	perspective: 1000px;
 
 	@include mobile {

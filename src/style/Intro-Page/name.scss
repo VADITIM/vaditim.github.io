@@ -15,14 +15,14 @@
 	position: absolute;
 	display: flex;
 	flex-direction: column;
-	right: 12%;
+	right: 18%;
 	width: fit-content;
 	top: 50%;
 	transform: translateY(-50%);
 	color: $purple !important;
 	font-family: Wosker;
 	perspective: 1000px;
-	font-size: 18rem;
+	font-size: 22rem;
 	gap: 0rem;
 	margin: 0;
 
@@ -65,10 +65,9 @@
 	display: flex;
 	position: relative;
 	align-items: center;
-	height: 13rem;
+	height: 15rem;
 	
 	@include mobile {
-		@include rotate(-20, 0, -8);
 		height: 3.5rem;
 		margin: 0 1rem;
 		margin-bottom: 1rem;
@@ -91,10 +90,9 @@
 	@include rotate(-22, -30, -12);
 	display: flex;
 	align-items: center;
-	height: 13rem;
+	height: 15rem;
 
 	@include mobile {
-		@include rotate(-20, 0, -8);
 		height: 3.5rem;
 		margin: 0 1rem;
 	}
@@ -106,7 +104,6 @@
 	@include tabletLandscape {
 		height: fit-content
 	}
-
 }
 
 .letter {
@@ -139,6 +136,7 @@
 	clip-path: polygon(0 90%, 100% 0, 100% 100%, 0 100%);
 
 	@include mobile {
+		visibility: hidden;
 		@include rotate(-10, -140, -8);
 		bottom: -30%;
 		height: 1rem;

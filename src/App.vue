@@ -14,20 +14,29 @@ tablet 820 x 1180
 </template>
 
 <script setup lang="ts">
-  import IntroPage from './components/Intro-Page/IntroPage.vue'
-  import InfoPage from './components/Info-Page/InfoPage.vue'
-  import WorkPage from './components/Work-Page/WorkPage.vue'
+import IntroPage from './components/Intro-Page/IntroPage.vue'
+import InfoPage from './components/Info-Page/InfoPage.vue'
+import WorkPage from './components/Work-Page/WorkPage.vue'
 
-  // import { container, InitializeScrollSnap } from './modules/scroll-snapping'
+// import { container, InitializeScrollSnap } from './modules/scroll-snapping'
 
-  // InitializeScrollSnap();
+// InitializeScrollSnap();
 </script>
 
 <style scoped lang="scss">
 @use "./style/variables.scss" as *;
 
-.app-container> * {
+.app-container>* {
   @extend .center;
-  overflow-y: visible;
+
+  @include mobile {
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  @include allTablets {
+    overflow-x: hidden;
+    overflow-y: visible; 
+  }
 }
 </style>
