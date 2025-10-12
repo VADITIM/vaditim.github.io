@@ -17,7 +17,7 @@ tablet 820 x 1180
 import IntroPage from './components/Intro-Page/IntroPage.vue'
 import InfoPage from './components/Info-Page/InfoPage.vue'
 import WorkPage from './components/Work-Page/WorkPage.vue'
-
+// 
 // import { container, InitializeScrollSnap } from './modules/scroll-snapping'
 
 // InitializeScrollSnap();
@@ -30,13 +30,13 @@ import WorkPage from './components/Work-Page/WorkPage.vue'
   @extend .center;
 
   @include mobile {
-    overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: visible;
   }
 
   @include allTablets {
-    overflow-x: hidden;
-    overflow-y: visible; 
+    overflow-x: clip;
+    overflow-y: visible;
   }
 }
 </style>

@@ -25,6 +25,9 @@
 	font-size: 22rem;
 	gap: 0rem;
 	margin: 0;
+	pointer-events: none;
+	overscroll-behavior: none;
+	touch-action: none;
 
 
 	@include mobile {
@@ -38,9 +41,9 @@
 	
 	@include tablet {
 		top: 5%;
-		right: 3%;
+		right: 15%;
 		transform: translateY(0);
-		font-size: 7rem;
+		font-size: 9rem;
 	}
 	
 	@include tabletLandscape {
@@ -112,6 +115,8 @@
 	margin: 0;
 	padding: 0;
 	line-height: 1;
+	// Allow interactions on letters despite parent pointer-events: none
+	pointer-events: auto;
 	
 	transition:
 		color .6s ease;
@@ -124,6 +129,7 @@
 		@include threeDElement(5);
 		filter:  none;
 	}
+
 }
 
 .name-underline {

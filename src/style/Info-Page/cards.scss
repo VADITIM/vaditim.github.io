@@ -13,6 +13,10 @@
   @include mobile {
     overflow: hidden;
   }
+
+  @include allTablets {
+    overflow: visible;
+  }
 }
 
 .cards-container {
@@ -27,6 +31,11 @@
     touch-action: pan-y;
     overscroll-behavior: auto;
   }
+
+  @include allTablets {
+    touch-action: pan-y;
+    overscroll-behavior: auto;
+  }
 }
 
 // POSITIONING GROUPS
@@ -34,12 +43,16 @@
   // left: 18%;
   left: -100%;
 
-  @include mobile {
-    left: 28.5%;
+  @include tabletLandscape {
+    left: 17.7%;
   }
 
   @include tablet {
     left: 25%;
+  }
+
+  @include mobile {
+    left: 37.5%;
   }
 
 }
@@ -47,72 +60,34 @@
 .card2, .card4, .back-card2, .back-card4 {
   right: 18%;
   right: -100%;
-
-  @include mobile {
-    right: 21%;
-    right: 28.5%;
+  
+  @include tabletLandscape {
+    right: 17.7%;
   }
   
   @include tablet {
-
+    right: 25%;
   }
 
-  @include tabletLandscape {
-    
-  }
-
-}
-
-.back-card1, .back-card2 {
-  bottom: 53.5%;
-  bottom: 100%;
-  
   @include mobile {
-    bottom: 49%;
+    right: 22.5%;
   }
-
-  @include tablet {
-
-  }
-
-  @include tabletLandscape {
-
-  }
-}
-
-.back-card3, .back-card4 {
-  bottom: 19.5%;
-  bottom: 100%;
-  
-  @include mobile {
-    bottom: 26%;
-  }
-  
-  @include tablet {
-
-  }
-
-  @include tabletLandscape {
-    
-  }
-
 }
 
 .card1, .card2 {
   bottom: 39%;
   bottom: 100%;
 
-  @include mobile {
-    bottom: 39.5%;
-    bottom: 109.5%;
-  }
-  
-  @include tablet {
-    bottom: 40%;
+  @include tabletLandscape {
+    bottom: 34.5%;
   }
 
-  @include tabletLandscape {
-    
+  @include tablet {
+    bottom: 36%;
+  }
+
+  @include mobile {
+    bottom: 37.5%;
   }
 
 }
@@ -120,20 +95,55 @@
 .card3, .card4 {
   bottom: 5%;
   bottom: -100%;
-  
-  @include mobile {
-    bottom: 16.5%;
+
+  @include tabletLandscape {
+    bottom: 0;
   }
   
   @include tablet {
-
+    bottom: 9%;
   }
 
+  @include mobile {
+    bottom: 16.5%;
+  }
+}
+
+.back-card1, .back-card2 {
+  bottom: 53.5%;
+  bottom: 100%;
+
   @include tabletLandscape {
-    
+    bottom: 49.2%;
+  }  
+
+  @include tablet {
+    bottom: 47.5%;
+  }
+
+  @include mobile {
+    bottom: 46.5%;
+  }
+}
+
+.back-card3, .back-card4 {
+  bottom: 19.5%;
+  bottom: 100%;
+  
+  @include tabletLandscape {
+    bottom: 14.7%;
+  }
+
+  @include tablet {
+    bottom: 20.5%;
+  }
+
+  @include mobile {
+    bottom: 25.5%;
   }
 
 }
+
 
 
 // MODULAR MIXINS
@@ -157,16 +167,17 @@
     1s ease all, 
     z-index 2s ease;
 
-  @include mobile {
-    width: 20vh;
-    height: 20vh;
-
-    font-size: 1rem;
-  }
-
   @include tablet {
     width: 25vh;
     height: 25vh;
+  }
+
+  @include mobile {
+    width: 20vh;
+    height: 20vh;
+    border: 5px double $border-color;
+
+    font-size: 1rem;
   }
 }
 
@@ -182,19 +193,18 @@
   opacity: 1;
   background-color: $bg-color;
   border: 10px double $border-color;
-  // Allow back cards to receive interactions
   pointer-events: auto;
-
-  @include mobile {
-    width: 20vh;
-    height: 20vh;
-  }
   
   @include tablet {
     width: 25vh;
     height: 25vh;
   }
 
+  @include mobile {
+    width: 20vh;
+    height: 20vh;
+    border: 5px double $border-color;
+  }
 }
 
 @mixin card-open-state($rotation-x: -360, $side: left) {
@@ -216,20 +226,43 @@
     bottom: 23% !important;
   }
 
+  @include tabletLandscape {
+    scale: 1.8;
+
+    @if $side == left {
+      left: 31% !important;
+      bottom: 17% !important;
+    } @else {
+      right: 31% !important;
+      bottom: 17% !important;
+    }
+  }
+
+  @include tablet {
+    scale: 1.8;
+
+    @if $side == left {
+      left: 35% !important;
+      bottom: 25% !important;
+    } @else {
+      right: 35% !important;
+      bottom: 25% !important;
+    }
+  }
+
   @include mobile {
     scale: 1.6;
 
     @if $side == left {
       left: 38% !important;
-      bottom: 40% !important;
+      bottom: 30% !important;
     } @else {
       right: 37% !important;
-      bottom: 40% !important;
+      bottom: 30% !important;
     }
   }
 }
 
-// SHARED STYLES
 .card-content {
   @extend .center;
   width: 100%;
@@ -239,6 +272,7 @@
   opacity: 0;
   font-size: 1rem;
   visibility: hidden;
+  text-align: center;
   
   transition: opacity 0.5s ease 0s, visibility 0s linear 0s;
 
@@ -250,12 +284,15 @@
 
   span {
     position: absolute;
-    margin: 1rem;
+    margin: 1rem auto;
     top: 0;
+  }
+
+  @include mobile {
+    font-size: .6rem;
   }
 }
 
-// CARD DEFINITIONS USING MIXINS
 .card1 {
   @include card-base(#3664fc, -30, -50, 0);
 }

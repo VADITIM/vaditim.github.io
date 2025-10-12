@@ -9,13 +9,13 @@
   color: black;
 	overflow: visible;
 
+	@include allTablets {
+		width: 30rem;
+	}
+	
 	@include mobile {
 		height: 100vh;
 		width: 100vw;
-	}
-
-	@include allTablets {
-		width: 30rem;
 	}
 }
 
@@ -36,6 +36,11 @@
 		left: -20%;
 		width: 65%;
 	}
+	
+	@include tablet {
+		top: 10%;
+	}
+
 }
 
 .skills-line-container {

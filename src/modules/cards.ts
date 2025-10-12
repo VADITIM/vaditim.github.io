@@ -10,24 +10,63 @@ const card4Open = ref<boolean>(false);
 const cardFourContent = ref<boolean>(false)
 
 
- const ToggleCardOne = () => {
-   card1Open.value = !card1Open.value;
-   cardOneContent.value = !cardOneContent.value;
+const isAnyOtherCardOpen = (currentCard: string) => {
+  switch(currentCard) {
+    case 'card1':
+      return card2Open.value || card3Open.value || card4Open.value;
+    case 'card2':
+      return card1Open.value || card3Open.value || card4Open.value;
+    case 'card3':
+      return card1Open.value || card2Open.value || card4Open.value;
+    case 'card4':
+      return card1Open.value || card2Open.value || card3Open.value;
+    default:
+      return false;
+  }
+}
+
+const ToggleCardOne = () => {
+  if (card1Open.value) {
+    card1Open.value = false;
+    cardOneContent.value = false;
+  } 
+  else if (!isAnyOtherCardOpen('card1')) {
+    card1Open.value = true;
+    cardOneContent.value = true;
+  }
 }
 
 const ToggleCardTwo = () => {
-   card2Open.value = !card2Open.value;
-   cardTwoContent.value = !cardTwoContent.value;
+  if (card2Open.value) {
+    card2Open.value = false;
+    cardTwoContent.value = false;
+  } 
+  else if (!isAnyOtherCardOpen('card2')) {
+    card2Open.value = true;
+    cardTwoContent.value = true;
+  }
 }
 
 const ToggleCardThree = () => {
-   card3Open.value = !card3Open.value;
-   cardThreeContent.value = !cardThreeContent.value;
+  if (card3Open.value) {
+    card3Open.value = false;
+    cardThreeContent.value = false;
+  } 
+  else if (!isAnyOtherCardOpen('card3')) {
+    card3Open.value = true;
+    cardThreeContent.value = true;
+  }
 }
 
 const ToggleCardFour = () => {
-   card4Open.value = !card4Open.value;
-   cardFourContent.value = !cardFourContent.value;
+  if (card4Open.value) {
+    card4Open.value = false;
+    cardFourContent.value = false;
+  } 
+  else if (!isAnyOtherCardOpen('card4')) {
+    card4Open.value = true;
+    cardFourContent.value = true;
+  }
 }
 
 export const cards = [
