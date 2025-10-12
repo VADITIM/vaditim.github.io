@@ -2,9 +2,9 @@
   <div class="info-page-container">
     <InfoBackground />
     <!-- <Quotes /> -->
-    <!-- <Cards /> -->
-    <!-- <NameHeadline /> -->
-    <!-- <Contact /> -->
+    <Cards />
+    <NameHeadline />
+    <Contact />
     <div class="scroller"></div>
     <div class="info-scroller-bottom"></div>
   </div>
@@ -44,6 +44,7 @@ onMounted(() => {
   height: 100%;
   background-color: red;
 }
+
 .ba2 {
   position: absolute;
   top: 0;

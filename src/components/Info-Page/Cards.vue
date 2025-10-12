@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { cards } from '../../modules/cards';
-import { CardsAnimations, BackCardsAnimations} from '../../modules/animations/card-animations';
+import { CardsAnimations, BackCardsAnimations } from '../../modules/animations/card-animations';
 import { onMounted } from 'vue';
 
 onMounted(() => {
@@ -29,4 +29,5 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 @use "@/style/Info-Page/cards.scss" as *;
+
 </style>

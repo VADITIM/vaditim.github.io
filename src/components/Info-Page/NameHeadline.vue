@@ -43,12 +43,20 @@
   width: 10rem;
   height: 10rem;
   perspective: 1000px;
+  font-family: Mono;
+  font-size: 5.5rem;
+
+  @include mobile {
+    top: 15%;
+    left: -120%;
+    font-size: 2.4rem;
+    text-align: end;
+  }
+
 }
 
 .about-me {
   color: red;
-  font-family: Mono;
-  font-size: 5.5rem;
   line-height: 1;
   filter: drop-shadow(2px 2px 2px black);
 

@@ -50,6 +50,26 @@
       transform: scale(1.1);
     }
   }
+
+  @include mobile {
+    @include absoluteCenter(85%, 120%);
+    width: 4rem;
+    height: 9rem;
+    border-top: 2px solid #f09b3a;
+    border-right: 2px solid #f09b3a;
+
+
+    &>div {
+      width: 2rem;
+      height: 2rem;
+      margin: .3rem 0rem;
+    }
+
+    &>span {
+      font-size: 0.74rem;
+      top: -3%;
+    }
+  }
 }
 
 .github {
