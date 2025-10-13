@@ -1,7 +1,7 @@
 <template>
   <div class="work-page-container">
-    <WorkBackground />
     <Projects />
+    <WorkBackground />
   </div>
   <div class="scrollerW"></div>
 </template>
@@ -16,7 +16,6 @@ import WorkBackground from './WorkBackground.vue';
   position: absolute;
   top: 200vh;
 }
-
 
 .work-page-container {
   position: absolute;

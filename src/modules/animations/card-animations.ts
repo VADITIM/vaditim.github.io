@@ -11,7 +11,7 @@ export function CardsAnimations() {
         {
           left: "18%",
           bottom: "39%",
-
+          
           stagger: 0.1,
           scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
             start: "top 20%",

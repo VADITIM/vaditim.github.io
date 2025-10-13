@@ -37,7 +37,7 @@
 }
 
 .about-me-container {
-  @include absoluteCenter(55%, 120%);
+  @include absoluteCenter(-200%, 15%);
   @include rotate(0, 180, 0);
   margin: 2rem 5rem;
   width: 10rem;

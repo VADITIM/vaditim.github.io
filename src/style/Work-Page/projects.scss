@@ -2,9 +2,179 @@
 
 
 .container {
+  width: 100vw;
+  height: 100vh;
+  perspective: 1000px;
+  user-select: none;
+}
+
+
+.projects-container {
   @extend .center;
-  min-width: 100vw;
-  min-height: 100vh;
-  // background-color: rgba(48, 206, 95, 0.252);
-  overflow-x: hidden;
+  @include absoluteCenter(60%, 45%);
+  justify-content: start;
+  width: 100%;
+  height: 50rem;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  gap: 30rem;
+  cursor: grab;
+  scrollbar-width: none;
+  background-color: #242424;
+  
+}
+
+
+// Z INDEX LOGIC FOR COPY CONTAINER
+// Z INDEX LOGIC FOR COPY CONTAINER
+// Z INDEX LOGIC FOR COPY CONTAINER
+// Z INDEX LOGIC FOR COPY CONTAINER
+// Z INDEX LOGIC FOR COPY CONTAINER
+
+.project {
+  @extend .center;
+  flex-direction: column;
+  text-align: center;
+  position: relative;
+  min-width: 30rem;
+  min-height: 100%;
+  scroll-snap-align: center;
+  background-color: rgb(0, 81, 255);
+
+  &>* {
+    z-index: 1;
+  }
+}
+
+.spacer {
+  @extend .center;
+  position: relative;
+  flex-direction: column;
+  text-align: center;
+  min-width: 35rem;
+  min-height: 100%;
+}
+
+.spacer2 {
+  @extend .center;
+  flex-direction: column;
+  align-items: start;
+  text-align: center;
+  position: relative;
+  min-width: 35rem;
+  font-size: 3rem;
+  font-family: Mono;
+}
+
+.more-info-container {
+  position: absolute;
+  min-height: 100%;
+  min-width: 100%;
+}
+
+.more-info {
+  @extend .center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12rem;
+  height: 5rem;
+  font-size: 2rem;
+  border-top: none;
+  border-right: none;
+  border-radius: 10px;
+  font-family: Exo;
+  backdrop-filter: blur(3px);
+  filter: drop-shadow(0px 0px 30px black);
+}
+
+.project-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.platform {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5rem;
+  height: 5rem;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.pagination-dots {
+  @include absoluteCenter(95%, 45.5%);
+  display: flex;
+  gap: 1rem;
+  z-index: 100;
+}
+
+.dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(214, 22, 22, 0.8);
+    transform: scale(1.2);
+  }
+  
+  &.active {
+    background-color: rgb(255, 0, 0);
+    transform: scale(1.3);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+}
+
+
+.copy-container {
+  @extend .center;
+  @include absoluteCenter(60%, 45%);
+  width: 100%;
+  height: 50rem;    
+  overflow: visible;
+
+  transition: 
+    z-index 0s ease 2s;
+
+  &.active {
+    z-index: 10;
+    
+    transition: 
+      z-index 0s ease 0s;
+  }
+}
+
+.current-project-copy {
+  @extend .center;
+  @include absoluteCenter(50%, 50%);
+  text-align: center;
+  width: 30rem;
+  height: 100%;
+  background-color: rgba(0, 81, 255, 0.733);
+
+  transition: 
+    all 1s ease,
+    z-index 0s ease 1s;
+
+  &.active {
+    width: 80%;
+    top: 35%;
+    height: 140%;
+
+    transition: 
+      all 1s ease,
+      z-index 0s ease 0s;
+  }
 }
