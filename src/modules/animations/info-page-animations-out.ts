@@ -2,71 +2,42 @@ import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
-export function InfoPageAnimations() {
+export function InfoPageAnimationsOut() {
   ScrollTrigger.matchMedia({
     // Desktop
     "(min-width: 842px)": function() {
-      gsap.fromTo(".name-headline-container",
+
+      gsap.fromTo(".about-me-container",
       {
-        scale: 2,
+
       },
-      {
-        scale: 1,
-        top: 0,
-        left: 0,
+      { 
+				top: "75%",
+				left: "-50%",
         ease: "elastic.inOut(.3, 0.3)",
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 60%", 
-          end: "bottom 5%",
-          // markers: true,
-        },
-      })  
-
-      gsap.to(".name",
-      { 
-        rotateX: -10,
-        rotateY: 40,
-        rotateZ: 5,
-        top: 0,
-        left: 0,
-
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 60%", 
+        scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
+          start: "top 70%", 
           end: "bottom 5%",
           // markers: true,
       }})  
+        
+      gsap.fromTo(".contact-container",
+      {
 
-      gsap.fromTo(".about-me-container", 
-        {}, 
-        { 
-          top: "75%",
-          left: "15%",
-          rotateX: 0,
-          rotateY: 0,
-          rotateZ: 0,
-
-          scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-            markers: true,
-            start: "top 40%",
-            end: "bottom 00%",
-          }
-        }
-      );
-
-
-      gsap.to(".contact-container",
+      },
       {
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
-        top: "50%",
+        top: "0%",
         left: "90%",
+        ease: "elastic.inOut(.3, 0.3)",
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 20%", 
-          end: "bottom -10%",
-          // markers: true,
+        scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
+          start: "top 90%", 
+          end: "bottom 20%",
+          markers: true,
       }})
     },
 

@@ -20,10 +20,12 @@ import { onMounted } from 'vue';
 import { InfoPageAnimations } from '../../modules/animations/info-page-animations';
 import { ScrollInfoPage } from '../../modules/animations/background/info-page-background-scroller';
 import Contact from './Contact.vue';
+import { InfoPageAnimationsOut } from '../../modules/animations/info-page-animations-out';
 
 onMounted(() => {
   ScrollInfoPage();
   InfoPageAnimations();
+  InfoPageAnimationsOut();
 })
 </script>
 
@@ -34,24 +36,6 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-}
-
-.ba {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
-  background-color: red;
-}
-
-.ba2 {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: 100%;
-  background-color: rgb(0, 255, 149);
 }
 
 .scroller {
