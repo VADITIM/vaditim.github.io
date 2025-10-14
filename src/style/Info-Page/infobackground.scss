@@ -66,6 +66,12 @@
   background-color: rgb(134, 12, 12);
   clip-path: polygon(100% 0, 100% 0, 100% 100%, 61% 100%);
   z-index: 1;
+  transition: .5s all .0s;
+
+  &.active {
+    width: 25%;
+    transition: .4s all;
+  }
 
   @include tabletLandscape {
     
@@ -90,6 +96,15 @@
   background-color: $red;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 35% 100%);
   z-index: 2;
+
+  transition: .4s all 0s;
+
+  &.active {
+    width: 33.85%;
+    transition: .5s all .2s;
+  }
+
+
 
   @include tabletLandscape {
     

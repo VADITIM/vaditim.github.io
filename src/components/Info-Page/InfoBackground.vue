@@ -4,13 +4,14 @@
 
     <div class="intro-background"></div>
     
-    <div class="work-background-bottom"></div>
-    <div class="work-background-top"></div>
+    <div class="work-background-bottom" :class="{active: activeProjectIndex !== null}"></div>
+    <div class="work-background-top" :class="{active: activeProjectIndex !== null}"></div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { ScrollWorkPage } from "../../modules/animations/background/work-page-background-scroller";
+import { activeProjectIndex } from '../../modules/projects';
 
 onMounted(() => {
     ScrollWorkPage();
