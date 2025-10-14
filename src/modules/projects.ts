@@ -14,11 +14,12 @@ export const projects = [
     name: "Wrath of the Fallen Queen",
     description: "Description",
     year: 1,
-    img: "src/assets/images/wrathofthefallenqueen.png",
+    img: "src/assets/images/wrathofthefallenqueen1.png",
     engine: "src/assets/images/webengine.png",
     language: "src/assets/images/javascript.png",
     platform: "src/assets/images/webapp.png",
-    link: "https://github.com/VADITIM/Wrath-Of-The-Fallen-Queen"
+    link: "https://github.com/VADITIM/Wrath-Of-The-Fallen-Queen",
+    ai: true,
   },
   {
     name: "Haunted",
@@ -28,7 +29,8 @@ export const projects = [
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
-    link: "https://github.com/VADITIM/Haunted"
+    link: "https://github.com/VADITIM/Haunted",
+    ai: true,
   },
 	{
     name: "Velvet Deck Web",
@@ -38,7 +40,8 @@ export const projects = [
     engine: "src/assets/images/webengine.png",
     language: "src/assets/images/javascript.png",
     platform: "src/assets/images/webapp.png",
-    link: "https://github.com/VADITIM/Card-Game"
+    link: "https://github.com/VADITIM/Card-Game",
+    ai: true,
   },
   {
     name: "Boundless Board",
@@ -48,17 +51,19 @@ export const projects = [
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
-    link: "https://github.com/VADITIM/Boundless-Board"
+    link: "https://github.com/VADITIM/Boundless-Board",
+    ai: true,
   },
   {
     name: "//NETRUNNERS",
     description: "Description",
     year: 4,
-    img: "path/to/image4.jpg",
+    img: "src/assets/images/netrunners.png",
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
-    link: "https://github.com/VADITIM/NETRUNNERS"
+    link: "https://github.com/VADITIM/NETRUNNERS",
+    ai: true,
   },
   {
     name: "Veil of Remorse",
@@ -68,7 +73,8 @@ export const projects = [
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
-    link: "https://github.com/VADITIM/Veil-of-Remorse"
+    link: "https://github.com/VADITIM/Veil-of-Remorse",
+    ai: true,
   },
 	{
     name: "Simulation City - Reborn: Green Horizons",
@@ -78,17 +84,19 @@ export const projects = [
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
-    link: "https://github.com/Nobody-989/SimulationCity"
+    link: "https://github.com/Nobody-989/SimulationCity",
+    ai: false,
   },
 	{
 		name: "Velvet Deck",
 		description: "Description",
 		year: 4,
-		img: "src/assets/images/wrathofthefallenqueen.png",
+		img: "src/assets/images/velvetdeck.jpg",
 		engine: "src/assets/images/godot.png",
 		language: "src/assets/images/csharp.png",
 		platform: "src/assets/images/android.png",
-		link: "https://github.com/VADITIM/Velvet-Deck"
+		link: "https://github.com/VADITIM/Velvet-Deck",
+    ai: true,
 	},
 	{
 		name: "Portfolio",
@@ -98,7 +106,8 @@ export const projects = [
 		engine: "src/assets/images/webengine.png",
 		language: "src/assets/images/typescript.png",
 		platform: "src/assets/images/webapp.png",
-		link: "https://github.com/VADITIM/Velvet-Deck"
+		link: "https://github.com/VADITIM/Velvet-Deck",
+    ai: true,
 	},
 	{
     name: "Anomaly",
@@ -108,7 +117,8 @@ export const projects = [
     engine: "src/assets/images/godot.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
-    link: ""
+    link: "https://github.com/VADITIM/Anomaly",
+    ai: true,
   },
 ]
 
@@ -186,7 +196,10 @@ export function updateCurrentProject() {
 
   const scrollLeft = projectsContainer.value.scrollLeft
   
-  const projectSpacing = 60 * 16
+  const projectWidth = projectsContainer.value.clientWidth * 0.22
+  const gap = projectsContainer.value.clientWidth * .15 
+  const projectSpacing = projectWidth + gap
+  
   const currentIndex = Math.floor((scrollLeft + projectSpacing / 2) / projectSpacing)
   
   currentProjectIndex.value = Math.max(0, Math.min(currentIndex, projects.length - 1))
@@ -195,6 +208,9 @@ export function updateCurrentProject() {
 export function scrollToProject(index: number) {
   if (!projectsContainer.value) return
   
-  const projectSpacing = 60 * 16
+  const projectWidth = projectsContainer.value.clientWidth * 0.22
+  const gap = projectsContainer.value.clientWidth * .15 
+  const projectSpacing = projectWidth + gap
+  
   projectsContainer.value.scrollLeft = index * projectSpacing
 }
