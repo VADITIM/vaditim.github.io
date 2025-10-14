@@ -2,7 +2,7 @@
   <div class="work-page-container">
     <Projects />
     <WorkBackground />
-    <TechContainer />
+    <!-- <TechContainer /> -->
   </div>
   <div class="scrollerW"></div>
 </template>

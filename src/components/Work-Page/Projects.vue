@@ -32,10 +32,11 @@
 
         
     <div class="copy-container" :class="{ active: activeProjectIndex !== null }">
-      <div class="current-project-copy" :class="{ active: activeProjectIndex !== null }" @click="closeActiveProject">
+      <div class="project-copy" :class="{ active: activeProjectIndex !== null }" @click="closeActiveProject">
         <p>{{ projects[currentProjectIndex]?.name }}</p>
         <p>{{ projects[currentProjectIndex]?.description }}</p>
         <span>{{ projects[currentProjectIndex]?.year }}</span>
+        <p class="notice" v-if="projects[currentProjectIndex]?.ai && activeProjectIndex !== null">This image was generated with the help of AI by supplying it with assets from the original game / games art</p>
         <div class="project-image" :style="{ backgroundImage: `url(${projects[currentProjectIndex]?.img})` }" :class="{current: currentProjectIndex === currentProjectIndex, transitioning: transitioning}"></div>
       </div>
     </div>
@@ -61,9 +62,10 @@ import {
   previousProject,
   nextClicked,
   previousClicked,
-
 } 
 from '../../modules/projects';
+
+
 </script>
 
 <style lang="scss" scoped>
