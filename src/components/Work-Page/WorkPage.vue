@@ -2,12 +2,14 @@
   <div class="work-page-container">
     <Projects />
     <WorkBackground />
+    <TechContainer />
   </div>
   <div class="scrollerW"></div>
 </template>
 
 <script setup lang="ts">
 import Projects from './Projects.vue';
+import TechContainer from './TechContainer.vue';
 import WorkBackground from './WorkBackground.vue';
 </script>
 
