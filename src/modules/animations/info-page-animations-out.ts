@@ -37,7 +37,7 @@ export function InfoPageAnimationsOut() {
         scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
           start: "top 90%", 
           end: "bottom 20%",
-          markers: true,
+          // markers: true,
       }})
     },
 
