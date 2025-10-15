@@ -1,5 +1,20 @@
 import { ref } from 'vue'
 
+
+interface Project {
+  name: string
+  description: string
+  year: number | string
+  img: string
+  engine: string
+  language: string
+  platform: string
+  link: string
+  ai?: boolean
+  wip?: boolean
+  estimated?: number | string
+}
+
 export const activeProjectIndex = ref<number | null>(null)
 export const currentProjectIndex = ref(0)
 export const projectsContainer = ref<HTMLElement>()
@@ -9,11 +24,11 @@ export const scrollLeft = ref(0)
 export const transitioning = ref(false)
 
 
-export const projects = [
+export const projects: Project[] = [
   {
     name: "Wrath of the Fallen Queen",
     description: "Description",
-    year: 1,
+    year: 2024,
     img: "src/assets/images/wrathofthefallenqueen1.png",
     engine: "src/assets/images/webengine.png",
     language: "src/assets/images/javascript.png",
@@ -24,7 +39,7 @@ export const projects = [
   {
     name: "Haunted",
     description: "Description",
-    year: 2,
+    year: 2024,
     img: "src/assets/images/haunted.png",
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
@@ -35,7 +50,7 @@ export const projects = [
 	{
     name: "Velvet Deck Web",
     description: "Description",
-    year: 2,
+    year: 2024,
     img: "src/assets/images/velvetdeckweb.png",
     engine: "src/assets/images/webengine.png",
     language: "src/assets/images/javascript.png",
@@ -46,7 +61,7 @@ export const projects = [
   {
     name: "Boundless Board",
     description: "Description",
-    year: 3,
+    year: 2025,
     img: "src/assets/images/boundlessboard.png",
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
@@ -57,7 +72,7 @@ export const projects = [
   {
     name: "//NETRUNNERS",
     description: "Description",
-    year: 4,
+    year: 2025,
     img: "src/assets/images/netrunners.png",
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
@@ -68,7 +83,7 @@ export const projects = [
   {
     name: "Veil of Remorse",
     description: "Description",
-    year: 4,
+    year: 2025,
     img: "path/to/image4.jpg",
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
@@ -79,18 +94,17 @@ export const projects = [
 	{
     name: "Simulation City - Reborn: Green Horizons",
     description: "Description",
-    year: 4,
+    year: 2025,
     img: "src/assets/images/simulationcity.jpg",
     engine: "src/assets/images/unity.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
     link: "https://github.com/Nobody-989/SimulationCity",
-    ai: false,
   },
 	{
 		name: "Velvet Deck",
 		description: "Description",
-		year: 4,
+		year: 2025,
 		img: "src/assets/images/velvetdeck.jpg",
 		engine: "src/assets/images/godot.png",
 		language: "src/assets/images/csharp.png",
@@ -99,26 +113,28 @@ export const projects = [
     ai: true,
 	},
 	{
-		name: "Portfolio",
+		name: "'Godot 3D'",
 		description: "Description",
-		year: 4,
-		img: "src/assets/images/portfolio.png",
-		engine: "src/assets/images/webengine.png",
-		language: "src/assets/images/typescript.png",
-		platform: "src/assets/images/webapp.png",
+		year: 2025,
+		img: "src/assets/images/.png",
+		engine: "src/assets/images/godot.png",
+		language: "src/assets/images/csharp.png",
+		platform: "src/assets/images/windows.png",
 		link: "https://github.com/VADITIM/Velvet-Deck",
-    ai: true,
+    wip: true,
+    estimated: 2027,
 	},
 	{
     name: "Anomaly",
     description: "Description",
-    year: 4,
+    year: "Planned 2030",
     img: "src/assets/images/anomaly.JPG",
     engine: "src/assets/images/godot.png",
     language: "src/assets/images/csharp.png",
     platform: "src/assets/images/windows.png",
     link: "https://github.com/VADITIM/Anomaly",
-    ai: true,
+    wip: true,
+    estimated: 2035,
   },
 ]
 

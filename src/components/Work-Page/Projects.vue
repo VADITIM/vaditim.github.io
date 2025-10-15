@@ -18,8 +18,11 @@
           <div class="more-info" @click="ActiveProject(index)" :class="{ active: activeProjectIndex === index }">Show More</div>
         </div>
         <h3>{{ project.name }}</h3>
-        <p>{{ project.description }}</p>
-        <span>{{ project.year }}</span>
+        <span v-if="!project.wip">Year <br></br> {{ project.year }}</span>
+        <span v-if="project.wip">
+          <span>WORK IN PROGRESS <br></br> </span>
+          <span>Estimated {{ project.estimated }}</span>
+        </span>
         <div class="project-image" :style="{ backgroundImage: `url(${project.img})` }" :class="{current: currentProjectIndex === index, transitioning: transitioning}"></div>
       </div>
       <div class="spacer2">More To Come</div>
@@ -27,8 +30,8 @@
 
     <div class="next" @click="nextProject" :class="{active: activeProjectIndex !== null, clicked: nextClicked}"></div>
     <div class="previous" @click="previousProject" :class="{active: activeProjectIndex !== null, clicked: previousClicked}"></div>
-    <div class="full-next" @click="nextProject" :class="{active: activeProjectIndex !== null, clicked: nextClicked}"></div>
-    <div class="full-previous" @click="previousProject" :class="{active: activeProjectIndex !== null, clicked: previousClicked}"></div>
+    <div v-if="!last" class="full-next" @click="nextProject" :class="{active: activeProjectIndex !== null, clicked: nextClicked}"></div>
+    <div v-if="!first" class="full-previous" @click="previousProject" :class="{active: activeProjectIndex !== null, clicked: previousClicked}"></div>
 
         
     <div class="copy-container" :class="{ active: activeProjectIndex !== null }">
@@ -36,7 +39,7 @@
         <p>{{ projects[currentProjectIndex]?.name }}</p>
         <p>{{ projects[currentProjectIndex]?.description }}</p>
         <span>{{ projects[currentProjectIndex]?.year }}</span>
-        <p class="notice" v-if="projects[currentProjectIndex]?.ai && activeProjectIndex !== null">This image was generated with the help of AI by supplying it with assets from the original game / games art</p>
+        <p class="notice" v-if="projects[currentProjectIndex]?.ai && activeProjectIndex !== null">This image was created with the help of AI, using visual assets from the original game for reference.</p>
         <div class="project-image" :style="{ backgroundImage: `url(${projects[currentProjectIndex]?.img})` }" :class="{current: currentProjectIndex === currentProjectIndex, transitioning: transitioning}"></div>
       </div>
     </div>
@@ -45,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { 
   projects,
   currentProjectIndex,
@@ -64,6 +68,9 @@ import {
   previousClicked,
 } 
 from '../../modules/projects';
+
+const first = computed(() => currentProjectIndex.value === 0);
+const last = computed(() => currentProjectIndex.value === projects.length - 1);
 
 
 </script>
