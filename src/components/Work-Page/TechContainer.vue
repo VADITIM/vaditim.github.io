@@ -1,14 +1,20 @@
 <template>
-  <div class="tech-container" :class="{active: activeProjectIndex !== null}">
+  <div class="tech-container" :class="{ active: activeProjectIndex !== null }">
     <div class="dev-container">
-      <div class="platform" :style="{ backgroundImage: `url(${projects[currentProjectIndex || 0].platform})` }" :class="{active: activeProjectIndex !== null}"></div>
-      <div class="engine" :style="{ backgroundImage: `url(${projects[currentProjectIndex || 0].engine})` }" :class="{active: activeProjectIndex !== null}"></div>
-      <div class="language" :style="{ backgroundImage: `url(${projects[currentProjectIndex || 0].language})` }" :class="{active: activeProjectIndex !== null}"></div>
+      <div class="platform" ref="platformRef"
+        :style="{ backgroundImage: `url(${projects[currentProjectIndex || 0].platform})` }"
+        :class="{ active: activeProjectIndex !== null }"></div>
+      <div class="engine" ref="engineRef"
+        :style="{ backgroundImage: `url(${projects[currentProjectIndex || 0].engine})` }"
+        :class="{ active: activeProjectIndex !== null }"></div>
+      <div class="language" ref="languageRef"
+        :style="{ backgroundImage: `url(${projects[currentProjectIndex || 0].language})` }"
+        :class="{ active: activeProjectIndex !== null }"></div>
     </div>
-    <div class="download"></div>
+    <div class="download" ref="downloadRef"></div>
   </div>
 
-  <div class="description-container" :class="{active: activeProjectIndex !== null}">
+  <div class="description-container" :class="{ active: activeProjectIndex !== null }">
     <div class="container">
       <div class="see-more">See More</div>
       <div class="description"> {{ projects[currentProjectIndex || 0].description }} </div>
@@ -17,7 +23,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { currentProjectIndex, projects, activeProjectIndex } from '../../modules/projects';
+import { InitializeTilt } from '../../modules/vanillaTilt';
+
+const platformRef = ref<HTMLElement | null>(null);
+const engineRef = ref<HTMLElement | null>(null);
+const languageRef = ref<HTMLElement | null>(null);
+const downloadRef = ref<HTMLElement | null>(null);
+
+const tilts = [platformRef, engineRef, languageRef, downloadRef];
+
+InitializeTilt(tilts);
 </script>
 
 <style lang="scss" scoped>
@@ -28,35 +45,34 @@ import { currentProjectIndex, projects, activeProjectIndex } from '../../modules
   position: absolute;
   bottom: 0;
   right: -50%;
-  right: 0%;
   background-color: rgba(0, 128, 0, 0.322);
   width: 25%;
-  height: 30%;
+  height: 40%;
   z-index: 5;
 
-  transition: 
+  transition:
     all .3s ease-in-out;
 
   &.active {
     right: 0%;
 
-    transition: 
+    transition:
       all 1s ease-in-out;
   }
 }
 
 .dev-container {
-	position: absolute;
-	right: 0;
-	margin: 2rem;
+  position: absolute;
+  right: 0;
+  margin: 2rem;
   filter: drop-shadow(0px 0px 30px black);
-	perspective: 1000px;
+  perspective: 1000px;
 }
 
 .engine,
 .platform,
 .language {
-	@include rotate(-10, -20, 0);
+  @include rotate(-10, -20, 0);
   position: relative;
   top: 0;
   left: 0;
@@ -65,16 +81,16 @@ import { currentProjectIndex, projects, activeProjectIndex } from '../../modules
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-	margin: 1rem;
+  margin: 1rem;
 }
 
 .download {
-	position: absolute;
+  position: absolute;
   top: 70%;
   left: 15%;
   width: 6.5rem;
   height: 6.5rem;
-	background-image: url("../../assets/images/download.png");
+  background-image: url("../../assets/images/download.png");
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -94,19 +110,19 @@ import { currentProjectIndex, projects, activeProjectIndex } from '../../modules
   z-index: 5;
   perspective: 1000px;
   font-family: Exo;
-  
-  transition: 
+
+  transition:
     all 1s ease-in-out;
 
   &.active {
     right: -25%;
 
-    transition: 
+    transition:
       all 1s ease-in-out;
 
-      &:hover {
-        right: 5%;
-      }
+    &:hover {
+      right: 5%;
+    }
   }
 }
 
@@ -131,14 +147,14 @@ import { currentProjectIndex, projects, activeProjectIndex } from '../../modules
   font-size: 2rem;
   margin: 1rem;
 
-  transition: 
+  transition:
     all .6s ease-in-out;
 
   .description-container:hover & {
     opacity: 1;
     left: 0;
 
-    transition: 
+    transition:
       all .6s ease-in-out .2s;
 
   }
@@ -146,21 +162,21 @@ import { currentProjectIndex, projects, activeProjectIndex } from '../../modules
 
 .see-more {
   @include absoluteCenter(50%, 20%);
-  position: absolute;
   text-align: center;
-  
-  opacity: 1;
-  font-size: 4rem;
 
-  transition: 
+  opacity: 1;
+  font-size: 3rem;
+
+  transition:
     all .6s ease-in-out;
 
   .description-container:hover & {
     @include absoluteCenter(50%, -20%);
     opacity: 0;
   }
+
+  @include largeDesktop() {
+    font-size: 4rem;
+  }
 }
-
 </style>
-
-

@@ -23,7 +23,6 @@ export const startX = ref(0)
 export const scrollLeft = ref(0)
 export const transitioning = ref(false)
 
-
 export const projects: Project[] = [
   {
     name: "Wrath of the Fallen Queen",
@@ -92,7 +91,7 @@ export const projects: Project[] = [
     ai: true,
   },
 	{
-    name: "Simulation City - Reborn: Green Horizons",
+    name: "Simulation City Reborn<br>Green Horizons",
     description: "Description",
     year: 2025,
     img: "src/assets/images/simulationcity.jpg",

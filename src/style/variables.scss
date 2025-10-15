@@ -97,6 +97,10 @@ $red: #DC143C;
 
 // Methods -------------------------------------------------------------------------
 
+@mixin outline($color) {
+  text-shadow: -1px -1px 0 $color, 1px -1px 0 $color, -1px 1px 0 $color, 1px 1px 0 $color;
+
+}
 
 @mixin rotate($angleX, $angleY, $angleZ ) {
   transform: rotateX(#{$angleX}deg) rotateY(#{$angleY}deg) rotateZ(#{$angleZ}deg);
