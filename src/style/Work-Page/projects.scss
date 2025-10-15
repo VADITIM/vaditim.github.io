@@ -101,6 +101,7 @@ $projectWidht: 22%;
 .project,
 .project-copy {
   @extend .center;
+  @include outline(black);
   min-width: $projectWidht;
   min-height: 100%;
   width: $projectWidht;
@@ -117,6 +118,7 @@ $projectWidht: 22%;
 
 .more-info {
   @extend .center;
+  @include outline(rgba(255, 255, 255, 0.459));
   position: absolute;
   top: 0;
   right: 0;
@@ -125,10 +127,10 @@ $projectWidht: 22%;
   font-size: 2rem;
   border-top: none;
   border-right: none;
-  border-radius: 10px;
-  font-family: Exo;
-  backdrop-filter: blur(3px);
   border-radius: 20px;
+  font-family: Exo;
+  color: $red;
+  backdrop-filter: blur(3px);
   filter: drop-shadow(0px 0px 30px black);
   cursor: pointer;
 }
@@ -156,6 +158,37 @@ $projectWidht: 22%;
 
 
 
+.project-name-container {
+  position: absolute;
+  top: 0%;
+  left: -100%;
+  width: 70%;
+  height: fit-content;
+  margin: 1.5rem 12rem;
+  z-index: 15;
+  perspective: 1000px;
+  filter: drop-shadow(0px 0px 30px black);
+
+  transition: 
+    all 1s ease;
+
+  &.active {
+    left: 0%;
+  }
+}
+
+.project-name {
+  @include rotate(5, 20, 0);
+  @include outline(white);
+  color: $red;
+  font-size: 5rem;
+  font-family: Exo;
+}
+
+
+
+
+
 .notice {
   position: absolute;
   bottom: 0;
@@ -166,6 +199,10 @@ $projectWidht: 22%;
   backdrop-filter: blur(3px);
   filter: drop-shadow(0px 0px 30px black);
   font-family: Mono;
+  opacity: 1;
+
+  transition: 
+    all 1s ease;
 }
 
 
@@ -233,12 +270,6 @@ $projectWidht: 22%;
 
 
 
-
-
-
-
-
-
 .pagination-dots {
   @include absoluteCenter(95%, 45.5%);
   display: flex;
@@ -274,22 +305,11 @@ $projectWidht: 22%;
 
 
 
-
-
-
-
-
-
-
-
-
 .full-next,
 .full-previous {
   width: $projectWidht;
   height: 80%;
   cursor: pointer;
-  
-  // background-color: rgba(0, 81, 255, 0.733);
   z-index: 10;
 }
 
@@ -301,86 +321,23 @@ $projectWidht: 22%;
   @include absoluteCenter(50%, 8%);
 }
 
-.next,
-.previous {
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  width: 3rem;
-  height: 3rem;
-  z-index: 11;
-    transition:
-      right .6s .25s,
-      left .6s .25s,
-      scale .3s 0s;
 
-  &:hover {
-    scale: 1.1;
-    transition: .3s all;
-    cursor: pointer;
-  }
 
-  &.active {
-    transition: 
-      right .3s 0s,
-      left .3s 0s,
-  }
+.notice-fade-enter-active,
+.notice-fade-leave-active {
+  transition: all 1s ease;
 }
 
-.next {
-  background-image: url("../../assets/images/arrow_right.png");
-  position: absolute;
-  top: 50%;
-  right: 41%;
-  transform: translate(-50%, -50%);
-
-  &.active {
-    right: -10%;
-  }
-
-  &.clicked {
-    animation: nextClicked .5s ease;
-  }
+.notice-fade-enter-from,
+.notice-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0s ease;
 }
 
-.previous {
-  background-image: url("../../assets/images/arrow.png");
-  position: absolute;
-  top: 50%;
-  left: 33%;
-  transform: translate(-50%, -50%);
-
-  &.active {
-    left: -10%;
-  }
-
-  &.clicked {
-    animation: previousClicked .5s ease;
-  }
+.notice-fade-enter-to,
+.notice-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 1s ease 1s;
 }
-
-@keyframes nextClicked {
-  0% {
-    transform: translate(-50%, -50%) ;
-  }
-  50% {
-    transform: translate(50%, -50%);
-  }
-  100% {
-    transform: translate(-50%, -50%) ;
-  }
-}
-
-
-@keyframes previousClicked {
-  0% {
-    transform: translate(-50%, -50%) ;
-  }
-  50% {
-    transform: translate(-150%, -50%);
-  }
-  100% {
-    transform: translate(-50%, -50%) ;
-  }
-}
-

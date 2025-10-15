@@ -21,10 +21,11 @@
 </template>
 
 <script setup lang="ts">
-import { firstName, lastName, InitializeFloatingElements, firstNameRef, lastNameRef, InitializeTilt } from '../../modules/name';
+import { firstName, lastName, InitializeFloatingElements, firstNameRef, lastNameRef, tilts } from '../../modules/name';
+import { InitializeTilt } from '../../modules/vanillaTilt';
 
-InitializeTilt();
 InitializeFloatingElements();
+InitializeTilt(tilts);
 </script>
 
 <style lang="scss">
