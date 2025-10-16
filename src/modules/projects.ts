@@ -104,7 +104,7 @@ export const projects: Project[] = [
 		name: "Velvet Deck",
 		description: "Description",
 		year: 2025,
-		img: "src/assets/images/velvetdeck.jpg",
+		img: "src/assets/images/velvetdeck.png",
 		engine: "src/assets/images/godot.png",
 		language: "src/assets/images/csharp.png",
 		platform: "src/assets/images/android.png",

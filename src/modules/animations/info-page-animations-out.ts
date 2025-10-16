@@ -7,21 +7,6 @@ export function InfoPageAnimationsOut() {
     // Desktop
     "(min-width: 842px)": function() {
 
-      gsap.fromTo(".about-me-container",
-      {
-
-      },
-      { 
-				top: "75%",
-				left: "-50%",
-        ease: "elastic.inOut(.3, 0.3)",
-
-        scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
-          start: "top 70%", 
-          end: "bottom 5%",
-          // markers: true,
-      }})  
-        
       gsap.fromTo(".contact-container",
       {
 
@@ -39,14 +24,24 @@ export function InfoPageAnimationsOut() {
           end: "bottom 20%",
           // markers: true,
       }})
-    },
 
+      gsap.fromTo(".about-me-container",
+    { },
+    {
+      left: "-15%",
+
+      scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
+        start: "top 10%", 
+        end: "bottom 0%",
+        markers: true,
+    }})  
+  },
 
 
 
     // Tablet
     "(min-width: 436px) and (max-width: 841px)": function() {
-      gsap.fromTo(".name-headline-container",
+      gsap.fromTo(".about-me-container",
       {
         scale: 2,
       },
@@ -62,7 +57,7 @@ export function InfoPageAnimationsOut() {
         },
       })  
 
-      gsap.to(".name",
+      gsap.to(".about-me",
       { 
         rotateX: -10,
         rotateY: 40,
@@ -74,37 +69,6 @@ export function InfoPageAnimationsOut() {
           start: "top 60%", 
           end: "bottom 5%",
       }})  
-        
-      ScrollTrigger.create({
-        trigger: ".scroller",
-        start: "top 20%", 
-        end: "bottom 20%",
-
-        onEnter: () => {
-          gsap.to(".about-me-container", {
-            rotateX: 0,
-            rotateY: 0,
-            rotateZ: 0,
-            top: "70%",
-            left: "10%",
-            ease: "bounce.Out",
-            duration: 2.4,
-            delay: 1.5,
-          });
-        },
-        onLeave: () => {
-          gsap.to(".about-me-container", {
-            rotateX: 0,
-            rotateY: 180,
-            rotateZ: 0,
-            top: "50%",
-            left: "120%",
-            ease: "bounce.Out",
-            duration: 0.4,
-            delay: 0,
-          });
-        },
-      });
 
       gsap.to(".contact-container",
       {
@@ -122,7 +86,7 @@ export function InfoPageAnimationsOut() {
 
     // Mobile ----------------------------------------------------------
     "(max-width: 435px)": function() {
-      gsap.fromTo(".name-headline-container",
+      gsap.fromTo(".about-me-container",
       {
         scale: 1.5,
       },
@@ -137,8 +101,7 @@ export function InfoPageAnimationsOut() {
           end: "bottom 5%",
         },
       })  
-
-      gsap.to(".name",
+      gsap.to(".contact-container",
       { 
         rotateX: -5,
         rotateY: 20,
@@ -150,23 +113,6 @@ export function InfoPageAnimationsOut() {
           start: "top 60%", 
           end: "bottom 5%",
       }})  
-
-        gsap.to(".about-me-container", 
-        {
-          rotateX: 0,
-          rotateY: 0,
-          rotateZ: 0,
-          top: "15%",
-          left: "30%",
-          ease: "bounce.Out",
-          duration: 2.4,
-          delay: 1.5,
-
-          scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-            start: "top 40%", 
-            end: "bottom 0%",
-          },
-      });
 
       gsap.to(".contact-container",
       {

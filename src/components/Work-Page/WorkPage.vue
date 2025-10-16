@@ -11,6 +11,12 @@
 import Projects from './Projects.vue';
 import TechContainer from './TechContainer.vue';
 import WorkBackground from './WorkBackground.vue';
+import { WorkPageAnimations } from '../../modules/animations/work-page-animations';
+import { onMounted } from 'vue';
+
+onMounted(() => {
+  WorkPageAnimations();
+})
 </script>
 
 <style lang="scss" scoped>
