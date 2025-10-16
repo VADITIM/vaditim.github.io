@@ -1,0 +1,161 @@
+@use "../../style/variables.scss" as *;
+
+.content {
+    position: absolute;
+    bottom: 0;
+    font-size: 2rem;
+    margin: 1rem;
+}
+
+.description-container {
+  position: absolute;
+  top: 5%;
+  right: -50%;
+  width: 40%;
+  height: 40%;
+	transform: translate(0,0);
+  z-index: 5;
+  perspective: 1000px;
+  font-family: Exo;
+
+  transition:
+    all 1s ease-in-out;
+
+  &.active {
+    right: -25%;
+
+    transition:
+      all 1s ease-in-out;
+
+    &:hover {
+      right: 5%;
+    }
+  }
+
+  &.clicked {
+		top: 50%;
+		right: 50%;
+		transform: translate(-15%,-50%);
+    right: 5% !important;
+    width: 70%;
+    height: 70%;
+
+    transition:
+      all 1s ease-in-out;
+  }
+}
+
+.container {
+  @include rotate(0, -10, 0);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #242424;
+  filter: drop-shadow(0px 0px 30px rgb(121, 121, 121));
+	transition:
+		all 1s ease-in-out;
+
+  &.clicked {
+    @include rotate(0, 0, 0);
+    transition:
+      all 1s ease-in-out;
+  }
+}
+
+.description {
+  position: absolute;
+  width: 95%;
+  height: 95%;
+  top: 0;
+  left: -100%;
+  text-align: center;
+  opacity: 0;
+  font-size: 2rem;
+  margin: 1rem;
+
+  transition:
+    all .6s ease-in-out;
+
+  .description-container:hover & {
+    left: 0;
+    opacity: 1;
+
+    transition:
+      all .6s ease-in-out .2s;
+  }
+
+	&.clicked {
+		left: 0;
+		opacity: 1;
+
+		transition:
+			all .6s ease-in-out .2s;
+	}
+	
+}
+
+.see-more {
+  @include absoluteCenter(50%, 20%);
+  text-align: center;
+  animation: flashing 3s infinite;
+
+  opacity: 1;
+  font-size: 3rem;
+
+  transition:
+    all .6s ease-in-out;
+
+  .description-container:hover & {
+    @include absoluteCenter(50%, -20%);
+    opacity: 0;
+  }
+
+	&.clicked {
+		@include absoluteCenter(50%, -20%);
+		opacity: 0;
+	}
+
+  @include largeDesktop() {
+    font-size: 4rem;
+  }
+}
+
+@keyframes flashing {
+  0% { filter: drop-shadow(0px 0px 30px yellow)}
+  50% { filter: drop-shadow(0px 0px 100px yellow)}
+  100% { filter: drop-shadow(0px 0px 30px yellow)}
+}
+
+
+
+
+.description-grid {
+
+}
+
+.description-grid {
+	position: inherit;
+	width: 100%;
+	height: 100%;
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: repeat(5, 1fr);
+	grid-column-gap: 5px;
+	grid-row-gap: 5px;
+	opacity: 0;
+
+	&.clicked {
+		opacity: 1;
+	}
+}
+
+.div1 { grid-area: 1 / 1 / 4 / 4; }
+.div2 { grid-area: 4 / 1 / 6 / 3; }
+.div3 { grid-area: 4 / 3 / 6 / 6; }
+.div4 { grid-area: 1 / 4 / 4 / 6; }
+
+.div1, .div2, .div3, .div4 {
+	background-color: blue;
+	border-radius: 10px;
+}
