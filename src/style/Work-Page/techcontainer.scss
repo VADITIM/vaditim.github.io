@@ -1,0 +1,57 @@
+@use "../../style/variables.scss" as *;
+
+.tech-container {
+  @extend .center;
+  position: absolute;
+  bottom: 0;
+  right: -50%;
+  width: 25%;
+  height: 40%;
+  z-index: 5;
+
+  transition:
+    all .3s ease-in-out;
+
+  &.active {
+    right: 0%;
+
+    transition:
+      all 1s ease-in-out;
+  }
+}
+
+.dev-container {
+  position: absolute;
+  right: 0;
+  margin: 2rem;
+  filter: drop-shadow(0px 0px 30px black);
+  perspective: 1000px;
+}
+
+.engine,
+.platform,
+.language {
+  @include rotate(-10, -20, 0);
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 6rem;
+  height: 6rem;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 1rem;
+}
+
+.download {
+  position: absolute;
+  top: 70%;
+  left: 15%;
+  width: 6.5rem;
+  height: 6.5rem;
+  background-image: url("../../assets/images/download.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0px 0px 30px rgb(121, 121, 121));
+}

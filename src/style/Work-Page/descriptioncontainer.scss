@@ -1,11 +1,6 @@
 @use "../../style/variables.scss" as *;
 
-.content {
-    position: absolute;
-    bottom: 0;
-    font-size: 2rem;
-    margin: 1rem;
-}
+
 
 .description-container {
   position: absolute;
@@ -17,6 +12,8 @@
   z-index: 5;
   perspective: 1000px;
   font-family: Exo;
+  cursor: pointer;
+  @include animationPopOut;
 
   transition:
     all 1s ease-in-out;
@@ -33,15 +30,7 @@
   }
 
   &.clicked {
-		top: 50%;
-		right: 50%;
-		transform: translate(-15%,-50%);
-    right: 5% !important;
-    width: 70%;
-    height: 70%;
-
-    transition:
-      all 1s ease-in-out;
+  @include animationPopIn;
   }
 }
 
@@ -95,7 +84,7 @@
 	
 }
 
-.see-more {
+.info {
   @include absoluteCenter(50%, 20%);
   text-align: center;
   animation: flashing 3s infinite;
@@ -121,41 +110,44 @@
   }
 }
 
-@keyframes flashing {
-  0% { filter: drop-shadow(0px 0px 30px yellow)}
-  50% { filter: drop-shadow(0px 0px 100px yellow)}
-  100% { filter: drop-shadow(0px 0px 30px yellow)}
+.more-content {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: red;
+  margin: 1rem 0;
+  font-size: 2rem;
+  filter: drop-shadow(0px 0px 30px rgb(0, 255, 42));
+
+  
+    transition: 
+      all 1s ease;
+
+    &::before {
+        content: "V";
+    }
+
+    &::after {
+        content: "X";
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: 
+          opacity 0 ease;
+    }
+
+    &.clicked {
+        &::before {
+            opacity: 0;
+            filter: drop-shadow(0px 0px 30px rgb(0, 255, 42));
+        }
+        &::after {
+            opacity: 1;
+            filter: drop-shadow(0px 0px 30px rgb(255, 0, 0));
+        }
+    }
 }
 
 
-
-
-.description-grid {
-
-}
-
-.description-grid {
-	position: inherit;
-	width: 100%;
-	height: 100%;
-	display: grid;
-	grid-template-columns: repeat(5, 1fr);
-	grid-template-rows: repeat(5, 1fr);
-	grid-column-gap: 5px;
-	grid-row-gap: 5px;
-	opacity: 0;
-
-	&.clicked {
-		opacity: 1;
-	}
-}
-
-.div1 { grid-area: 1 / 1 / 4 / 4; }
-.div2 { grid-area: 4 / 1 / 6 / 3; }
-.div3 { grid-area: 4 / 3 / 6 / 6; }
-.div4 { grid-area: 1 / 4 / 4 / 6; }
-
-.div1, .div2, .div3, .div4 {
-	background-color: blue;
-	border-radius: 10px;
-}

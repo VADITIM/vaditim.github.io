@@ -142,8 +142,14 @@ export function ActiveProject(index: number) {
   console.log(`Active project: ${projects[index].name}`)
 }
 
-export function closeActiveProject() {
-  activeProjectIndex.value = null
+export function closeActiveProject(event?: MouseEvent) {
+  if (event) {
+    const target = event.target as HTMLElement;
+    if (target.closest('.description-grid') || target.closest('.more-content')) {
+      return; 
+    }
+  }
+  activeProjectIndex.value = null;
 }
 
 export function startDrag(event: MouseEvent) {

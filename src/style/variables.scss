@@ -77,7 +77,7 @@ $red: #DC143C;
 }
 
 
-// Includes -------------------------------------------------------------------------
+// Extends -------------------------------------------------------------------------
 
 
 .center {
@@ -92,6 +92,10 @@ $red: #DC143C;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+.animation-pop {
+    animation: pop 0.2s forwards;
 }
 
 
@@ -129,4 +133,50 @@ $red: #DC143C;
   display: flex;
   justify-content: $string1;
   align-items: $string2;
+}
+
+
+
+@mixin animationPopIn($duration: 0.2s) {
+    animation: popIn $duration forwards;
+}
+
+@mixin animationPopOut($duration: 0.2s) {
+    animation: popOut $duration forwards;
+}
+
+
+// Keyframes ------------------------------------------------------------
+
+@keyframes flashing {
+  0% { filter: drop-shadow(0px 0px 30px yellow)}
+  50% { filter: drop-shadow(0px 0px 100px yellow)}
+  100% { filter: drop-shadow(0px 0px 30px yellow)}
+}
+
+@keyframes dropIn {
+	0% { top: -300%; }
+	60% { top: 5%; }
+	75% { top: -2%; }
+	85% { top: 1%; }
+	95% { top: -0.5%; }
+	100% { top: 0; }
+}
+
+@keyframes dropOut {
+	0% { top: 0; }
+	40% { top: 5%; }
+	100% { top: -300%; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes popOut {
+  0% { transform: scale(1); }
+  50% { transform: scale(.95); }
+  100% { transform: scale(1); }
 }
