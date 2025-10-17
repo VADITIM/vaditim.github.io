@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import Projects from './Projects.vue';
-import TechContainer from './TechContainer.vue';
+import TechContainer from './ProjectInfoContainer.vue';
 import WorkBackground from './WorkBackground.vue';
 import { WorkPageAnimations } from '../../modules/animations/work-page-animations';
 import { onMounted } from 'vue';

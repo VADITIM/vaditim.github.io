@@ -3,7 +3,7 @@
 
     <PaginationDots />
 
-    <div class="project-name-container" :class="{ active: activeProjectIndex !== null }">
+    <div class="project-name-container" :class="{ active: activeProjectIndex !== null }" @click="closeActiveProject">
       <div class="project-name" v-html="projects[currentProjectIndex]?.name"></div>
     </div>
 
@@ -46,6 +46,7 @@ import {
   endDrag,
   projectsContainer,
   transitioning,
+  closeActiveProject,
 }
   from '../../modules/projects';
 import PaginationDots from './PaginationDots.vue';
