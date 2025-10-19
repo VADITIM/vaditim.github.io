@@ -1,9 +1,17 @@
 <template>
-  <div class="description-container" :class="{ active: activeProjectIndex !== null, clicked: clicked}" @click="toggleClick">
-    <div class="container" >
+  <div class="description-container" :class="{ active: activeProjectIndex !== null, clicked: clicked }"
+    @click="toggleClick">
+    <div class="container">
       <div class="info">Info</div>
       <div class="description"> {{ projects[currentProjectIndex || 0].description }}</div>
-      <div class="more-content" :class="{clicked: clicked}"></div>
+      <div class="wrapper" :class="{ clicked: clicked }">
+          <div class="bg" :class="{ clicked: clicked }"></div>
+        <div class="more-content" :class="{ clicked: clicked }">
+          <!-- <div class="smth"  :class="{clicked: clicked}"></div> -->
+          <div class="text" :class="{ clicked: clicked }"></div>
+          <!-- <div class="smth2"  :class="{clicked: clicked}"></div> -->
+        </div>
+      </div>
     </div>
   </div>
 </template>

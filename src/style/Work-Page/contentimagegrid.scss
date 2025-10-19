@@ -54,16 +54,23 @@
   position: relative;
   top: 0;
 	border-radius: 10px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  cursor: pointer;
 
   &.clicked {
     top: -300%;
 
+    &.open {
+      width: 30%;
+      height: 30%;
+    }
   }
 }
 
 .div1 { 
   grid-area: 4 / 1 / 6 / 3; 
-  background-color: yellow; 
   margin-bottom: 1rem; 
   margin-top: .5rem;
   margin-left: 1rem;
@@ -72,7 +79,6 @@
 
 .div2 { 
   grid-area: 4 / 3 / 6 / 6; 
-  background-color: green; 
   margin-bottom: 1rem; 
   margin-top: .5rem;
   margin-left: .5rem;
@@ -81,7 +87,6 @@
 
 .div3 { 
   grid-area: 1 / 1 / 4 / 4;  
-  background-color: red; 
   margin-top: 1rem; 
   margin-bottom: .5rem;
   margin-left: 1rem;
@@ -90,7 +95,6 @@
 
 .div4 { 
   grid-area:  1 / 4 / 4 / 6;  
-  background-color: blue; 
   margin-top: 1rem; 
   margin-bottom: .5rem;
   margin-left: .5rem;

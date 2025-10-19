@@ -74,13 +74,13 @@
 
 .github {
   @extend .center;
-  background-image: url("../../assets/images/github.png");
+  background-image: url("../../assets/images/icons/github.png");
   background-size: cover;
 }
 
 .telegram {
   @extend .center;
-  background-image: url("../../assets/images/telegram.png");
+  background-image: url("../../assets/images/icons/telegram.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
