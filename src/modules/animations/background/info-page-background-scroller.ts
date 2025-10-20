@@ -9,31 +9,31 @@ export function ScrollInfoPage() {
     // Desktop
     "(min-width: 1800px)": function() {
       // IN
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { },
       {
         left: 0,
         scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 60%", 
+          start: "top 50%", 
           end: "bottom 0%",
-          // markers: true,
+          markers: true,
         },
       }),
       
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { },
       {
         left: 0,
         scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 60%", 
-          end: "bottom 10%",
+          start: "top 80%", 
+          end: "bottom 0%",
           // markers: true,
         },
       }),
 
 
       // OUT
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { },
       {
         left: "-20%",
@@ -44,7 +44,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { },
       {
         left: "-20%",
@@ -57,10 +57,10 @@ export function ScrollInfoPage() {
 
       
       // OTHER
-      gsap.fromTo(".intro-background", 
+      gsap.fromTo(".info-intro-background", 
       { },
       {
-        xPercent: -108.2,
+        left: "-20%",
         scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
           start: "top 40%", 
           end: "bottom 0%",
@@ -68,7 +68,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-top", 
+      gsap.fromTo(".info-work-background-back", 
       { },
       {
        right: "0%",
@@ -82,7 +82,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-bottom", 
+      gsap.fromTo(".info-work-background-front", 
       { },
       {
        right: "0%",
@@ -98,7 +98,7 @@ export function ScrollInfoPage() {
     // Tablet Landscape ---------------------------------------------------------------
 		"(min-width: 845px) and (max-width: 1205px)": function() {
       // IN
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { },
       {
         left: 0,
@@ -109,7 +109,7 @@ export function ScrollInfoPage() {
         },
       }),
       
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { },
       {
         left: 0,
@@ -122,7 +122,7 @@ export function ScrollInfoPage() {
 
 
       // OUT
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { },
       {
         left: "-20%",
@@ -133,7 +133,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { },
       {
         left: "-20%",
@@ -146,7 +146,7 @@ export function ScrollInfoPage() {
 
       
       // OTHER
-      gsap.fromTo(".intro-background", 
+      gsap.fromTo(".info-intro-background", 
       { },
       {
         xPercent: -108.2,
@@ -157,7 +157,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-top", 
+      gsap.fromTo(".info-work-background-back", 
       { },
       {
        right: "0%",
@@ -171,7 +171,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-bottom", 
+      gsap.fromTo(".info-work-background-front", 
       { },
       {
        right: "0%",
@@ -188,7 +188,7 @@ export function ScrollInfoPage() {
     // Tablet ---------------------------------------------------------------
 		"(min-width: 436px) and (max-width: 845px)": function() {
       // IN
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { left: "-100%"},
       {
         left: 0,
@@ -199,7 +199,7 @@ export function ScrollInfoPage() {
         },
       }),
       
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { left: "-100%"},
       {
         left: 0,
@@ -212,7 +212,7 @@ export function ScrollInfoPage() {
 
 
       // OUT
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { },
       {
         left: "-50%",
@@ -223,7 +223,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { },
       {
         left: "-50%",
@@ -234,7 +234,7 @@ export function ScrollInfoPage() {
         },
       })
 
-      gsap.fromTo(".intro-background", 
+      gsap.fromTo(".info-intro-background", 
       { },
       {
         xPercent: -108.2,
@@ -246,7 +246,7 @@ export function ScrollInfoPage() {
       })
 
       
-      gsap.fromTo(".work-background-top", 
+      gsap.fromTo(".info-work-background-back", 
       { },
       {
        right: "0%",
@@ -260,7 +260,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-bottom", 
+      gsap.fromTo(".info-work-background-front", 
       { },
       {
        right: "0%",
@@ -278,7 +278,7 @@ export function ScrollInfoPage() {
     // Mobile ------------------------------------------------------------------------------------
     "(max-width: 435px)": function() {
       // IN
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { left: "-100%"},
       {
         left: 0,
@@ -289,7 +289,7 @@ export function ScrollInfoPage() {
         },
       }),
       
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { left: "-100%"},
       {
         left: 0,
@@ -301,7 +301,7 @@ export function ScrollInfoPage() {
       }),
 
       // OUT
-      gsap.fromTo(".backgroundInfoTop", 
+      gsap.fromTo(".info-info-background-front", 
       { },
       {
         left: "-40%",
@@ -312,7 +312,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".backgroundInfoBottom", 
+      gsap.fromTo(".info-info-background-back", 
       { },
       {
         left: "-51%",
@@ -325,7 +325,7 @@ export function ScrollInfoPage() {
 
       
       // OTHER
-      gsap.fromTo(".intro-background", 
+      gsap.fromTo(".info-intro-background", 
       { },
       {
         xPercent: -108.2,
@@ -336,7 +336,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-top", 
+      gsap.fromTo(".info-work-background-back", 
       { },
       {
        right: "0%",
@@ -350,7 +350,7 @@ export function ScrollInfoPage() {
         },
       }),
 
-      gsap.fromTo(".work-background-bottom", 
+      gsap.fromTo(".info-work-background-front", 
       { },
       {
        right: "0%",

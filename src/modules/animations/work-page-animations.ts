@@ -17,7 +17,7 @@ export function WorkPageAnimations() {
         scrollTrigger: { trigger: ".scrollerW", scrub: true, toggleActions: "play none none reverse",
           start: "top 10%", 
           end: "bottom 0%",
-          markers: true,
+          // markers: true,
           onEnter: () => {
             currentProjectIndex.value = 0;
             activeProjectIndex.value = null;

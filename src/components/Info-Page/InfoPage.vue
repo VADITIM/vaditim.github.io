@@ -14,16 +14,13 @@
 import Cards from './Cards.vue';
 import InfoBackground from './InfoBackground.vue';
 import NameHeadline from './NameHeadline.vue';
-import Quotes from './Quotes.vue';
 
 import { onMounted } from 'vue';
 import { InfoPageAnimations } from '../../modules/animations/info-page-animations';
-import { ScrollInfoPage } from '../../modules/animations/background/info-page-background-scroller';
 import Contact from './Contact.vue';
 import { InfoPageAnimationsOut } from '../../modules/animations/info-page-animations-out';
 
 onMounted(() => {
-  ScrollInfoPage();
   InfoPageAnimations();
   InfoPageAnimationsOut();
 })

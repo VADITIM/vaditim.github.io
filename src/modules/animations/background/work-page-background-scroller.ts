@@ -7,7 +7,7 @@ export function ScrollWorkPage() {
   ScrollTrigger.matchMedia({
     // Desktop
     "(min-width: 1800px)": function() {
-      gsap.fromTo(".backgroundWorkTop", 
+      gsap.fromTo(".work-work-background-back", 
        { right: "-20%", },
        {
           right: "0%",
@@ -18,7 +18,7 @@ export function ScrollWorkPage() {
           },
        }),
 
-       gsap.fromTo(".backgroundWorkBottom", 
+       gsap.fromTo(".work-work-background-front", 
        { right: "-20%", },
        {
           right: "0%",
@@ -29,7 +29,7 @@ export function ScrollWorkPage() {
           },
        })
 
-      gsap.fromTo(".info-background-top", 
+      gsap.fromTo(".work-info-background-front", 
        { },
        {
           left: "-20%",
@@ -40,7 +40,7 @@ export function ScrollWorkPage() {
           },
        }),
        
-    gsap.fromTo(".info-background-bottom", 
+    gsap.fromTo(".work-info-background-back", 
        { },
        {
           left: "-20%",

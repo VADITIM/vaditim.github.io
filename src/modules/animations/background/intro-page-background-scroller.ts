@@ -6,10 +6,10 @@ gsap.registerPlugin(ScrollTrigger)
 
 export function ScrollIntroPage() {
 
-  gsap.fromTo(".background", 
+  gsap.fromTo(".intro-intro-background", 
   { x: 0 },
   {
-    xPercent: -100,
+    left: "-20%",
     duration: 1,
     stagger: 0.1,
     scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
@@ -19,28 +19,28 @@ export function ScrollIntroPage() {
     },
   })
 
-  gsap.fromTo(".info-background-top", 
-  { },
-  {
-    left: 1.5,
-    duration: 1,
-    stagger: 0.1,
-    scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-      start: "top 60%", 
-      end: "bottom -5.9%",
-      // markers: true,
-    },
-  }),
-
-  gsap.fromTo(".info-background-bottom", 
+  gsap.fromTo(".intro-info-background-front", 
   { },
   {
     left: 0,
     duration: 1,
     stagger: 0.1,
     scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
-      start: "top 60%", 
-      end: "bottom 5%",
+      start: "top 50%", 
+      end: "bottom 0%",
+      markers: true,
+    },
+  }),
+
+  gsap.fromTo(".intro-info-background-back", 
+  { },
+  {
+    left: 0,
+    duration: 1,
+    stagger: 0.1,
+    scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+      start: "top 80%", 
+      end: "bottom 0%",
       // markers: true,
     },
   })  

@@ -1,20 +1,20 @@
 <template>
-    <div class="backgroundInfoBottom"></div>
-    <div class="backgroundInfoTop"></div>
+    <div class="info-info-background-back"></div>
+    <div class="info-info-background-front"></div>
 
-    <div class="intro-background"></div>
+    <div class="info-intro-background"></div>
     
-    <div class="work-background-bottom" :class="{active: activeProjectIndex !== null}"></div>
-    <div class="work-background-top" :class="{active: activeProjectIndex !== null}"></div>
+    <div class="info-work-background-front" :class="{active: activeProjectIndex !== null}"></div>
+    <div class="info-work-background-back" :class="{active: activeProjectIndex !== null}"></div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { ScrollWorkPage } from "../../modules/animations/background/work-page-background-scroller";
 import { activeProjectIndex } from '../../modules/projects';
+import { ScrollInfoPage } from '../../modules/animations/background/info-page-background-scroller';
 
 onMounted(() => {
-    ScrollWorkPage();
+  ScrollInfoPage();
 })
 </script>
 
