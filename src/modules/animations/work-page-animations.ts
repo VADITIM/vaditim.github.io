@@ -14,10 +14,11 @@ export function WorkPageAnimations() {
         left: "1%",
         ease: "elastic.inOut(.3, 0.3)",
 
-        scrollTrigger: { trigger: ".scrollerW", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".work-scroller", scrub: true, toggleActions: "play none none reverse",
           start: "top 10%", 
           end: "bottom 0%",
-          // markers: true,
+          markers: true,
+          
           onEnter: () => {
             currentProjectIndex.value = 0;
             activeProjectIndex.value = null;
@@ -44,7 +45,7 @@ export function WorkPageAnimations() {
       { },
       {
 
-        scrollTrigger: { trigger: ".scrollerW", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".work-scroller", scrub: true, toggleActions: "play none none reverse",
           start: "top 10%", 
           end: "bottom 5%",
         }})  
@@ -55,7 +56,7 @@ export function WorkPageAnimations() {
       gsap.fromTo(".name-headline-container",
       { },
       {
-        scrollTrigger: { trigger: ".scrollerW", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".work-scroller", scrub: true, toggleActions: "play none none reverse",
           start: "top 60%", 
           end: "bottom 5%",
         }})  

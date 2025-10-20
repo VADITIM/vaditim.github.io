@@ -11,7 +11,7 @@ export function IntroPageAnimations() {
       x: -1000,
       duration: .4,
       stagger: 0.1, 
-      scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+      scrollTrigger: { trigger: ".intro-scroller", scrub: true, toggleActions: "play none none reverse",
          start: "top 80%", 
          end: "bottom 0%",
          // markers: true,
@@ -23,7 +23,7 @@ export function IntroPageAnimations() {
    {
       y: -1000,
       duration: 1.4,
-      scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse", scrub: true, 
+      scrollTrigger: { trigger: ".intro-scroller", toggleActions: "play none none reverse", scrub: true, 
          start: "top 90%", 
          end: "bottom 0%",
          // markers: true,
@@ -35,7 +35,7 @@ export function IntroPageAnimations() {
    {
       xPercent: 100,
       duration: .5,
-      scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+      scrollTrigger: { trigger: ".intro-scroller", scrub: true, toggleActions: "play none none reverse",
       start: "top 70%", 
       end: "bottom 0%",
       // markers: true,

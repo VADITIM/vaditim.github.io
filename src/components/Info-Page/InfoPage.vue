@@ -1,24 +1,22 @@
 <template>
   <div class="info-page-container">
-    <InfoBackground />
-    <!-- <Quotes /> -->
     <Cards />
     <NameHeadline />
     <Contact />
-    <div class="scroller"></div>
+    <Contact />
+    <div class="info-scroller-top"></div>
     <div class="info-scroller-bottom"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import Cards from './Cards.vue';
-import InfoBackground from './InfoBackground.vue';
 import NameHeadline from './NameHeadline.vue';
 
 import { onMounted } from 'vue';
 import { InfoPageAnimations } from '../../modules/animations/info-page-animations';
-import Contact from './Contact.vue';
 import { InfoPageAnimationsOut } from '../../modules/animations/info-page-animations-out';
+import Contact from './Contact.vue';
 
 onMounted(() => {
   InfoPageAnimations();
@@ -35,13 +33,19 @@ onMounted(() => {
   height: 100vh;
 }
 
-.scroller {
+.info-scroller-top {
   position: absolute;
   top: 0;
+  // width: 100%;
+  // height: 1%;
+  // background-color: red;
 }
 
 .info-scroller-bottom {
   position: absolute;
   top: 100vh;
+  // width: 100%;
+  // height: 1%;
+  // background-color: red;
 }
 </style>

@@ -9,13 +9,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { activeProjectIndex } from '../../modules/projects';
-import { ScrollInfoPage } from '../../modules/animations/background/info-page-background-scroller';
 
-onMounted(() => {
-  ScrollInfoPage();
-})
+
 </script>
 
 <style lang="scss" scoped>

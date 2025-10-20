@@ -8,6 +8,7 @@
   width: 20rem;
   color: black;
 	overflow: visible;
+	z-index: 3;
 
 	@include allTablets {
 		width: 30rem;
