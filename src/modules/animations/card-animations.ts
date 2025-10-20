@@ -13,7 +13,7 @@ export function CardsAnimations() {
           bottom: "39%",
           
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -27,7 +27,7 @@ export function CardsAnimations() {
           bottom: "39%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -41,7 +41,7 @@ export function CardsAnimations() {
           bottom: "5%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -55,7 +55,7 @@ export function CardsAnimations() {
           bottom: "5%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -72,7 +72,7 @@ export function CardsAnimations() {
           left: "37.5%",
           bottom: "37.5%",
 
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -85,7 +85,7 @@ export function CardsAnimations() {
           right: "22.5%",
           bottom: "37.5%",
 
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -98,7 +98,7 @@ export function CardsAnimations() {
           left: "37.5%",
           bottom: "16.5%",
 
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -111,7 +111,7 @@ export function CardsAnimations() {
           right: "22.5%",
           bottom: "16.5%",
 
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
             // markers: true,
@@ -129,7 +129,7 @@ export function CardsAnimations() {
           bottom: "36%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -142,7 +142,7 @@ export function CardsAnimations() {
           bottom: "36%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -155,7 +155,7 @@ export function CardsAnimations() {
           bottom: "9%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -168,7 +168,7 @@ export function CardsAnimations() {
           bottom: "9%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -185,7 +185,7 @@ export function CardsAnimations() {
           bottom: "34.5%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -198,7 +198,7 @@ export function CardsAnimations() {
           bottom: "34.5%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -211,7 +211,7 @@ export function CardsAnimations() {
           bottom: "0%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -224,7 +224,7 @@ export function CardsAnimations() {
           bottom: "0%",
 
           stagger: 0.1,
-          scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
             start: "top 20%",
             end: "bottom 5%",
           },
@@ -241,7 +241,7 @@ export function CardsAnimations() {
       //     bottom: "39%",
 
       //     stagger: 0.1,
-      //     scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+      //     scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
       //       start: "top 20%",
       //       end: "bottom 5%",
       //     },
@@ -254,7 +254,7 @@ export function CardsAnimations() {
       //     bottom: "39%",
 
       //     stagger: 0.1,
-      //     scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+      //     scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
       //       start: "top 20%",
       //       end: "bottom 5%",
       //     },
@@ -267,7 +267,7 @@ export function CardsAnimations() {
       //     bottom: "5%",
 
       //     stagger: 0.1,
-      //     scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+      //     scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
       //       start: "top 20%",
       //       end: "bottom 5%",
       //     },
@@ -280,7 +280,7 @@ export function CardsAnimations() {
       //     bottom: "5%",
 
       //     stagger: 0.1,
-      //     scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+      //     scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
       //       start: "top 20%",
       //       end: "bottom 5%",
       //     },
@@ -297,7 +297,7 @@ export function CardsAnimations() {
     //       bottom: "39%",
 
     //       stagger: 0.1,
-    //       scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+    //       scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
     //         start: "top 20%",
     //         end: "bottom 5%",
     //       },
@@ -310,7 +310,7 @@ export function CardsAnimations() {
     //       bottom: "39%",
 
     //       stagger: 0.1,
-    //       scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+    //       scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
     //         start: "top 20%",
     //         end: "bottom 5%",
     //       },
@@ -323,7 +323,7 @@ export function CardsAnimations() {
     //       bottom: "5%",
 
     //       stagger: 0.1,
-    //       scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+    //       scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
     //         start: "top 20%",
     //         end: "bottom 5%",
     //       },
@@ -336,7 +336,7 @@ export function CardsAnimations() {
     //       bottom: "5%",
 
     //       stagger: 0.1,
-    //       scrollTrigger: { trigger: ".scroller", toggleActions: "play none none reverse",
+    //       scrollTrigger: { trigger: ".info-scroller-top", toggleActions: "play none none reverse",
     //         start: "top 20%",
     //         end: "bottom 5%",
     //       },
@@ -501,7 +501,7 @@ export function BackCardsAnimations() {
       }
 
       ScrollTrigger.create({
-        trigger: ".scroller",
+        trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
         // markers: true,
@@ -666,7 +666,7 @@ export function BackCardsAnimations() {
       }
 
       ScrollTrigger.create({
-        trigger: ".scroller",
+        trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
         // markers: true, // Removed markers for tablet
@@ -831,7 +831,7 @@ export function BackCardsAnimations() {
       }
 
       ScrollTrigger.create({
-        trigger: ".scroller",
+        trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
         // markers: true, // Removed markers for tablet landscape
@@ -996,7 +996,7 @@ export function BackCardsAnimations() {
       }
 
       ScrollTrigger.create({
-        trigger: ".scroller",
+        trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
         // markers: true, // Removed markers for mobile

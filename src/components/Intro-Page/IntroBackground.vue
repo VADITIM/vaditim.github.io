@@ -7,13 +7,6 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { ScrollIntroPage } from '../../modules/animations/background/intro-page-background-scroller';
-
-onMounted(() => {
-  ScrollIntroPage();
-});
-
 </script>
 
 <style lang="scss" scoped>

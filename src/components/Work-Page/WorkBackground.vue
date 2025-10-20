@@ -7,13 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { ScrollWorkPage } from '../../modules/animations/background/work-page-background-scroller';
 import { activeProjectIndex } from '../../modules/projects';
-
-onMounted(()=> {
-  ScrollWorkPage();
-})
 
 </script>
 

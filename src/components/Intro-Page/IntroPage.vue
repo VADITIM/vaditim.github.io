@@ -1,8 +1,7 @@
 <template>
-  <IntroBackground />
   <Name />
   <Roles />
-  <div class="scroller"></div>
+  <div class="intro-scroller"></div>
 </template>
 
 <script setup lang="ts">
@@ -11,7 +10,6 @@
 
   import { onMounted } from 'vue';
   import { IntroPageAnimations } from '../../modules/animations/intro-page-animations';
-  import IntroBackground from './IntroBackground.vue';
 
   onMounted(() => {
     IntroPageAnimations();
@@ -19,4 +17,11 @@
 </script>
 
 <style lang="scss" scoped>
+.intro-scroller {
+  position: absolute;
+  bottom: 0;
+  // width: 100%;
+  // height: 1%;
+  // background: red;
+}
 </style>

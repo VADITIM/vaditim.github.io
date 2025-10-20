@@ -51,7 +51,7 @@ export function InfoPageAnimationsOut() {
         left: 0,
         ease: "elastic.inOut(.3, 0.3)",
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
           start: "top 60%", 
           end: "bottom 5%",
         },
@@ -65,7 +65,7 @@ export function InfoPageAnimationsOut() {
         top: 0,
         left: 0,
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
           start: "top 60%", 
           end: "bottom 5%",
       }})  
@@ -78,7 +78,7 @@ export function InfoPageAnimationsOut() {
         top: "45%",
         left: "85%",
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
           start: "top 20%", 
           end: "bottom 0%",
       }})
@@ -96,7 +96,7 @@ export function InfoPageAnimationsOut() {
         left: 0,
         ease: "elastic.inOut(.3, 0.3)",
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
           start: "top 60%", 
           end: "bottom 5%",
         },
@@ -109,7 +109,7 @@ export function InfoPageAnimationsOut() {
         top: 0,
         left: 0,
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
           start: "top 60%", 
           end: "bottom 5%",
       }})  
@@ -122,7 +122,7 @@ export function InfoPageAnimationsOut() {
         top: "85%",
         left: "15%",
 
-        scrollTrigger: { trigger: ".scroller", scrub: true, toggleActions: "play none none reverse",
+        scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
           start: "top 20%", 
           end: "bottom 0%",
       }})

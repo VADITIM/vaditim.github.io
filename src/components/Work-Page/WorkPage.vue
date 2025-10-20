@@ -1,18 +1,18 @@
 <template>
   <div class="work-page-container">
     <Projects />
-    <WorkBackground />
     <TechContainer />
+    <ProjectsHeader />
+    <div class="work-scroller"></div>
   </div>
-  <div class="scrollerW"></div>
 </template>
 
 <script setup lang="ts">
 import Projects from './Projects.vue';
 import TechContainer from './ProjectInfoContainer.vue';
-import WorkBackground from './WorkBackground.vue';
 import { WorkPageAnimations } from '../../modules/animations/work-page-animations';
 import { onMounted } from 'vue';
+import ProjectsHeader from './ProjectsHeader.vue';
 
 onMounted(() => {
   WorkPageAnimations();
@@ -20,9 +20,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.scrollerW {
+.work-scroller {
   position: absolute;
-  top: 200vh;
+  top: 0;
+  // width: 100%;
+  // height: 1%;
+  // background-color: red;
 }
 
 .work-page-container {

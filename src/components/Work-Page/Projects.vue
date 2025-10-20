@@ -29,7 +29,6 @@
     </div>
 
     <ProjectsCopy />
-    <ProjectsHeader />
     <SwipeButtons />
   </div>
 </template>
@@ -51,9 +50,7 @@ import {
   from '../../modules/projects';
 import PaginationDots from './PaginationDots.vue';
 import ProjectsCopy from './ProjectsCopy.vue';
-import ProjectsHeader from './ProjectsHeader.vue';
 import SwipeButtons from './SwipeButtons.vue';
-
 
 </script>
 
