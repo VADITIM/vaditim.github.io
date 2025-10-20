@@ -1,6 +1,6 @@
 @use "../variables.scss" as *;
 
-.background {
+.intro-intro-background {
 	position: absolute;
   top: 0;
 	left: 0;
@@ -15,10 +15,10 @@
 	}
 }
 	
-.info-background-top {
+.intro-info-background-front {
   position: absolute;
   top: 0;
-  left: -100%;
+  left: -20%;
   width: 15%;
   height: 100vh;
   background-color: blue;
@@ -33,10 +33,10 @@
   }
 }
 
-.info-background-bottom {
+.intro-info-background-back {
   position: absolute;
   top: 0;
-  left: -100%;
+  left: -20%;
   width: 12%;
   height: 100vh;
   background-color: rgb(24, 24, 177);

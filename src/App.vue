@@ -1,9 +1,7 @@
 <!-- 
 1280 x 720
 tabletland 1180 x 820
-tablet 820 x 1180
-
--->
+tablet 820 x 1180 -->
 
 <template>
   <main class="app-container" ref="container">
@@ -17,7 +15,7 @@ tablet 820 x 1180
 import IntroPage from './components/Intro-Page/IntroPage.vue'
 import InfoPage from './components/Info-Page/InfoPage.vue'
 import WorkPage from './components/Work-Page/WorkPage.vue'
-// 
+
 // import { container, InitializeScrollSnap } from './modules/scroll-snapping'
 
 // InitializeScrollSnap();
