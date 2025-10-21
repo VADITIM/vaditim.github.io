@@ -18,6 +18,11 @@
   margin: 0;
 }
 
+#app {
+  overflow-x: hidden;
+
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -52,6 +57,11 @@ html::-webkit-scrollbar {
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
-  
+  overflow-x: clip; /* Stronger than hidden - prevents scroll even programmatically */
+}
+
+#app {
+  overflow-x: clip;
+  position: relative;
+  width: 100vw;
 }

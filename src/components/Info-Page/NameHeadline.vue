@@ -24,7 +24,6 @@
   z-index: 20;
   gap: 0;
   text-wrap: nowrap;
-
 }
 
 .about-me {
