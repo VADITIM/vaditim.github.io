@@ -1,6 +1,5 @@
 import { ref } from 'vue'
 
-
 interface Project {
   name: string
   description: string
@@ -62,7 +61,7 @@ export const projects: Project[] = [
     name: "Velvet Deck Web",
     description: "Description",
     year: 2024,
-    img: "src/assets/images/projects/velvetdeck.png", // Fixed path
+    img: "src/assets/images/projects/velvetdeck.png",
     engine: "src/assets/images/icons/webengine.png",
     language: "src/assets/images/icons/javascript.png",
     platform: "src/assets/images/icons/webapp.png",
@@ -103,21 +102,21 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/netrunners.png",
     ai: true,
   },
-  {
-    name: "Veil of Remorse",
-    description: "Description",
-    year: 2025,
-    img: "src/assets/images/projects/netrunners.png", // Using existing image as placeholder
-    engine: "src/assets/images/icons/unity.png",
-    language: "src/assets/images/icons/csharp.png",
-    platform: "src/assets/images/icons/windows.png",
-    link: "https://github.com/VADITIM/Veil-of-Remorse",
-    image1: "src/assets/images/projects/netrunners.png",
-    image2: "src/assets/images/projects/netrunners.png",
-    image3: "src/assets/images/projects/netrunners.png",
-    image4: "src/assets/images/projects/netrunners.png",
-    ai: true,
-  },
+  // {
+  //   name: "Veil of Remorse",
+  //   description: "Description",
+  //   year: 2025,
+  //   img: "src/assets/images/projects/netrunners.png",
+  //   engine: "src/assets/images/icons/unity.png",
+  //   language: "src/assets/images/icons/csharp.png",
+  //   platform: "src/assets/images/icons/windows.png",
+  //   link: "https://github.com/VADITIM/Veil-of-Remorse",
+  //   image1: "src/assets/images/projects/netrunners.png",
+  //   image2: "src/assets/images/projects/netrunners.png",
+  //   image3: "src/assets/images/projects/netrunners.png",
+  //   image4: "src/assets/images/projects/netrunners.png",
+  //   ai: true,
+  // },
 	{
     name: "Simulation City Reborn<br>Green Horizons",
     description: "Description",
@@ -147,22 +146,22 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/velvetdeck.png",
     ai: true,
 	},
-	{
-		name: "'Godot 3D'",
-		description: "Description",
-		year: 2025,
-		img: "src/assets/images/projects/velvetdeck.png", // Using existing image as placeholder
-		engine: "src/assets/images/icons/godot.png",
-		language: "src/assets/images/icons/csharp.png",
-		platform: "src/assets/images/icons/windows.png",
-		link: "https://github.com/VADITIM/Velvet-Deck",
-    image1: "src/assets/images/projects/velvetdeck.png",
-    image2: "src/assets/images/projects/velvetdeck.png",
-    image3: "src/assets/images/projects/velvetdeck.png",
-    image4: "src/assets/images/projects/velvetdeck.png",
-    wip: true,
-    estimated: 2027,
-	},
+	// {
+	// 	name: "'Godot 3D'",
+	// 	description: "Description",
+	// 	year: 2025,
+	// 	img: "src/assets/images/projects/velvetdeck.png", 
+	// 	engine: "src/assets/images/icons/godot.png",
+	// 	language: "src/assets/images/icons/csharp.png",
+	// 	platform: "src/assets/images/icons/windows.png",
+	// 	link: "https://github.com/VADITIM/Velvet-Deck",
+  //   image1: "src/assets/images/projects/velvetdeck.png",
+  //   image2: "src/assets/images/projects/velvetdeck.png",
+  //   image3: "src/assets/images/projects/velvetdeck.png",
+  //   image4: "src/assets/images/projects/velvetdeck.png",
+  //   wip: true,
+  //   estimated: 2027,
+	// },
 	{
     name: "Anomaly",
     description: "Description",
@@ -181,8 +180,11 @@ export const projects: Project[] = [
   },
 ]
 
+
+
+
 export function ActiveProject(index: number) {
-  activeProjectIndex.value = index
+  activeProjectIndex.value = index 
   console.log(`Active project: ${projects[index].name}`)
 }
 
@@ -250,7 +252,6 @@ export function previousProject() {
 }
 
 
-
 export function updateCurrentProject() {
   if (!projectsContainer.value) return
 
@@ -269,6 +270,74 @@ export function updateCurrentProject() {
   
   currentProjectIndex.value = Math.max(0, Math.min(currentIndex, projects.length - 1))
 }
+
+let _scrollRafId: number | null = null;
+
+export function scrollToProjectTime(index: number, duration = 3.5) {
+
+    setTimeout(() => {
+    const con = document.getElementById('con') as HTMLElement;
+    con.classList.remove('no-snap');
+  }, 3800);
+  
+  setTimeout(() => {
+    if (!projectsContainer.value) return;
+
+    const container = projectsContainer.value;
+    const projectWidth = container.clientWidth * 0.22;
+    const gap = container.clientWidth * 0.15;
+    const projectSpacing = projectWidth + gap;
+    const targetScroll = index * projectSpacing;
+
+    // cancel any running animation
+    if (_scrollRafId !== null) {
+      cancelAnimationFrame(_scrollRafId);
+      _scrollRafId = null;
+    }
+
+    if (duration <= 0) {
+      container.scrollLeft = targetScroll;
+      return;
+    }
+
+    const startScroll = container.scrollLeft;
+    const distance = targetScroll - startScroll;
+    const startTime = performance.now();
+
+    const split = 0.0; 
+    const tailFactor = 1 - split; 
+
+    function easeOutBack(x: number) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    function step(now: number) {
+      const elapsed = (now - startTime) / 1000; 
+      let t = Math.min(1, elapsed / duration); 
+
+      let progress: number;
+      if (t <= split) {
+        progress = t; 
+      } else {
+        const u = (t - split) / tailFactor; 
+        progress = split + easeOutBack(u) * tailFactor;
+      }
+
+      container.scrollLeft = startScroll + distance * progress;
+
+      if (t < 1) {
+        _scrollRafId = requestAnimationFrame(step);
+      } else {
+        _scrollRafId = null;
+        container.scrollLeft = targetScroll; 
+      }
+    }
+
+    _scrollRafId = requestAnimationFrame(step);
+  }, 300);
+}
+
+
 
 export function scrollToProject(index: number) {
   if (!projectsContainer.value) return

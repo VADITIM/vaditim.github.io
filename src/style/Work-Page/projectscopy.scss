@@ -1,17 +1,6 @@
 @use "../../style/variables.scss" as *;
 @use "../../style/Work-Page/projects.scss" as *;
 
-.more-images {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  font-size: 10rem;
-  z-index: 1;
-  font-family: Wosker;
-  margin: 0 3rem;
-}
-
 .copy-container {
   overflow: visible;
 
@@ -35,19 +24,35 @@
     z-index .5s, 
     scale .2s;
 
-    &>h3, &>span {
-      position: absolute;
-      transform: translateY(-0%);
+  &.active {
+    width: 80%;
+    top: -20%;
+    height: 90%;
+    transform: translate(0%, 19.5%);
 
-      transition: 
-        .4s ease opacity;
+    transition: 
+      width 0.75s, 
+      height 0.75s, 
+      top .5s .1s, 
+      left .35s, 
+      transform .4s, 
+      border-radius 1s, 
+      z-index .5s, 
+      scale .2s;
+  }
 
-        &.active {
-          opacity: 0;
-        }
-    }
+  &>h3, &>span {
+    position: absolute;
+    transform: translateY(-0%);
 
-    
+    transition: 
+      .4s ease opacity;
+
+      &.active {
+        opacity: 0;
+      }
+  }
+
   &>h3 {
     top: 10%;
     margin: 0.5rem 0;
@@ -76,23 +81,6 @@
       font-size: 1.3rem;
       font-family: Mono;
     }
-  }
-
-  &.active {
-    width: 80%;
-    top: -25%;
-    height: 110%;
-    transform: translate(0%, 20%);
-
-    transition: 
-      width 0.75s, 
-      height 0.75s, 
-      top .5s .1s, 
-      left .35s, 
-      transform .4s, 
-      border-radius 1s, 
-      z-index .5s, 
-      scale .2s;
   }
 }
 

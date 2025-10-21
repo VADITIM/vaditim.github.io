@@ -10,8 +10,8 @@
 
 <script setup lang="ts" >
 import { onMounted } from 'vue';
-import { ScrollBackgroundSections } from '../../modules/animations/sectionBackgrounds';
-import { activeProjectIndex } from '../../modules/projects';
+import { ScrollBackgroundSections } from '../modules/animations/sectionBackgrounds';
+import { activeProjectIndex } from '../modules/projects';
 
 onMounted(() => {
 	ScrollBackgroundSections();
@@ -19,7 +19,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss">
-@use "../../style/variables.scss" as *;
+@use "../style/variables.scss" as *;
 
 .scrollerBackgrounds {
 	position: absolute;
@@ -35,6 +35,8 @@ onMounted(() => {
 	width: 20%;
 	height: 300vh;
 	background-color: rgb(255, 221, 28);
+  background: #FFDD1B;
+  background: linear-gradient(180deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
 	clip-path: polygon(0 0, 100% 0, 10% 100%, 0% 100%);
 	z-index: 1;
 
@@ -59,6 +61,7 @@ onMounted(() => {
   width: 20%;
   height: 300vh;
   background-color: blue;
+  background: linear-gradient(180deg,rgba(0, 64, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
 	clip-path: polygon(0 0, 100% 0, 0 100%, 0% 100%);
 	z-index: 2;
 
@@ -80,7 +83,7 @@ onMounted(() => {
   width: 20%;
   height: 300vh;
   background-color: rgb(24, 24, 177);
-  clip-path: polygon(0 0, 54% 0, 100% 100%, 0% 100%);
+  background: linear-gradient(180deg,rgba(0, 30, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
 	clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
 	z-index: 2;
 	
@@ -98,10 +101,11 @@ onMounted(() => {
 
 .work-background-back {
   position: absolute;
-  right: -20%;
+  right: -30%;
   width: 15%;
   height: 300vh;
   background-color: rgb(134, 12, 12);
+  background: linear-gradient(180deg,rgba(51, 8, 8, 1) 21%, rgba(102, 14, 14, 1) 80%, rgba(134, 12, 12, 1) 100%);
 	clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
 	z-index: 3;
 	
@@ -124,12 +128,12 @@ onMounted(() => {
 
 .work-background-front {
   position: absolute;
-  right: -20%;
+  right: -30%;
   width: 30%;
   height: 300vh;
   background-color: $red;
-	clip-path: polygon(0 0, 100% 0, 100% 100%, 56% 100%);
-	clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
+  background: linear-gradient(180deg,rgba(105, 17, 34, 1) 21%, rgba(153, 9, 38, 1) 55%, rgba(220, 20, 60, 1) 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
 	z-index: 3;
 	
 	transition: $backgroundTransitionTime all ease;

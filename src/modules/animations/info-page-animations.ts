@@ -16,8 +16,8 @@ export function InfoPageAnimations() {
         ease: "elastic.inOut(.3, 0.3)",
 
         scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
-          start: "top 60%", 
-          end: "bottom 5%",
+          start: "top 40%", 
+          end: "bottom 0%",
           // markers: true,
         },
       })  

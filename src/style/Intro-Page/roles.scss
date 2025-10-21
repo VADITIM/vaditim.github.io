@@ -50,7 +50,6 @@
 
 .skills-line {
 	@include rotate(0, -40, 0);
-
 	position: absolute;
 	height: 100%;
 	width: 2rem;
@@ -84,9 +83,9 @@
   }
 }
 
-
 .options-container {
 	display: inherit;
+	gap: 1rem;
 	justify-content: space-between;
 	flex-direction: column;
 	width: 100%;
@@ -107,6 +106,7 @@
 	@include flex(start, start);
 	width: 120%;
 	height: 3rem;
+
 	background-color: $blacktrans;
 	color: white;
 	margin: 1rem 4.5rem;
@@ -134,7 +134,7 @@
 	@include allDesktops {
 		&:hover {
 			width: 140%;
-			height: 11.5rem;
+			height: 10.5rem;
 			border-color: $yellow;
 			filter: drop-shadow(5px 5px 10px #f5e67580);
 

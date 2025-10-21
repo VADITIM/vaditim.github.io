@@ -20,6 +20,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+
 .work-scroller {
   position: absolute;
   top: 0;
@@ -34,6 +35,7 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
 </style>
