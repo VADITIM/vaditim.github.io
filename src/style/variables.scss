@@ -181,3 +181,18 @@ $backgroundTransitionTime: 0.6s;
   50% { transform: scale(.95); }
   100% { transform: scale(1); }
 }
+
+@mixin flashingCard($color, $name: 'flashing') {
+  @keyframes #{$name} {
+    0% { filter: drop-shadow(0px 0px 30px $color); }
+    25% { filter: drop-shadow(0px 0px 100px $color); }
+    100% { filter: drop-shadow(0px 0px 30px $color); }
+  }
+  
+  @keyframes #{$name}-out {
+    0% { filter: drop-shadow(0px 0px 30px $color); }
+    100% { filter: drop-shadow(0px 0px 0px transparent); }
+  }
+  
+  animation: #{$name} .7s forwards;
+}

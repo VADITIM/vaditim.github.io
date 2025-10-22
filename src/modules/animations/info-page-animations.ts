@@ -6,12 +6,8 @@ export function InfoPageAnimations() {
   ScrollTrigger.matchMedia({
     // Desktop
     "(min-width: 842px)": function() {
-      gsap.fromTo(".about-me-container",
+      gsap.to(".about-me-header-container",
       {
-        scale: 2,
-      },
-      {
-        scale: 1,
         left: "1%",
         ease: "elastic.inOut(.3, 0.3)",
 
@@ -22,7 +18,7 @@ export function InfoPageAnimations() {
         },
       })  
 
-      gsap.to(".about-me",
+      gsap.to(".about-me-header",
       { 
         top: 0,
         left: 0,
@@ -39,11 +35,11 @@ export function InfoPageAnimations() {
         rotateY: 0,
         rotateZ: 0,
         top: "50%",
-        left: "90%",
+        left: "80%",
 
         scrollTrigger: { trigger: ".info-scroller-top", scrub: true, toggleActions: "play none none reverse",
-          start: "top 20%", 
-          end: "bottom -10%",
+          start: "top 25%", 
+          end: "bottom 0%",
           // markers: true,
       }})
     },
@@ -53,7 +49,7 @@ export function InfoPageAnimations() {
 
     // Tablet
     "(min-width: 436px) and (max-width: 841px)": function() {
-      gsap.fromTo(".about-me-container",
+      gsap.fromTo(".about-me-header-container",
       {
         scale: 2,
       },
@@ -69,7 +65,7 @@ export function InfoPageAnimations() {
         },
       })  
 
-      gsap.to(".about-me",
+      gsap.to(".about-me-header",
       { 
         rotateX: -10,
         rotateY: 40,
@@ -98,7 +94,7 @@ export function InfoPageAnimations() {
 
     // Mobile ----------------------------------------------------------
     "(max-width: 435px)": function() {
-      gsap.fromTo(".about-me-container",
+      gsap.fromTo(".about-me-header-container",
       {
         scale: 1.5,
       },
@@ -114,7 +110,7 @@ export function InfoPageAnimations() {
         },
       })  
 
-      gsap.to(".about-me",
+      gsap.to(".about-me-header",
       { 
         rotateX: -5,
         rotateY: 20,

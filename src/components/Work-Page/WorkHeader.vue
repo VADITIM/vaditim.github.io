@@ -15,15 +15,13 @@ import { activeProjectIndex } from '../../modules/projects';
   display: flex;
   position: fixed;
   top: 1%;
-  left: -20%;
+  left: 120%;
   width: 10%;
   font-size: 5rem;
   font-family: Wosker;
   perspective: 1000px;
   z-index: 20;
   gap: 0;
-
-  transition: .3s all
 }
 
 .projects-header {

@@ -1,18 +1,14 @@
 <template>
-  <div class="about-me-container">
-    <div class="about-me">ABOUT ME</div>
+  <div class="about-me-header-container">
+    <p class="about-me-header">ABOUT ME</p>
   </div>
 </template>
-
-<script setup lang="ts">
-
-</script>
 
 <style lang="scss" scoped>
 @use "../../style/variables.scss" as *;
 
 
-.about-me-container {
+.about-me-header-container {
   display: flex;
   position: fixed;
   top: 1%;
@@ -26,7 +22,7 @@
   text-wrap: nowrap;
 }
 
-.about-me {
+.about-me-header {
   @include rotate(0, 40, 0);
 	@include outline(black);
 	color: $red;

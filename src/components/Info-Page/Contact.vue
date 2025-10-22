@@ -1,12 +1,8 @@
 <template>
   <div class="contact-container">
-    <div class="github">
-      <a href="https://github.com/VADITIM" target="_blank" rel="noopener noreferrer"></a>
-    </div>
+      <a class="github" href="https://github.com/VADITIM" target="_blank" rel="noopener noreferrer"></a>
     <span>GitHub</span>
-    <div class="telegram">
-      <a href="https://t.me/VADITIMx" target="_blank" rel="noopener noreferrer"></a>
-    </div>
+      <a class="telegram" href="https://t.me/VADITIMx" target="_blank" rel="noopener noreferrer"></a>
     <span>Telegram</span>
   </div>
 </template>
@@ -22,15 +18,14 @@
   @extend .center;
   @include absoluteCenter(50%, 120%);
   flex-direction: column;
-  width: 10rem;
-  height: 25rem;
+  width: 20rem;
+  height: 35rem;
   perspective: 1000px;
   border-radius: 5rem;
-  background-color: $lightblacktrans;
-  background-color: #473622a2;
-  filter: drop-shadow(10px -10px 15px #c79152a2);
-  border-top: 5px solid #f09b3a;
-  border-right: 5px solid #f09b3a;
+  // background-color: #473622a2;
+  // filter: drop-shadow(10px -10px 15px #c79152a2);
+  // border-top: 5px solid #f09b3a;
+  // border-right: 5px solid #f09b3a;
 
   &>span {
     position: relative;
@@ -38,23 +33,17 @@
     width: fit-content;
     height: fit-content;
     font-family: Exo;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
   }
 
-  &>div {
-    width: 5rem;
-    height: 5rem;
+  &>a {
+    width: 10rem;
+    height: 10rem;
     margin: 2rem 0rem;
     transition: transform 0.3s ease;
-
-    &>a {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
+    
     &:hover {
-      transform: scale(1.1);
+      transform: scale(1.2);
     }
   }
 
@@ -79,17 +68,21 @@
   }
 }
 
-.github {
-  @extend .center;
-  background-image: url("../../assets/images/icons/github.png");
-  background-size: cover;
-}
-
-.telegram {
-  @extend .center;
-  background-image: url("../../assets/images/icons/telegram.png");
+.github, .telegram {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+  transform: translateZ(0); 
+  filter: drop-shadow(0px 0px 35px #ffffffa2);
+
+}
+
+.github {
+  background-image: url("../../assets/images/icons/github.png");
+}
+
+.telegram {
+  background-image: url("../../assets/images/icons/telegram.png");
+
 }
 </style>
