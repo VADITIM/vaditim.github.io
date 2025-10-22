@@ -7,7 +7,7 @@
       <div class="project-name" v-html="projects[currentProjectIndex]?.name"></div>
     </div>
 
-    <div ref="projectsContainer" class="projects-container" id="con" :class="{ active: activeProjectIndex !== null }"
+    <div ref="projectsContainer" class="projects-container" :class="{ active: activeProjectIndex !== null }"
       @scroll="updateCurrentProject" @mousedown="startDrag" @mousemove="drag" @mouseup="endDrag" @mouseleave="endDrag">
       <div class="spacer"></div>
       <div v-for="(project, index) in projects" :key="index" class="project"
@@ -25,7 +25,7 @@
         <div class="project-image" :style="{ backgroundImage: `url(${project.img})` }"
           :class="{ current: currentProjectIndex === index, transitioning: transitioning }"></div>
       </div>
-      <div class="spacer2">More To Come</div>
+      <div class="spacer2 transparent">More To Come</div>
     </div>
 
     <ProjectsCopy />

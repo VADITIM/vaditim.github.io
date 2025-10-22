@@ -9,6 +9,7 @@ interface Project {
   language: string
   platform: string
   link: string
+  type?: string
   image1?: string
   image2?: string
   image3?: string
@@ -36,6 +37,7 @@ export const projects: Project[] = [
     language: "src/assets/images/icons/javascript.png",
     platform: "src/assets/images/icons/webapp.png",
     link: "https://github.com/VADITIM/Wrath-Of-The-Fallen-Queen",
+    type: "info",
     image1: "src/assets/images/projects/wrathofthefallenqueen/1.png",
     image2: "src/assets/images/projects/wrathofthefallenqueen/2.png",
     image3: "src/assets/images/projects/wrathofthefallenqueen/3.png",
@@ -50,7 +52,8 @@ export const projects: Project[] = [
     engine: "src/assets/images/icons/unity.png",
     language: "src/assets/images/icons/csharp.png",
     platform: "src/assets/images/icons/windows.png",
-    link: "https://github.com/VADITIM/Haunted",
+    link: "https://github.com/VADITIM/Haunted/releases",
+    type: "download",
     image1: "src/assets/images/projects/haunted.png",
     image2: "src/assets/images/projects/haunted.png",
     image3: "src/assets/images/projects/haunted.png",
@@ -66,6 +69,7 @@ export const projects: Project[] = [
     language: "src/assets/images/icons/javascript.png",
     platform: "src/assets/images/icons/webapp.png",
     link: "https://github.com/VADITIM/Card-Game",
+    type: "play",
     image1: "src/assets/images/projects/velvetdeck.png",
     image2: "src/assets/images/projects/velvetdeck.png",
     image3: "src/assets/images/projects/velvetdeck.png",
@@ -80,7 +84,8 @@ export const projects: Project[] = [
     engine: "src/assets/images/icons/unity.png",
     language: "src/assets/images/icons/csharp.png",
     platform: "src/assets/images/icons/windows.png",
-    link: "https://github.com/VADITIM/Boundless-Board",
+    link: "https://github.com/VADITIM/Boundless-Board/releases",
+    type: "download",
     image1: "src/assets/images/projects/boundlessboard.png",
     image2: "src/assets/images/projects/boundlessboard.png",
     image3: "src/assets/images/projects/boundlessboard.png",
@@ -95,7 +100,8 @@ export const projects: Project[] = [
     engine: "src/assets/images/icons/unity.png",
     language: "src/assets/images/icons/csharp.png",
     platform: "src/assets/images/icons/windows.png",
-    link: "https://github.com/VADITIM/NETRUNNERS",
+    link: "https://github.com/VADITIM/NETRUNNERS/releases",
+    type: "download",
     image1: "src/assets/images/projects/netrunners.png",
     image2: "src/assets/images/projects/netrunners.png",
     image3: "src/assets/images/projects/netrunners.png",
@@ -111,6 +117,7 @@ export const projects: Project[] = [
   //   language: "src/assets/images/icons/csharp.png",
   //   platform: "src/assets/images/icons/windows.png",
   //   link: "https://github.com/VADITIM/Veil-of-Remorse",
+    // type: true,
   //   image1: "src/assets/images/projects/netrunners.png",
   //   image2: "src/assets/images/projects/netrunners.png",
   //   image3: "src/assets/images/projects/netrunners.png",
@@ -126,6 +133,7 @@ export const projects: Project[] = [
     language: "src/assets/images/icons/csharp.png",
     platform: "src/assets/images/icons/windows.png",
     link: "https://github.com/Nobody-989/SimulationCity",
+    type: "info",
     image1: "src/assets/images/projects/simulationcity.jpg",
     image2: "src/assets/images/projects/simulationcity.jpg",
     image3: "src/assets/images/projects/simulationcity.jpg",
@@ -140,6 +148,7 @@ export const projects: Project[] = [
 		language: "src/assets/images/icons/csharp.png",
 		platform: "src/assets/images/icons/android.png",
 		link: "https://github.com/VADITIM/Velvet-Deck",
+    type: "download",
     image1: "src/assets/images/projects/velvetdeck.png",
     image2: "src/assets/images/projects/velvetdeck.png",
     image3: "src/assets/images/projects/velvetdeck.png",
@@ -155,6 +164,7 @@ export const projects: Project[] = [
 	// 	language: "src/assets/images/icons/csharp.png",
 	// 	platform: "src/assets/images/icons/windows.png",
 	// 	link: "https://github.com/VADITIM/Velvet-Deck",
+  // type: true,
   //   image1: "src/assets/images/projects/velvetdeck.png",
   //   image2: "src/assets/images/projects/velvetdeck.png",
   //   image3: "src/assets/images/projects/velvetdeck.png",
@@ -171,6 +181,7 @@ export const projects: Project[] = [
     language: "src/assets/images/icons/csharp.png",
     platform: "src/assets/images/icons/windows.png",
     link: "https://github.com/VADITIM/Anomaly",
+    type: "info",
     image1: "src/assets/images/projects/anomaly.JPG",
     image2: "src/assets/images/projects/anomaly.JPG",
     image3: "src/assets/images/projects/anomaly.JPG",
@@ -270,74 +281,6 @@ export function updateCurrentProject() {
   
   currentProjectIndex.value = Math.max(0, Math.min(currentIndex, projects.length - 1))
 }
-
-let _scrollRafId: number | null = null;
-
-export function scrollToProjectTime(index: number, duration = 3.5) {
-
-    setTimeout(() => {
-    const con = document.getElementById('con') as HTMLElement;
-    con.classList.remove('no-snap');
-  }, 3800);
-  
-  setTimeout(() => {
-    if (!projectsContainer.value) return;
-
-    const container = projectsContainer.value;
-    const projectWidth = container.clientWidth * 0.22;
-    const gap = container.clientWidth * 0.15;
-    const projectSpacing = projectWidth + gap;
-    const targetScroll = index * projectSpacing;
-
-    // cancel any running animation
-    if (_scrollRafId !== null) {
-      cancelAnimationFrame(_scrollRafId);
-      _scrollRafId = null;
-    }
-
-    if (duration <= 0) {
-      container.scrollLeft = targetScroll;
-      return;
-    }
-
-    const startScroll = container.scrollLeft;
-    const distance = targetScroll - startScroll;
-    const startTime = performance.now();
-
-    const split = 0.0; 
-    const tailFactor = 1 - split; 
-
-    function easeOutBack(x: number) {
-    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-    }
-
-    function step(now: number) {
-      const elapsed = (now - startTime) / 1000; 
-      let t = Math.min(1, elapsed / duration); 
-
-      let progress: number;
-      if (t <= split) {
-        progress = t; 
-      } else {
-        const u = (t - split) / tailFactor; 
-        progress = split + easeOutBack(u) * tailFactor;
-      }
-
-      container.scrollLeft = startScroll + distance * progress;
-
-      if (t < 1) {
-        _scrollRafId = requestAnimationFrame(step);
-      } else {
-        _scrollRafId = null;
-        container.scrollLeft = targetScroll; 
-      }
-    }
-
-    _scrollRafId = requestAnimationFrame(step);
-  }, 300);
-}
-
-
 
 export function scrollToProject(index: number) {
   if (!projectsContainer.value) return

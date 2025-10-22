@@ -11,7 +11,6 @@ let userScrolled: boolean = false
 const SnapToNearest = () => {
   if (isAnimating && !userScrolled) return
 
-  // Cancel any existing animation if user scrolled
   if (isAnimating && userScrolled) {
     cancelAnimationFrame(animationId)
     isAnimating = false
@@ -36,7 +35,6 @@ const SnapToNearest = () => {
       userScrolled = false
 
       const AnimateScroll = (currentTime: number) => {
-        // Stop animation if user scrolled during animation
         if (userScrolled) {
           isAnimating = false
           return
@@ -68,19 +66,17 @@ export function InitializeScrollSnap() {
    const handleScroll = () => {
    const currentScrollY = window.scrollY
    
-   // Detect if user is actively scrolling (scroll position changed significantly)
    if (Math.abs(currentScrollY - lastScrollY) > 10) {
      userScrolled = true
    }
    
    lastScrollY = currentScrollY
    
-   // Don't start new snap animation if currently animating, unless user scrolled
    if (isAnimating && !userScrolled) return
 
    clearTimeout(scrollTimeout)
    scrollTimeout = setTimeout(() => {
-     userScrolled = false // Reset flag before snapping
+     userScrolled = false 
      SnapToNearest()
    }, 400)
    }

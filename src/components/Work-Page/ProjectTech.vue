@@ -9,13 +9,24 @@
         :style="{ backgroundImage: `url(${item.image})` }"
       ></div>
     </div>
-    <div class="download" ref="downloadRef"></div>
+    
+  <a 
+    :class="{
+      download: projects[currentProjectIndex].type === 'download', 
+      info: projects[currentProjectIndex].type === 'info', 
+      play: projects[currentProjectIndex].type === 'play'
+    }" 
+    ref="downloadRef" 
+    :href="projects[currentProjectIndex].link"
+    target="_blank"
+    rel="noopener noreferrer"
+  ></a>
   </div>
 </template>
 
 <script setup lang="ts">
 import { downloadRef, tilts, devItems} from '../../modules/techContainer';
-import { activeProjectIndex } from '../../modules/projects';
+import { activeProjectIndex, currentProjectIndex, projects } from '../../modules/projects';
 import { InitializeTilt } from '../../modules/vanillaTilt';
 
 InitializeTilt(tilts);
