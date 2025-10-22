@@ -82,6 +82,10 @@
       font-family: Mono;
     }
   }
+  
+  &.cursor {
+    cursor: default;
+  }
 }
 
 .notice {
