@@ -211,5 +211,16 @@ $projectWidht: 22%;
   min-height: 100%;
   font-size: 3rem;
   font-family: Mono;
+
+  transition: 
+    color 0s 1.5s;
+
+  &.transparent {
+    color: transparent;
+
+    transition: 
+      color .3s .0s;
+
+  }
 }
 

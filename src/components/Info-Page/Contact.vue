@@ -1,9 +1,11 @@
 <template>
   <div class="contact-container">
     <div class="github">
+      <a href="https://github.com/VADITIM" target="_blank" rel="noopener noreferrer"></a>
     </div>
     <span>GitHub</span>
     <div class="telegram">
+      <a href="https://t.me/VADITIMx" target="_blank" rel="noopener noreferrer"></a>
     </div>
     <span>Telegram</span>
   </div>
@@ -43,8 +45,13 @@
     width: 5rem;
     height: 5rem;
     margin: 2rem 0rem;
-    cursor: pointer;
     transition: transform 0.3s ease;
+
+    &>a {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
 
     &:hover {
       transform: scale(1.1);
