@@ -24,6 +24,7 @@ onUnmounted(() => {
 @use "../style/variables.scss" as *;
 
 .content-list-container {
+	@extend .disable-selection;
   display: flex;
   position: fixed;
 	flex-direction: column;
@@ -43,20 +44,26 @@ onUnmounted(() => {
 	@include outline(black);
   position: relative;
 	display: flex;
-	width: 100%;
+	width: 10%;
 	align-self: start;
 	line-height: 1rem;
-	margin: .8rem 0rem;
+	margin: .8rem .7rem;
 	font-size: 2rem;
   cursor: pointer;
+	text-wrap: nowrap;
+
   transition: 
     .3s all;
+
+	&:hover {
+		font-size: 2.1rem;
+	}
 
 	&.active {
 		font-size: 5rem;
 		color: $red;
 		line-height: 1.2rem;
-		margin: 3rem 0rem;
+		margin: 3rem 1rem;
 	}
 }
 

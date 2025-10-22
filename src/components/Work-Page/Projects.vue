@@ -11,7 +11,7 @@
       @scroll="updateCurrentProject" @mousedown="startDrag" @mousemove="drag" @mouseup="endDrag" @mouseleave="endDrag">
       <div class="spacer"></div>
       <div v-for="(project, index) in projects" :key="index" class="project" @click="ActiveProject(index, $event)"
-        :class="{ active: activeProjectIndex === index }">
+        :class="{ active: activeProjectIndex === index, cursor: clicked }">
         <h3 v-html="project.name"></h3>
         <span v-if="!project.wip">Year <br></br> {{ project.year }}</span>
         <span v-if="project.wip">
@@ -48,6 +48,7 @@ import {
 import PaginationDots from './PaginationDots.vue';
 import ProjectsCopy from './ProjectsCopy.vue';
 import SwipeButtons from './SwipeButtons.vue';
+import { clicked } from '../../modules/techContainer';
 
 onMounted(() => {
 if (projectsContainer.value) {

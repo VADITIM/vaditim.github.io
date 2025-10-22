@@ -1,12 +1,8 @@
 <template>
     <div class="copy-container" :class="{ active: activeProjectIndex !== null }">
-        <div class="project-copy" :class="{ active: activeProjectIndex !== null }" @click="closeActiveProject($event)">
+        <div class="project-copy" :class="{ active: activeProjectIndex !== null, cursor: clicked }" @click="closeActiveProject($event)">
         <DescriptionGrid />
 
-        <div class="more-info-container">
-            <div class="more-info" :class="{ active: activeProjectIndex !== null }">Show More</div>
-        </div>
-        
         <h3 :class="{ active: activeProjectIndex !== null }" v-html="projects[currentProjectIndex]?.name"></h3>
         <span :class="{ active: activeProjectIndex !== null }" v-if="!projects[currentProjectIndex]?.wip">Year <br> {{
             projects[currentProjectIndex]?.year }}</span>

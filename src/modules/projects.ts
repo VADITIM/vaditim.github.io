@@ -14,6 +14,7 @@ interface Project {
   image2?: string
   image3?: string
   image4?: string
+  mobileImage?: boolean
   ai?: boolean
   wip?: boolean
   estimated?: number | string
@@ -47,6 +48,7 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/wrathofthefallenqueen/4.png",
     ai: true,
   },
+
   {
     name: "Haunted",
     description: "Description",
@@ -63,6 +65,7 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/haunted.png",
     ai: true,
   },
+
 	{
     name: "Velvet Deck Web",
     description: "Description",
@@ -79,6 +82,7 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/velvetdeck.png",
     ai: true,
   },
+
   {
     name: "Boundless Board",
     description: "Description",
@@ -95,6 +99,7 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/boundlessboard.png",
     ai: true,
   },
+
   {
     name: "//NETRUNNERS",
     description: "Description",
@@ -111,6 +116,7 @@ export const projects: Project[] = [
     image4: "src/assets/images/projects/netrunners.png",
     ai: true,
   },
+
   // {
   //   name: "Veil of Remorse",
   //   description: "Description",
@@ -127,6 +133,7 @@ export const projects: Project[] = [
   //   image4: "src/assets/images/projects/netrunners.png",
   //   ai: true,
   // },
+
 	{
     name: "Simulation City Reborn<br>Green Horizons",
     description: "Description",
@@ -142,22 +149,25 @@ export const projects: Project[] = [
     image3: "src/assets/images/projects/simulationcity.jpg",
     image4: "src/assets/images/projects/simulationcity.jpg",
   },
+
 	{
 		name: "Velvet Deck",
 		description: "Description",
 		year: 2025,
-		img: "src/assets/images/projects/velvetdeck.png",
+		img: "src/assets/images/projects/velvetdeck/velvetdeck.png",
 		engine: "src/assets/images/icons/godot.png",
 		language: "src/assets/images/icons/csharp.png",
 		platform: "src/assets/images/icons/android.png",
 		link: "https://github.com/VADITIM/Velvet-Deck",
     type: "download",
-    image1: "src/assets/images/projects/velvetdeck.png",
-    image2: "src/assets/images/projects/velvetdeck.png",
-    image3: "src/assets/images/projects/velvetdeck.png",
-    image4: "src/assets/images/projects/velvetdeck.png",
+    image1: "src/assets/images/projects/velvetdeck/velvetdeck1.jpg",
+    image2: "src/assets/images/projects/velvetdeck/velvetdeck2.jpg",
+    image3: "src/assets/images/projects/velvetdeck/velvetdeck3.jpg",
+    image4: "src/assets/images/projects/velvetdeck/velvetdeck4.jpg",
+    mobileImage: true,
     ai: true,
 	},
+  
 	// {
 	// 	name: "'Godot 3D'",
 	// 	description: "Description",
@@ -175,6 +185,7 @@ export const projects: Project[] = [
   //   wip: true,
   //   estimated: 2027,
 	// },
+
 	{
     name: "Anomaly",
     description: "Description",
@@ -233,7 +244,6 @@ export function drag(event: MouseEvent) {
   const walk = (x - startX.value) * 3 
   projectsContainer.value.scrollLeft = scrollLeft.value - walk
   
-  // Track cursor change in real-time based on distance moved
   const distanceX = Math.abs(event.pageX - clickStartX.value)
   const distanceY = Math.abs(event.pageY - clickStartY.value)
   
@@ -252,7 +262,6 @@ export function endDrag() {
     projectsContainer.value.style.cursor = 'grab'
   }
   
-  // Reset cursor on all project elements
   const projects = document.querySelectorAll('.project')
   projects.forEach((proj) => {
     (proj as HTMLElement).style.cursor = 'pointer'
