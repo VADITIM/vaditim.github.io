@@ -6,17 +6,13 @@ export function InfoPageAnimationsOut() {
   ScrollTrigger.matchMedia({
     // Desktop
     "(min-width: 842px)": function() {
-
       gsap.fromTo(".contact-container",
-      {
-
-      },
+      { },
       {
         rotateX: 0,
         rotateY: 0,
         rotateZ: 0,
         top: "0%",
-        left: "90%",
         ease: "elastic.inOut(.3, 0.3)",
 
         scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
@@ -25,15 +21,14 @@ export function InfoPageAnimationsOut() {
           // markers: true,
       }})
 
-      gsap.fromTo(".about-me-container",
-    { },
-    {
-      left: "-15%",
+      gsap.to(".about-me-header-container",
+      {
+        left: "-15%",
 
-      scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
-        start: "top 30%", 
-        end: "bottom 0%",
-        // markers: true,
+        scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
+          start: "top 25%", 
+          end: "bottom 0%",
+          // markers: true,
     }})  
   },
 
@@ -41,7 +36,7 @@ export function InfoPageAnimationsOut() {
 
     // Tablet
     "(min-width: 436px) and (max-width: 841px)": function() {
-      gsap.fromTo(".about-me-container",
+      gsap.fromTo(".about-me-header-container",
       {
         scale: 2,
       },
@@ -57,7 +52,7 @@ export function InfoPageAnimationsOut() {
         },
       })  
 
-      gsap.to(".about-me",
+      gsap.to(".about-me-header",
       { 
         rotateX: -10,
         rotateY: 40,
@@ -86,7 +81,7 @@ export function InfoPageAnimationsOut() {
 
     // Mobile ----------------------------------------------------------
     "(max-width: 435px)": function() {
-      gsap.fromTo(".about-me-container",
+      gsap.fromTo(".about-me-header-container",
       {
         scale: 1.5,
       },

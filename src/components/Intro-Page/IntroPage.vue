@@ -1,6 +1,7 @@
 <template>
   <Name />
   <Roles />
+  <!-- <IntroHeader /> -->
   <div class="intro-scroller"></div>
 </template>
 
@@ -10,6 +11,7 @@
 
   import { onMounted } from 'vue';
   import { IntroPageAnimations } from '../../modules/animations/intro-page-animations';
+import IntroHeader from './IntroHeader.vue';
 
   onMounted(() => {
     IntroPageAnimations();
@@ -20,8 +22,5 @@
 .intro-scroller {
   position: absolute;
   bottom: 0;
-  // width: 100%;
-  // height: 1%;
-  // background: red;
 }
 </style>

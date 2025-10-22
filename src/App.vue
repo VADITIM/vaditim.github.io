@@ -9,6 +9,7 @@ tablet 820 x 1180 -->
     <IntroPage />
     <InfoPage />
     <WorkPage />
+    <Test />
   </main>
 </template>
 
@@ -17,6 +18,7 @@ import IntroPage from './components/Intro-Page/IntroPage.vue'
 import InfoPage from './components/Info-Page/InfoPage.vue'
 import WorkPage from './components/Work-Page/WorkPage.vue'
 import SectionBackgrounds from './components/SectionBackgrounds.vue';
+import Test from './components/test.vue';
 
 // import { container, InitializeScrollSnap } from './modules/scroll-snapping'
 

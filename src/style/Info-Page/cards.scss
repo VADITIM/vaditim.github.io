@@ -144,8 +144,6 @@
 }
 
 
-
-// MODULAR MIXINS
 @mixin card-base($border-color, $rotation-x: -30, $rotation-y: -50, $rotation-z: 0) {
   @extend .center;
   @include rotate($rotation-x, $rotation-y, $rotation-z);
@@ -294,6 +292,12 @@
 
 .card1 {
   @include card-base(#3664fc, -30, -50, 0);
+  animation: flashing-card1-out 0.5s forwards;
+
+  &:hover:not(.card1-open),
+  &:hover:not(.card1-open) ~ .back-card1 {
+    @include flashingCard(#3664fc, 'flashing-card1');
+  }
 }
 
 .back-card-done {
@@ -303,6 +307,7 @@
 
 .back-card1 {
   @include back-card-base(#3664fc, #1E40AF80, -30, 50, 0);
+  animation: flashing-card1-out 0.5s forwards;
 }
 
 .card1-open {
@@ -311,10 +316,17 @@
 
 .card2 {
   @include card-base(#0bc993, -30, 50, 0);
+  animation: flashing-card2-out 0.5s forwards;
+
+  &:hover:not(.card2-open),
+  &:hover:not(.card2-open) ~ .back-card2 {
+    @include flashingCard(#0bc993, 'flashing-card2');
+  }
 }
 
 .back-card2 {
   @include back-card-base(#0bc993, #04785780, -30, -50, 0);
+  animation: flashing-card2-out 0.5s forwards;
 }
 
 .card2-open {
@@ -323,10 +335,18 @@
 
 .card3 {
   @include card-base(#F59E0B, -30, -50, 0);
+  animation: flashing-card3-out 0.5s forwards;
+
+  &:hover:not(.card3-open),
+  &:hover:not(.card3-open) ~ .back-card3 {
+    @include flashingCard(#F59E0B, 'flashing-card3');
+  }
 }
+
 
 .back-card3 {
   @include back-card-base(#F59E0B, #F59E0B80, -30, 50, 0);
+  animation: flashing-card3-out 0.5s forwards;
 }
 
 .card3-open {
@@ -335,10 +355,17 @@
 
 .card4 {
   @include card-base(#9532e6, -30, 50, 0);
+  animation: flashing-card4-out 0.5s forwards;
+
+  &:hover:not(.card4-open),
+  &:hover:not(.card4-open) ~ .back-card4 {
+    @include flashingCard(#9532e6, 'flashing-card4');
+  }
 }
 
 .back-card4 {
   @include back-card-base(#9532e6, #6B21A880, -30, -50, 0);
+  animation: flashing-card4-out 0.5s forwards;
 }
 
 .card4-open {

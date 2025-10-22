@@ -24,6 +24,9 @@ export const currentProjectIndex = ref(0)
 export const projectsContainer = ref<HTMLElement>()
 export const isDragging = ref(false)
 export const startX = ref(0)
+export const startY = ref(0)
+export const clickStartX = ref(0)
+export const clickStartY = ref(0)
 export const scrollLeft = ref(0)
 export const transitioning = ref(false)
 
@@ -193,10 +196,10 @@ export const projects: Project[] = [
 
 
 
+export function ActiveProject(index: number, event?: MouseEvent) {
+  if (event && (Math.abs(event.pageX - clickStartX.value) > 50 || Math.abs(event.pageY - clickStartY.value) > 50)) return;
 
-export function ActiveProject(index: number) {
-  activeProjectIndex.value = index 
-  console.log(`Active project: ${projects[index].name}`)
+  activeProjectIndex.value = index; 
 }
 
 export function closeActiveProject(event?: MouseEvent) {
@@ -214,6 +217,9 @@ export function startDrag(event: MouseEvent) {
   
   isDragging.value = true
   startX.value = event.pageX - projectsContainer.value.offsetLeft
+  startY.value = event.pageY
+  clickStartX.value = event.pageX
+  clickStartY.value = event.pageY
   scrollLeft.value = projectsContainer.value.scrollLeft
   
   projectsContainer.value.style.cursor = 'grabbing'
@@ -226,13 +232,31 @@ export function drag(event: MouseEvent) {
   const x = event.pageX - projectsContainer.value.offsetLeft
   const walk = (x - startX.value) * 3 
   projectsContainer.value.scrollLeft = scrollLeft.value - walk
+  
+  // Track cursor change in real-time based on distance moved
+  const distanceX = Math.abs(event.pageX - clickStartX.value)
+  const distanceY = Math.abs(event.pageY - clickStartY.value)
+  
+  const projects = document.querySelectorAll('.project')
+  projects.forEach((proj) => {
+    if (distanceX > 5 || distanceY > 5) {
+      (proj as HTMLElement).style.cursor = 'grabbing'
+    }
+  })
 }
 
 export function endDrag() {
   isDragging.value = false
+  
   if (projectsContainer.value) {
     projectsContainer.value.style.cursor = 'grab'
   }
+  
+  // Reset cursor on all project elements
+  const projects = document.querySelectorAll('.project')
+  projects.forEach((proj) => {
+    (proj as HTMLElement).style.cursor = 'pointer'
+  })
 }
 
 export const nextClicked = ref(false);

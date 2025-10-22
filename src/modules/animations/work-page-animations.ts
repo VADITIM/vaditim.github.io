@@ -1,6 +1,6 @@
 import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { activeProjectIndex, currentProjectIndex, projects, projectsContainer, } from "../projects";
+import { activeProjectIndex, projectsContainer, } from "../projects";
 import { ref } from "vue";
 
 let _scrollRafId: number | null = null;
@@ -14,7 +14,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function WorkPageAnimations() {
 
-  // Initialize DOM elements
   con = document.querySelector('.projects-container') as HTMLElement;
   spa = document.querySelector('.spacer2') as HTMLElement;
   
@@ -29,7 +28,7 @@ export function WorkPageAnimations() {
         ease: "elastic.inOut(.3, 0.3)",
 
         scrollTrigger: { trigger: ".work-scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 10%", 
+          start: "top 60%", 
           end: "bottom 0%",
           // markers: true,
       }})  
@@ -60,7 +59,7 @@ export function WorkPageAnimations() {
       ScrollTrigger.create({
         trigger: ".work-scroller",
         start: "top 20%",
-        markers: true,
+        // markers: true,
 
         onEnter: () => {
           if (!scrolled.value) {

@@ -2,7 +2,7 @@
   <div class="work-page-container">
     <Projects />
     <TechContainer />
-    <ProjectsHeader />
+    <!-- <WorkHeader /> -->
     <div class="work-scroller"></div>
   </div>
 </template>
@@ -12,7 +12,7 @@ import Projects from './Projects.vue';
 import TechContainer from './ProjectInfoContainer.vue';
 import { WorkPageAnimations } from '../../modules/animations/work-page-animations';
 import { onMounted } from 'vue';
-import ProjectsHeader from './ProjectsHeader.vue';
+import WorkHeader from './WorkHeader.vue';
 
 onMounted(() => {
   WorkPageAnimations();
@@ -35,7 +35,7 @@ onMounted(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow: visible;
 }
 
 </style>

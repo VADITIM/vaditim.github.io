@@ -1,8 +1,7 @@
 <template>
   <div class="info-page-container">
     <Cards />
-    <NameHeadline />
-    <Contact />
+    <!-- <InfoHeader /> -->
     <Contact />
     <div class="info-scroller-top"></div>
     <div class="info-scroller-bottom"></div>
@@ -11,7 +10,7 @@
 
 <script setup lang="ts">
 import Cards from './Cards.vue';
-import NameHeadline from './NameHeadline.vue';
+import InfoHeader from './InfoHeader.vue';
 
 import { onMounted } from 'vue';
 import { InfoPageAnimations } from '../../modules/animations/info-page-animations';
