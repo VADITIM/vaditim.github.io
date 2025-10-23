@@ -22,7 +22,7 @@
 	color: $purple !important;
 	font-family: Wosker;
 	perspective: 1000px;
-	font-size: 22rem;
+	font-size: 20rem;
 	gap: 0rem;
 	margin: 0;
 	pointer-events: none;
@@ -59,7 +59,7 @@
 	@include largeDesktop {
 		top: 47%;
 		right: 22%;
-		font-size: 25rem;
+		font-size: 23rem;
 	}
 }
 

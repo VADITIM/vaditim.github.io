@@ -1,5 +1,5 @@
 <template>
-  <div class="content-list-container">
+  <div class="content-list-container" :class="{active: activeProjectIndex !== null}">
 		<div class="line"></div>
     <p class="intro-header-list" :class="{active: currentSection === 0}" @click="scrollToSection(0)">ROLES</p>
     <p class="info-header-list" :class="{active: currentSection === 1}" @click="scrollToSection(1)">ABOUT ME</p>
@@ -9,7 +9,8 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
-import { currentSection, initSectionTracking, cleanupSectionTracking, scrollToSection } from '../modules/test'
+import { currentSection, initSectionTracking, cleanupSectionTracking, scrollToSection } from '../modules/sections'
+import { activeProjectIndex } from '../modules/projects'
 
 onMounted(() => {
   initSectionTracking()
@@ -30,11 +31,17 @@ onUnmounted(() => {
 	flex-direction: column;
   bottom: 3%;
   left: 1%;
-  width: 20%;
+  width: 15rem;
   font-family: Wosker;
   perspective: 1000px;
   z-index: 20;
-	// background-color: green;
+	filter: drop-shadow(0px 0px 30px black);
+
+	transition: .5s ease all;
+
+	&.active {
+		left: -20%
+	}
 }
 
 .intro-header-list,
@@ -68,12 +75,15 @@ onUnmounted(() => {
 }
 
 .line {
+	display: flex;
 	position: absolute;
 	width: .4rem;
 	height: 100%;
 	background-color: $black;
-	margin-bottom: 1rem;
+	background-color: rgb(224, 224, 224);
+	border: solid 1px black;
+	border-radius: 5px;
+	top: -2%;
 	left: 0;
-	top: -5%;
 }
 </style>
