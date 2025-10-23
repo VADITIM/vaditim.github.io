@@ -4,14 +4,43 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 export function ScrollBackgroundSections() {
 	ScrollTrigger.matchMedia({
 		"(min-width: 1800px)": function() {
+      
+      gsap.fromTo(".intro-background", 
+      { left: "200%",}, 
+      {
+        left: "0%",
+        delay: 1.4,
+        duration: .7,
+      });
+
+      gsap.to(".intro-background", {
+        width: "20%",
+        delay: 2.1,
+        duration: .7,
+      });
+
+      
+      
 			// In
+			gsap.to(".intro-background", 
+      {
+				left: "20%",
+				scrollTrigger: { trigger: ".scrollerBackgrounds2", scrub: true, toggleActions: "play none none reverse",
+					start: "top 45%", 
+					end: "bottom 0%",
+					markers: true,
+        },
+      }),
+
+            
+			// Out
 			gsap.to(".intro-background", 
       {
 				left: "-20%",
 				scrollTrigger: { trigger: ".scrollerBackgrounds", scrub: true, toggleActions: "play none none reverse",
 					start: "top 145%", 
 					end: "bottom 100%",
-					// markers: true,
+					markers: true,
         },
       }),
 

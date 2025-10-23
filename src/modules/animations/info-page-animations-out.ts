@@ -30,6 +30,30 @@ export function InfoPageAnimationsOut() {
           end: "bottom 0%",
           // markers: true,
     }})  
+          gsap.fromTo(".contact-container",
+      { },
+      {
+        rotateX: 0,
+        rotateY: 0,
+        rotateZ: 0,
+        top: "0%",
+        ease: "elastic.inOut(.3, 0.3)",
+
+        scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
+          start: "top 90%", 
+          end: "bottom 20%",
+          // markers: true,
+      }})
+
+      gsap.to(".about-me-header-container",
+      {
+        left: "-15%",
+
+        scrollTrigger: { trigger: ".info-scroller-bottom", scrub: true, toggleActions: "play none none reverse",
+          start: "top 25%", 
+          end: "bottom 0%",
+          // markers: true,
+    }})  
   },
 
 

@@ -1,27 +1,34 @@
 <template>
-	<div class="loading-container" :class="{open: open}" @click="toggleOpen">
-		<div class="top-background" :class="{open: open}"></div>
-		<div class="bottom-background" :class="{open: open}"></div>
+	<div class="loading-container" :class="{ open: open }" @click="toggleOpen">
+		<div class="top-background" :class="{ open: open }"></div>
+		<div class="bottom-background" :class="{ open: open }"></div>
 
-	<div class="portfolio-text-top" :class="{open: open}" >PORTFOLIO</div>
-	<div class="portfolio-text-bottom" :class="{open: open}" >PORTFOLIO</div>
+		<div class="portfolio-text-top" :class="{ open: open }">PORTFOLIO</div>
+		<div class="portfolio-text-bottom" :class="{ open: open }">PORTFOLIO</div>
 
-	<div v-for="(text, index) in texts" :key="index" class="text" :style="{ top: text.top, left: text.left }"> 
-		{{ text.content }} 
-		<div class="hidder" :class="{open: open}" :style="{ transitionDelay: `${index * 0.15}s` }"></div>
-	</div>
+		<div v-for="(text, index) in texts" :key="index" class="text"
+			:style="{ top: text.top, left: text.left, '--text-delay': `${index * 0.15}s` }" :class="{ open: open }">
+			{{ text.content }}
+			<div class="hidder" :class="{ open: open }" :style="{ '--stagger': `${index * 0.15}s` }"></div>
+		</div>
 
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-
+import { onMounted, ref } from 'vue';
+import { transitioning } from '../modules/projects';
 const open = ref<boolean>(false);
 
 function toggleOpen() {
 	open.value = !open.value;
 }
+
+onMounted(() => {
+	toggleOpen();
+})
+
+
 
 interface TextItem {
 	content: string;
@@ -63,7 +70,8 @@ const texts: TextItem[] = [
 	}
 }
 
-.portfolio-text-top, .portfolio-text-bottom {
+.portfolio-text-top,
+.portfolio-text-bottom {
 	@include absoluteCenter(50%, 50%);
 	display: flex;
 	align-self: center;
@@ -71,7 +79,7 @@ const texts: TextItem[] = [
 
 	line-height: 5rem;
 	padding-top: 2rem;
-	
+
 	height: fit-content;
 	color: rgb(91, 253, 91);
 	text-align: center;
@@ -100,7 +108,8 @@ const texts: TextItem[] = [
 	}
 }
 
-.top-background, .bottom-background {
+.top-background,
+.bottom-background {
 	position: absolute;
 	width: 100%;
 	height: 0%;
@@ -109,9 +118,9 @@ const texts: TextItem[] = [
 	background-color: rgb(91, 253, 91);
 	z-index: 301;
 
-	transition: 
+	transition:
 		1.5s ease-in-out all .5s;
-	
+
 	&.open {
 		height: 50%;
 	}
@@ -125,8 +134,6 @@ const texts: TextItem[] = [
 	top: 50%;
 }
 
-
-
 .text {
 	position: absolute;
 	transform: translate(-50%, -50%);
@@ -135,30 +142,33 @@ const texts: TextItem[] = [
 	font-family: Wosker;
 	text-wrap: nowrap;
 	z-index: 300;
+	opacity: 1;
 
 	transition:
-		.5s ease-in-out all;
-}
-
-.hidder {
-	position: relative;
-	width: 0%;
-	height: 100%;
-	background-color: rgb(91, 253, 91);
-	position: absolute;
-	top: 0;
-	left: -10%;
-	padding: 0;
-	z-index: 301;
-
-	transition: 
-		.4s ease all;
+		color 0s ease var(--text-delay, 1s);
 
 	&.open {
-		width: 100%;
-		left: 0;
-		padding: 0 1rem;
+		color: transparent;
+
+
+
 	}
 }
 
+.hidder {
+	position: absolute;
+	top: 0;
+	left: 0%;
+	width: 0%;
+	height: 100%;
+	background-color: rgb(91, 253, 91);
+	z-index: 301;
+
+	transition: left 1.2s ease var(--stagger, .3s), width .25s ease var(--stagger, 0s);
+
+	&.open {
+		width: 100%;
+		left: 300%;
+	}
+}
 </style>
