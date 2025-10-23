@@ -6,6 +6,7 @@
 	<div class="work-background-front" :class="{active: activeProjectIndex !== null}"></div>
 
 	<div class="scrollerBackgrounds"></div>
+	<div class="scrollerBackgrounds2"></div>
 </template>
 
 <script setup lang="ts" >
@@ -14,7 +15,7 @@ import { ScrollBackgroundSections } from '../modules/animations/sectionBackgroun
 import { activeProjectIndex } from '../modules/projects';
 
 onMounted(() => {
-	ScrollBackgroundSections();
+  ScrollBackgroundSections();
 })
 </script>
 
@@ -26,13 +27,18 @@ onMounted(() => {
 	bottom: -100%;
 }
 
+.scrollerBackgrounds2 {
+	position: absolute;
+	bottom: 0%;
+}
+
 
 
 .intro-background {
 	position: absolute;
   top: 0;
-	left: 0;
-	width: 20%;
+	left: 20%;
+	width: 100%;
 	height: 300vh;
 	background-color: rgb(255, 221, 28);
   background: #FFDD1B;
