@@ -21,8 +21,16 @@
 }
 
 .skills-container {
+	position: absolute;
+	left: -15%;
 	display: flex;
 	perspective: 1000px;
+	scale: .85;
+
+	@include largeDesktop {
+		scale: 1;
+		left: 0;
+	}
 
 	@include mobile {
 		position: absolute;
@@ -104,6 +112,7 @@
 .skill {
 	@include rotate(0, 30, -2);
 	@include flex(start, start);
+	position: relative;
 	width: 120%;
 	height: 3rem;
 

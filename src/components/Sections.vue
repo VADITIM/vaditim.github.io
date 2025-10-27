@@ -29,7 +29,7 @@ onUnmounted(() => {
   display: flex;
   position: fixed;
 	flex-direction: column;
-  bottom: 3%;
+  bottom: 1%;
   left: 1%;
   width: 15rem;
   font-family: Wosker;
@@ -41,6 +41,10 @@ onUnmounted(() => {
 
 	&.active {
 		left: -20%
+	}
+
+	@include largeDesktop {
+		bottom: 3%;
 	}
 }
 
@@ -55,7 +59,7 @@ onUnmounted(() => {
 	align-self: start;
 	line-height: 1rem;
 	margin: .8rem .7rem;
-	font-size: 2rem;
+	font-size: 1.7rem;
   cursor: pointer;
 	text-wrap: nowrap;
 
@@ -67,10 +71,25 @@ onUnmounted(() => {
 	}
 
 	&.active {
-		font-size: 5rem;
+		font-size: 4rem;
 		color: $red;
-		line-height: 1.2rem;
-		margin: 3rem 1rem;
+		line-height: 1rem;
+		margin: 2rem 1rem;
+	}
+
+	@include largeDesktop {
+		font-size: 2rem;
+
+		&:hover {
+			font-size: 2.1rem;
+		}
+
+		&.active {
+			font-size: 5rem;
+			color: $red;
+			line-height: 1.2rem;
+			margin: 3rem 1rem;
+		}
 	}
 }
 
