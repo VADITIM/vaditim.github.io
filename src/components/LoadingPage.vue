@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { transitioning } from '../modules/projects';
 const open = ref<boolean>(false);
 
 function toggleOpen() {
