@@ -27,6 +27,7 @@ onMounted(() => {
 	bottom: -100%;
 }
 
+
 .scrollerBackgrounds2 {
 	position: absolute;
 	bottom: 0%;
@@ -37,8 +38,8 @@ onMounted(() => {
 .intro-background {
 	position: absolute;
   top: 0;
-	left: 20%;
-	width: 100%;
+	left: -10%;
+	width: 30%;
 	height: 300vh;
 	background-color: rgb(255, 221, 28);
   background: #FFDD1B;
@@ -46,7 +47,7 @@ onMounted(() => {
 	clip-path: polygon(0 0, 100% 0, 10% 100%, 0% 100%);
 	z-index: 1;
 
-	transition: $backgroundTransitionTime all ease;
+	// transition: $backgroundTransitionTime all ease-out;
 
 	@include tablet {
 		top: 0;
@@ -63,15 +64,15 @@ onMounted(() => {
 
 .info-background-front {
   position: absolute;
-  left: -20%;
-  width: 20%;
+  left: -30%;
+  width: 30%;
   height: 300vh;
   background-color: blue;
   background: linear-gradient(180deg,rgba(0, 64, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
 	clip-path: polygon(0 0, 100% 0, 0 100%, 0% 100%);
 	z-index: 2;
 
-	transition: $backgroundTransitionTime all ease;
+	// // transition: $backgroundTransitionTime all ease-out;
 
   @include tablet {
     width: 20%;
@@ -85,15 +86,15 @@ onMounted(() => {
 
 .info-background-back {
   position: absolute;
-  left: -20%;
-  width: 20%;
+  left: -30%;
+  width: 30%;
   height: 300vh;
   background-color: rgb(24, 24, 177);
   background: linear-gradient(180deg,rgba(0, 30, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
 	clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
 	z-index: 2;
 	
-	transition: $backgroundTransitionTime all ease;
+	// // transition: $backgroundTransitionTime all ease-out;
 
   @include tablet {
     width: 30%;
@@ -107,19 +108,19 @@ onMounted(() => {
 
 .work-background-back {
   position: absolute;
-  right: -30%;
-  width: 15%;
+  right: -40%;
+  width: 25%;
   height: 300vh;
   background-color: rgb(134, 12, 12);
   background: linear-gradient(180deg,rgba(51, 8, 8, 1) 21%, rgba(102, 14, 14, 1) 80%, rgba(134, 12, 12, 1) 100%);
 	clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
 	z-index: 3;
 	
-	transition: $backgroundTransitionTime all ease;
+	// // transition: $backgroundTransitionTime all ease-out;
 
   &.active {
     width: 25%;
-    transition: .4s all;
+    // transition: .4s all;
   }
 
   @include mobile {
@@ -134,19 +135,19 @@ onMounted(() => {
 
 .work-background-front {
   position: absolute;
-  right: -30%;
-  width: 30%;
+  right: -40%;
+  width: 40%;
   height: 300vh;
   background-color: $red;
   background: linear-gradient(180deg,rgba(105, 17, 34, 1) 21%, rgba(153, 9, 38, 1) 55%, rgba(220, 20, 60, 1) 100%);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
 	z-index: 3;
 	
-	transition: $backgroundTransitionTime all ease;
+	// // transition: $backgroundTransitionTime all ease-out;
 
   &.active {
 		width: 50%;
-		transition: .5s all .2s;
+		// transition: .5s all .2s;
   }
 
   @include mobile {

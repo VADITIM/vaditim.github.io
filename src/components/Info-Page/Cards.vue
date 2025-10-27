@@ -28,7 +28,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use "@/style/Info-Page/cards.scss" as *;
+@use "../../style/Info-Page/cards.scss" as *;
 
 .container { z-index: 1000;}
 </style>

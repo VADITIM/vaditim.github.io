@@ -1,8 +1,10 @@
 import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { isLeftHandSideExpression } from "typescript";
 gsap.registerPlugin(ScrollTrigger);
 
 export function InfoPageAnimationsOut() {
+
   ScrollTrigger.matchMedia({
     // Desktop
     "(min-width: 842px)": function() {
