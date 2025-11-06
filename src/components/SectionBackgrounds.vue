@@ -116,11 +116,15 @@ onMounted(() => {
 	clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
 	z-index: 3;
 	
-	// // transition: $backgroundTransitionTime all ease-out;
+	transition: $backgroundTransitionTime all ease-out;
 
+  &.gsap--no-transition {
+    transition: none !important;
+  }
+  
   &.active {
-    width: 25%;
-    // transition: .4s all;
+    width: 30%;
+    transition: .4s all;
   }
 
   @include mobile {
@@ -143,11 +147,15 @@ onMounted(() => {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
 	z-index: 3;
 	
-	// // transition: $backgroundTransitionTime all ease-out;
+	transition: $backgroundTransitionTime all ease-out;
 
   &.active {
-		width: 50%;
-		// transition: .5s all .2s;
+		width: 60%;
+		transition: .5s all .2s;
+  }
+
+  &.gsap--no-transition {
+    transition: none !important;
   }
 
   @include mobile {
@@ -163,3 +171,10 @@ onMounted(() => {
 
 
 </style>
+
+/* Utility class used by GSAP to temporarily disable CSS transitions
+   while JS-driven animations run. Added with !important so it overrides
+   broad `transition: all` rules in this file. */
+.gsap--no-transition {
+  transition: none !important;
+}

@@ -3,12 +3,12 @@
         <div class="project-copy" :class="{ active: activeProjectIndex !== null, cursor: clicked }" @click="closeActiveProject($event)">
         <DescriptionGrid />
 
-        <h3 :class="{ active: activeProjectIndex !== null }" v-html="projects[currentProjectIndex]?.name"></h3>
-        <span :class="{ active: activeProjectIndex !== null }" v-if="!projects[currentProjectIndex]?.wip">Year <br> {{
+        <span :class="{ active: activeProjectIndex !== null }" v-html="projects[currentProjectIndex]?.name" class="p-name"></span>
+        <span :class="{ active: activeProjectIndex !== null }" v-if="!projects[currentProjectIndex]?.wip" class="year">{{
             projects[currentProjectIndex]?.year }}</span>
-        <span :class="{ active: activeProjectIndex !== null }" v-if="projects[currentProjectIndex]?.wip">
+        <span :class="{ active: activeProjectIndex !== null }" v-if="projects[currentProjectIndex]?.wip" class="wip">
             <span>WORK IN PROGRESS <br> </span>
-            <span>Estimated {{ projects[currentProjectIndex]?.estimated }}</span>
+            <span class="estimated" :class="{ active: activeProjectIndex !== null }">Estimated {{ projects[currentProjectIndex]?.estimated }}</span>
         </span>
         
         <Transition name="notice-fade">
@@ -28,5 +28,5 @@ import { clicked } from '../../modules/techContainer';
 
 
 <style lang="scss" scoped>
-@use "../../style/Work-Page/projectscopy.scss"
+@use "../../style/Work-Page/projectscopy.scss";
 </style>

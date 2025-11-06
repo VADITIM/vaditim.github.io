@@ -12,11 +12,11 @@
       <div class="spacer"></div>
       <div v-for="(project, index) in projects" :key="index" class="project" @click="ActiveProject(index, $event)"
         :class="{ active: activeProjectIndex === index, cursor: clicked }">
-        <h3 v-html="project.name"></h3>
-        <span v-if="!project.wip">Year <br></br> {{ project.year }}</span>
-        <span v-if="project.wip">
+        <span v-html="project.name" class="p-name"></span>
+        <span v-if="!project.wip" class="year" :class="{ active: activeProjectIndex !== null }">{{ project.year }}</span>
+        <span v-if="project.wip" class="wip">
           <span>WORK IN PROGRESS <br></br> </span>
-          <span>Estimated {{ project.estimated }}</span>
+          <span class="estimated" :class="{ active: activeProjectIndex !== null }">Estimated {{ project.estimated }}</span>
         </span>
         <div class="project-image" :style="{ backgroundImage: `url(${project.img})` }"
           :class="{ current: currentProjectIndex === index, transitioning: transitioning }"></div>
