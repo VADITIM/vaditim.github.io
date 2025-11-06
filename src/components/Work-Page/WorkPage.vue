@@ -1,6 +1,7 @@
 <template>
   <div class="work-page-container">
     <Projects />
+    <!-- <NewProjects /> -->
     <TechContainer />
     <!-- <WorkHeader /> -->
     <div class="work-scroller"></div>
@@ -13,6 +14,7 @@ import TechContainer from './ProjectInfoContainer.vue';
 import { WorkPageAnimations } from '../../modules/animations/work-page-animations';
 import { onMounted } from 'vue';
 import WorkHeader from './WorkHeader.vue';
+import NewProjects from './NewProjects.vue';
 
 onMounted(() => {
   WorkPageAnimations();

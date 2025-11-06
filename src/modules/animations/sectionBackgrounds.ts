@@ -8,92 +8,72 @@ export function ScrollBackgroundSections() {
   watch(currentSection, (newSection) => {
     // Animate when entering section 0 (Intro)
     if (newSection === 0) {
-      gsap.to(".intro-background", {
-        left: "-10%",
-        ease: "back.out"
+      // Temporarily disable CSS transitions on the background elements so GSAP easing controls the animation
+      const targets = [
+        ".intro-background",
+        ".info-background-back",
+        ".info-background-front",
+        ".work-background-back",
+        ".work-background-front",
+      ];
+      const els = gsap.utils.toArray(targets);
+      els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'));
+
+      const tl = gsap.timeline({
+        onComplete: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
       });
 
-      gsap.to(".info-background-back", {
-        left: "-30%",
-        ease: "back.out"
-      });
-      
-      gsap.to(".info-background-front", {
-        left: "-30%",
-        ease: "back.out",
-        delay: 0.1
-      });
-
-      gsap.to(".work-background-back", {
-        right: "-40%",
-        ease: "back.in"
-      });
-      
-      gsap.to(".work-background-front", {
-        right: "-40%",
-        ease: "back.in",
-        delay: 0.1
-      });
+      tl.to(".intro-background", { left: "-10%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".info-background-back", { left: "-30%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".info-background-front", { left: "-30%", ease: "back.out", duration: 0.45 }, 0.1);
+      tl.to(".work-background-back", { right: "-40%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".work-background-front", { right: "-40%", ease: "back.in", duration: 0.45 }, 0.1);
     }
     
     // Animate when entering section 1 (Info)
     if (newSection === 1) {
-      gsap.to(".intro-background", {
-        left: "-30%",
-        ease: "back.in"
+      const targets = [
+        ".intro-background",
+        ".info-background-back",
+        ".info-background-front",
+        ".work-background-back",
+        ".work-background-front",
+      ];
+      const els = gsap.utils.toArray(targets);
+      els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'));
+
+      const tl = gsap.timeline({
+        onComplete: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
       });
-      
-      gsap.to(".info-background-back", {
-        left: "-10%",
-        ease: "back.out"
-      });
-      
-      gsap.to(".info-background-front", {
-        left: "-10%",
-        ease: "back.out",
-        delay: 0.1
-      });
-            
-      gsap.to(".work-background-back", {
-        right: "-40%",
-        ease: "back.in"
-      });
-      
-      gsap.to(".work-background-front", {
-        right: "-40%",
-        ease: "back.in",
-        delay: 0.1
-      });
+
+      tl.to(".intro-background", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".info-background-back", { left: "-10%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".info-background-front", { left: "-10%", ease: "back.out", duration: 0.45 }, 0.1);
+      tl.to(".work-background-back", { right: "-40%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".work-background-front", { right: "-40%", ease: "back.in", duration: 0.45 }, 0.1);
     }
     
     // Animate when entering section 2 (Work)
     if (newSection === 2) {
-      gsap.to(".intro-background", {
-        left: "-30%",
-        ease: "back.in"
-      });
-      
+      const targets = [
+        ".intro-background",
+        ".info-background-back",
+        ".info-background-front",
+        ".work-background-back",
+        ".work-background-front",
+      ];
+      const els = gsap.utils.toArray(targets);
+      els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'));
 
-      gsap.to(".info-background-back", {
-        left: "-30%",
-        ease: "back.in"
+      const tl = gsap.timeline({
+        onComplete: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
       });
-      
-      gsap.to(".info-background-front", {
-        left: "-30%",
-        ease: "back.in"
-      });
-      
-      gsap.to(".work-background-back", {
-        right: "-10%",
-        ease: "back.out"
-      });
-      
-      gsap.to(".work-background-front", {
-        right: "-10%",
-        ease: "back.out",
-        delay: 0.1
-      });
+
+      tl.to(".intro-background", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".info-background-back", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".info-background-front", { left: "-30%", ease: "back.in", duration: 0.45 }, 0.05);
+      tl.to(".work-background-back", { right: "-10%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".work-background-front", { right: "-10%", ease: "back.out", duration: 0.45 }, 0.1);
     }
   });
 }
