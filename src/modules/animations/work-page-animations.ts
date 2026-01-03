@@ -54,6 +54,7 @@ export function WorkPageAnimations() {
         duration: .5,
       });
 
+      // @ts-ignore - animationState is used for tracking but not read
       let animationState = "idle"; 
 
       ScrollTrigger.create({

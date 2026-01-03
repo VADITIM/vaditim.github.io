@@ -10,7 +10,6 @@
 
 <script setup lang="ts">
 import Cards from './Cards.vue';
-import InfoHeader from './InfoHeader.vue';
 
 import { onMounted } from 'vue';
 import { InfoPageAnimations } from '../../modules/animations/info-page-animations';

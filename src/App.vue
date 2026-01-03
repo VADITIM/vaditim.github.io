@@ -22,7 +22,7 @@ import SectionBackgrounds from './components/SectionBackgrounds.vue';
 import Sections from './components/Sections.vue';
 import LoadingPage from './components/LoadingPage.vue';
 
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 
 const showLoadingPage = ref(true);
 
