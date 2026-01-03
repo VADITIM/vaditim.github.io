@@ -1,6 +1,5 @@
 import { ref, onMounted } from 'vue';
 import { createFloatingAnimation } from './animations/floating-elements';
-import { InitializeTilt } from './vanillaTilt';
 
 export const firstNameRef = ref<HTMLElement>();
 export const lastNameRef = ref<HTMLElement>();

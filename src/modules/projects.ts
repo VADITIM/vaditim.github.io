@@ -31,6 +31,10 @@ export const clickStartY = ref(0)
 export const scrollLeft = ref(0)
 export const transitioning = ref(false)
 
+// 3D Carousel rotation state
+export const carouselRotation = ref(0)
+export const anglePerItem = () => 360 / projects.length
+
 export const projects: Project[] = [
   {
     name: "Wrath of the Fallen Queen",
@@ -66,22 +70,22 @@ export const projects: Project[] = [
     ai: true,
   },
 
-	{
-    name: "Velvet Deck Web",
-    description: "Description",
-    year: 2024,
-    img: "src/assets/images/projects/velvetdeck.png",
-    engine: "src/assets/images/icons/webengine.png",
-    language: "src/assets/images/icons/javascript.png",
-    platform: "src/assets/images/icons/webapp.png",
-    link: "https://github.com/VADITIM/Card-Game",
-    type: "play",
-    image1: "src/assets/images/projects/velvetdeck.png",
-    image2: "src/assets/images/projects/velvetdeck.png",
-    image3: "src/assets/images/projects/velvetdeck.png",
-    image4: "src/assets/images/projects/velvetdeck.png",
-    ai: true,
-  },
+	// {
+  //   name: "Velvet Deck Web",
+  //   description: "Description",
+  //   year: 2024,
+  //   img: "src/assets/images/projects/velvetdeck.png",
+  //   engine: "src/assets/images/icons/webengine.png",
+  //   language: "src/assets/images/icons/javascript.png",
+  //   platform: "src/assets/images/icons/webapp.png",
+  //   link: "https://github.com/VADITIM/Card-Game",
+  //   type: "play",
+  //   image1: "src/assets/images/projects/velvetdeck.png",
+  //   image2: "src/assets/images/projects/velvetdeck.png",
+  //   image3: "src/assets/images/projects/velvetdeck.png",
+  //   image4: "src/assets/images/projects/velvetdeck.png",
+  //   ai: true,
+  // },
 
   {
     name: "Boundless Board",
@@ -135,7 +139,7 @@ export const projects: Project[] = [
   // },
 
 	{
-    name: "Simulation City Reborn<br>Green Horizons",
+    name: "Simulation City Reborn",
     description: "Description",
     year: 2025,
     img: "src/assets/images/projects/simulationcity.jpg",
@@ -280,7 +284,7 @@ export function nextProject() {
   }, 500)
 
 	currentProjectIndex.value++
-	scrollToProject(currentProjectIndex.value)
+	navigateToCarouselProject(currentProjectIndex.value)
 }
 
 export function previousProject() {
@@ -292,9 +296,32 @@ export function previousProject() {
   }, 500)
 
 	currentProjectIndex.value--
-	scrollToProject(currentProjectIndex.value)
+	navigateToCarouselProject(currentProjectIndex.value)
 }
 
+// Navigate carousel to specific project index (takes shortest rotation path)
+export function navigateToCarouselProject(index: number) {
+  const targetRotation = -index * anglePerItem()
+  const currentRotation = carouselRotation.value
+  
+  // Normalize both rotations to 0-360 range for comparison
+  const normalizedCurrent = ((currentRotation % 360) + 360) % 360
+  const normalizedTarget = ((targetRotation % 360) + 360) % 360
+  
+  // Calculate the difference
+  let diff = normalizedTarget - normalizedCurrent
+  
+  // Choose the shortest path (if diff > 180, go the other way)
+  if (diff > 180) {
+    diff -= 360
+  } else if (diff < -180) {
+    diff += 360
+  }
+  
+  // Apply the shortest rotation from current position
+  carouselRotation.value = currentRotation + diff
+  currentProjectIndex.value = index
+}
 
 export function updateCurrentProject() {
   if (!projectsContainer.value) return
@@ -316,11 +343,5 @@ export function updateCurrentProject() {
 }
 
 export function scrollToProject(index: number) {
-  if (!projectsContainer.value) return
-  
-  const projectWidth = projectsContainer.value.clientWidth * 0.22
-  const gap = projectsContainer.value.clientWidth * .15 
-  const projectSpacing = projectWidth + gap
-  
-  projectsContainer.value.scrollLeft = index * projectSpacing
+  navigateToCarouselProject(index)
 }

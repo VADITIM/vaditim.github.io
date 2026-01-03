@@ -13,8 +13,6 @@ import Projects from './Projects.vue';
 import TechContainer from './ProjectInfoContainer.vue';
 import { WorkPageAnimations } from '../../modules/animations/work-page-animations';
 import { onMounted } from 'vue';
-import WorkHeader from './WorkHeader.vue';
-import NewProjects from './NewProjects.vue';
 
 onMounted(() => {
   WorkPageAnimations();

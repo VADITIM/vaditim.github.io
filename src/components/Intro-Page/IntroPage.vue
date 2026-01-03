@@ -11,7 +11,6 @@
 
   import { onMounted } from 'vue';
   import { IntroPageAnimations } from '../../modules/animations/intro-page-animations';
-import IntroHeader from './IntroHeader.vue';
 
   onMounted(() => {
     IntroPageAnimations();
