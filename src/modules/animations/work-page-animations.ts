@@ -16,43 +16,53 @@ export function WorkPageAnimations() {
 
   con = document.querySelector('.projects-container') as HTMLElement;
   spa = document.querySelector('.spacer2') as HTMLElement;
+  const hasProjectsHeader = !!document.querySelector('.projects-header-container');
+  const hasProjects = document.querySelectorAll('.project').length > 0;
   
   ScrollTrigger.matchMedia({
     // Desktop
     "(min-width: 842px)": function() {
 
-      gsap.fromTo(".projects-header-container",
-      { },
-      { 
-        left: "1%",
-        ease: "elastic.inOut(.3, 0.3)",
+      if (hasProjectsHeader) {
+        gsap.fromTo(".projects-header-container",
+        { },
+        { 
+          left: "1%",
+          ease: "elastic.inOut(.3, 0.3)",
 
-        scrollTrigger: { trigger: ".work-scroller", scrub: true, toggleActions: "play none none reverse",
-          start: "top 60%", 
-          end: "bottom 0%",
-          // markers: true,
-      }})  
+          scrollTrigger: { trigger: ".work-scroller", scrub: true, toggleActions: "play none none reverse",
+            start: "top 60%", 
+            end: "bottom 0%",
+            // markers: true,
+        }})
+      }
 
 
       const staggeredTimeline = gsap.timeline({ paused: true });
-      staggeredTimeline.to(".project", {
-        top: 0,
-        ease: "elastic.out(1, 0.8)",
-        stagger: { each: 0.4, from: "end" },
-        duration: 2,
-      });
+      if (hasProjects) {
+        staggeredTimeline.to(".project", {
+          top: 0,
+          ease: "elastic.out(1, 0.8)",
+          stagger: { each: 0.4, from: "end" },
+          duration: 2,
+        });
+      }
 
       const instantTimelineDown = gsap.timeline({ paused: true });
-      instantTimelineDown.to(".project", {
-        top: "100%",
-        duration: .5,
-      });
+      if (hasProjects) {
+        instantTimelineDown.to(".project", {
+          top: "100%",
+          duration: .5,
+        });
+      }
 
       const instantTimelineUp = gsap.timeline({ paused: true });
-      instantTimelineUp.to(".project", {
-        top: "0%",
-        duration: .5,
-      });
+      if (hasProjects) {
+        instantTimelineUp.to(".project", {
+          top: "0%",
+          duration: .5,
+        });
+      }
 
       // @ts-ignore - animationState is used for tracking but not read
       let animationState = "idle"; 
