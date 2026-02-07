@@ -3,6 +3,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { currentSection } from '../sections'
 import { watch } from 'vue'
 
+gsap.defaults({ immediateRender: false })
+
 export function ScrollBackgroundSections() {
   // Watch for section changes and trigger animations
   watch(currentSection, (newSection) => {
