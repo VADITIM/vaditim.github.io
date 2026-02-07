@@ -10,6 +10,7 @@ const scrolled = ref<boolean>(false);
 let con: HTMLElement | null = null;
 let spa: HTMLElement | null = null;
 gsap.registerPlugin(ScrollTrigger);
+gsap.defaults({ immediateRender: false });
 
 
 export function WorkPageAnimations() {
