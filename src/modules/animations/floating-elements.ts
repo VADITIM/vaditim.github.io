@@ -1,5 +1,7 @@
 import { gsap } from 'gsap'
 
+gsap.defaults({ immediateRender: false })
+
 export function createFloatingAnimation(selector: string, options: {
   amplitude?: number,
   duration?: number,

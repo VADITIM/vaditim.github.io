@@ -1,6 +1,7 @@
 import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
+gsap.defaults({ immediateRender: false });
 
 export function InfoPageAnimations() {
   ScrollTrigger.matchMedia({
