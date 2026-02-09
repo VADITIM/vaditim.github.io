@@ -1,17 +1,10 @@
 import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { activeProjectIndex, currentProjectIndex, projectsContainer, } from "../3 Work Page/work-projects";
-import { ref, watch } from "vue";
+import { currentProjectIndex, } from "../3 Work Page/work-projects";
+import { watch } from "vue";
 
-let _scrollRafId: number | null = null;
-let _snapTimeoutId: number | null = null;
-let _startTimeoutId: number | null = null;
-const scrolled = ref<boolean>(false);
-let con: HTMLElement | null = null;
-let spa: HTMLElement | null = null;
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
-
 
 export function WorkPageAnimations() {
 	if (document.querySelector(".projects-container")) {
@@ -40,7 +33,6 @@ export function WorkPageAnimations() {
 			},
 		})
 
-		// When the current project changes, fade out old p-name and fade in new one
 		watch(currentProjectIndex, (newIndex, oldIndex) => {
 			const items = document.querySelectorAll(".carousel-item");
 			if (items[oldIndex]) {
