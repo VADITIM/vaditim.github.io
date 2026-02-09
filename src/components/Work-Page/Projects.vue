@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="projects-container">
 
     <PaginationDots />
 
@@ -10,7 +10,7 @@
     <div class="carousel-container">
       <div ref="carouselRef" class="carousel" :class="{ active: activeProjectIndex !== null }" :style="carouselStyle">
         <div v-for="(project, index) in projects" :key="index" class="carousel-item" :style="getItemStyle(index)"
-          @click="handleProjectClick(index, $event)"
+          @click="handleProjectClick(index)"
           :class="{ active: activeProjectIndex === index, current: currentProjectIndex === index }">
           <span v-html="project.name" class="p-name"></span>
           <span v-if="!project.wip" class="year" :class="{ active: activeProjectIndex !== null }">{{ project.year
@@ -20,13 +20,14 @@
             <span class="estimated" :class="{ active: activeProjectIndex !== null }">Estimated {{ project.estimated
               }}</span>
           </span>
-          <div class="project-image" :style="{ backgroundImage: `url(${project.img})` }"></div>
+          <div class="project-image" :style="{ backgroundImage: `url(${project.img})` }"
+          :class="{ active: activeProjectIndex === index, current: currentProjectIndex === index }"></div>
         </div>
       </div>
     </div>
 
     <ProjectsCopy />
-    <SwipeButtons />
+    <!-- <SwipeButtons /> -->
   </div>
 </template>
 
@@ -48,77 +49,85 @@ import ProjectsCopy from './ProjectsCopy.vue';
 import SwipeButtons from './SwipeButtons.vue';
 
 const carouselRef = ref<HTMLElement>();
+const isPointerDown = ref(false);
 const isDragging = ref(false);
+const wasDragged = ref(false);
 const startX = ref(0);
 const startRotation = ref(0);
+const dragThreshold = 6;
 
-// Carousel rotation style
 const carouselStyle = computed(() => ({
   transform: `rotateY(${carouselRotation.value}deg)`
 }));
 
-// Calculate individual item position in 3D space
 function getItemStyle(index: number) {
   const angle = index * anglePerItem();
-  const radius = 450; // Distance from center
+  const radius = 450;
 
   return {
     transform: `rotateY(${angle}deg) translateZ(${radius}px)`
   };
 }
 
-// Handle project click
-function handleProjectClick(index: number, event: MouseEvent) {
-  // Only activate if not dragging
-  if (Math.abs(event.clientX - startX.value) > 10) return;
+function handleProjectClick(index: number) {
+  if (wasDragged.value) {
+    wasDragged.value = false;
+    return;
+  }
 
-  // Rotate to bring clicked item to front
-  navigateToCarouselProject(index);
-  ActiveProject(index, event);
+  // Determine the actual front-facing index from rotation
+  const angle = anglePerItem();
+  const nearestIndex = Math.round(-carouselRotation.value / angle) % projects.length;
+  const frontIndex = nearestIndex < 0 ? projects.length + nearestIndex : nearestIndex;
+
+  // Only the front-facing item is clickable
+  if (index !== frontIndex) {
+    navigateToCarouselProject(index);
+    return;
+  }
+
+  ActiveProject(index);
 }
 
-// Mouse drag handling
 function handleMouseDown(event: MouseEvent) {
-  isDragging.value = true;
+  isPointerDown.value = true;
+  isDragging.value = false;
   startX.value = event.clientX;
   startRotation.value = carouselRotation.value;
+  window.addEventListener('mousemove', handleMouseMove as any);
+  window.addEventListener('mouseup', handleMouseUp as any);
 }
 
 function handleMouseMove(event: MouseEvent) {
-  if (!isDragging.value) return;
+  if (!isPointerDown.value) return;
   const deltaX = event.clientX - startX.value;
-  carouselRotation.value = startRotation.value + deltaX * 0.3;
+  if (!isDragging.value && Math.abs(deltaX) > dragThreshold) {
+    isDragging.value = true;
+  }
+  if (isDragging.value) {
+    carouselRotation.value = startRotation.value + deltaX * 0.3;
+  }
 }
 
 function handleMouseUp() {
-  if (!isDragging.value) return;
+  if (!isPointerDown.value) return;
+  if (isDragging.value) {
+    const angle = anglePerItem();
+    const nearestIndex = Math.round(-carouselRotation.value / angle) % projects.length;
+    const normalizedIndex = nearestIndex < 0 ? projects.length + nearestIndex : nearestIndex;
+    navigateToCarouselProject(normalizedIndex);
+    wasDragged.value = true;
+  }
+  isPointerDown.value = false;
   isDragging.value = false;
-  // Snap to nearest project
-  const angle = anglePerItem();
-  const nearestIndex = Math.round(-carouselRotation.value / angle) % projects.length;
-  const normalizedIndex = nearestIndex < 0 ? projects.length + nearestIndex : nearestIndex;
-  navigateToCarouselProject(normalizedIndex);
-}
-
-// Mouse wheel handling
-function handleWheel(event: WheelEvent) {
-  event.preventDefault();
-  carouselRotation.value -= event.deltaY * 0.1;
-  // Update current index
-  const angle = anglePerItem();
-  const nearestIndex = Math.round(-carouselRotation.value / angle) % projects.length;
-  const normalizedIndex = nearestIndex < 0 ? projects.length + nearestIndex : nearestIndex;
-  currentProjectIndex.value = normalizedIndex;
+  window.removeEventListener('mousemove', handleMouseMove as any);
+  window.removeEventListener('mouseup', handleMouseUp as any);
 }
 
 onMounted(() => {
   const container = document.querySelector('.carousel-container');
   if (container) {
     container.addEventListener('mousedown', handleMouseDown as any);
-    container.addEventListener('mousemove', handleMouseMove as any);
-    container.addEventListener('mouseup', handleMouseUp);
-    container.addEventListener('mouseleave', handleMouseUp);
-    container.addEventListener('wheel', handleWheel as any, { passive: false });
   }
 });
 
@@ -126,11 +135,9 @@ onUnmounted(() => {
   const container = document.querySelector('.carousel-container');
   if (container) {
     container.removeEventListener('mousedown', handleMouseDown as any);
-    container.removeEventListener('mousemove', handleMouseMove as any);
-    container.removeEventListener('mouseup', handleMouseUp);
-    container.removeEventListener('mouseleave', handleMouseUp);
-    container.removeEventListener('wheel', handleWheel as any);
   }
+  window.removeEventListener('mousemove', handleMouseMove as any);
+  window.removeEventListener('mouseup', handleMouseUp as any);
 });
 
 </script>

@@ -1,12 +1,12 @@
 <template>
-  <div class="pagination-dots">
+  <div class="pagination-dots" :class="{ 'project-open': activeProjectIndex !== null }">
     <div v-for="(_project, index) in projects" :key="index" class="dot"
-      :class="{ active: index === currentProjectIndex }" @click="navigateToCarouselProject(index)"></div>
+      :class="{ active: index === currentProjectIndex, 'project-open': activeProjectIndex !== null }" @click="navigateToCarouselProject(index)"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { projects, currentProjectIndex, navigateToCarouselProject } from '../../modules/projects';
+import { projects, currentProjectIndex, navigateToCarouselProject, activeProjectIndex } from '../../modules/projects';
 </script>
 
 <style lang="scss" scoped>
@@ -14,10 +14,23 @@ import { projects, currentProjectIndex, navigateToCarouselProject } from '../../
 
 .pagination-dots {
   @include absoluteCenter(50%, 20.5%);
+  width: 2rem;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-radius: 10rem;
   gap: 1rem;
   z-index: 100;
+  filter: drop-shadow(0px 0px 15px white);
+
+  transition: all 0.3s ease-in-out;
+
+  &.project-open {
+    left: 5%;
+  }
 }
 
 .dot {
@@ -27,6 +40,10 @@ import { projects, currentProjectIndex, navigateToCarouselProject } from '../../
   background-color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   transition: all 0.3s ease;
+    
+  &.project-open {
+    left: 5%;
+  }
 
   &:hover {
     background-color: rgba(214, 22, 22, 0.8);
@@ -37,6 +54,8 @@ import { projects, currentProjectIndex, navigateToCarouselProject } from '../../
     background-color: rgb(255, 0, 0);
     transform: scale(1.3);
     box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    
   }
+
 }
 </style>
