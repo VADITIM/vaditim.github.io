@@ -18,7 +18,7 @@ export function WorkPageAnimations() {
 			scrollTrigger: { trigger: ".work-scroller", scrub: false, toggleActions: "play none none reverse",
 				start: "top 30%",
 				end: "bottom 30%",
-				markers: true,
+				// markers: true,
 				onEnter: () => {
 					const items = document.querySelectorAll(".carousel-item");
 					const current = items[currentProjectIndex.value];
