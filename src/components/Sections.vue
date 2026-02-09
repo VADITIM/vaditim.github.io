@@ -1,8 +1,8 @@
 <template>
   <div class="content-list-container" :class="{active: activeProjectIndex !== null}">
 		<div class="line"></div>
-    <p class="intro-header-list" :class="{active: currentSection === 0}" @click="scrollToSection(0)">ROLES</p>
-    <p class="info-header-list" :class="{active: currentSection === 1}" @click="scrollToSection(1)">ABOUT ME</p>
+    <p class="intro-header-list" :class="{active: currentSection === 0}" @click="scrollToSection(0)">PERKS</p>
+    <p class="info-header-list" :class="{active: currentSection === 1}" @click="scrollToSection(1)">DEV PROFILE</p>
     <p class="work-header-list" :class="{active: currentSection === 2}" @click="scrollToSection(2)">PROJECTS</p>
   </div>
 </template>
