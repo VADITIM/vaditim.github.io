@@ -3,10 +3,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { currentProjectIndex } from "../3 Work Page/work-projects";
 import { watch } from "vue";
 
-
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
-
 
 export function WorkPageAnimations() {
 	if (document.querySelector(".projects-container")) {

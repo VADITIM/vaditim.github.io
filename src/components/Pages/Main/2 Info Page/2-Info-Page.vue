@@ -4,6 +4,7 @@
     <Contact />
     <div class="info-scroller-top"></div>
     <div class="info-scroller-bottom"></div>
+    <InfoBackground />
   </div>
 </template>
 
@@ -14,6 +15,7 @@
   import { InfoPageAnimations } from '../../../../modules/animations/info-page-animations';
   import { InfoPageAnimationsOut } from '../../../../modules/animations/info-page-animations-out';
   import Contact from './Info-Contact.vue';
+  import InfoBackground from './Info-Background.vue';
 
   onMounted(() => {
     InfoPageAnimations();
@@ -39,4 +41,5 @@
     position: absolute;
     top: 100vh;
   }
+
 </style>
