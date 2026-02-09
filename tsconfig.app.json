@@ -12,7 +12,7 @@
     "noUncheckedSideEffectImports": true,
     "outDir": "./dist-ts",
     "declaration": false,
-    "noEmit": false
+    "noEmit": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

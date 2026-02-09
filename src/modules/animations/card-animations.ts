@@ -670,7 +670,7 @@ export function BackCardsAnimations() {
         trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
-        // markers: true, // Removed markers for tablet
+        // markers: true, 
         onEnter: handleEnter,
         onEnterBack: handleEnter,
         onLeave: handleLeave,
@@ -678,7 +678,6 @@ export function BackCardsAnimations() {
       });
     },
 
-    // Tablet Landscape Back Cards
     "(min-width: 842px) and (max-width: 1201px)": function () {
 
       const startPos = {
@@ -695,14 +694,12 @@ export function BackCardsAnimations() {
         card4: { right: "17.7%", bottom: "14.7%" },
       };
 
-      // state
       let currentEnterTl: gsap.core.Timeline | null = null;
       let pendingEnterDelay = false; 
       let isAnimating = false;       
       let atStart = true;
       let atFinal = false;
 
-      // stable initial set
       gsap.set(".back-card1", startPos.card1);
       gsap.set(".back-card2", startPos.card2);
       gsap.set(".back-card3", startPos.card3);
@@ -835,7 +832,7 @@ export function BackCardsAnimations() {
         trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
-        // markers: true, // Removed markers for tablet landscape
+        // markers: true,
         onEnter: handleEnter,
         onEnterBack: handleEnter,
         onLeave: handleLeave,
@@ -860,14 +857,12 @@ export function BackCardsAnimations() {
         card4: { right: "22.5%", bottom: "25.5%" },
       };
 
-      // state
       let currentEnterTl: gsap.core.Timeline | null = null;
       let pendingEnterDelay = false; 
       let isAnimating = false;       
       let atStart = true;
       let atFinal = false;
 
-      // stable initial set
       gsap.set(".back-card1", startPos.card1);
       gsap.set(".back-card2", startPos.card2);
       gsap.set(".back-card3", startPos.card3);
@@ -1000,7 +995,7 @@ export function BackCardsAnimations() {
         trigger: ".info-scroller-top",
         start: "top 20%",
         end: "top -200%",
-        // markers: true, // Removed markers for mobile
+        // markers: true,
         onEnter: handleEnter,
         onEnterBack: handleEnter,
         onLeave: handleLeave,
