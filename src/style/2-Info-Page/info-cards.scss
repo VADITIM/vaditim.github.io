@@ -1,0 +1,383 @@
+@use "../variables.scss" as *;
+
+
+.container {
+  @extend .disable-selection;
+  @extend .center;
+  position: relative;
+  min-width: 100vw;
+  min-height: 100vh;
+  overflow-x: visible;
+  pointer-events: none;
+
+  @include mobile {
+    overflow: hidden;
+  }
+
+  @include allTablets {
+    overflow: visible;
+  }
+}
+
+.cards-container {
+  @extend .center;
+  position: absolute;
+  width: 90vh;
+  height: 90vh;  
+  overflow: visible;
+  pointer-events: none;
+  
+  @include mobile {
+    touch-action: pan-y;
+    overscroll-behavior: auto;
+  }
+
+  @include allTablets {
+    touch-action: pan-y;
+    overscroll-behavior: auto;
+  }
+}
+
+// POSITIONING GROUPS
+.card1, .card3, .back-card1, .back-card3 {
+  left: -100%;
+
+  @include tabletLandscape {
+    left: 17.7%;
+  }
+
+  @include tablet {
+    left: 25%;
+  }
+
+  @include mobile {
+    left: 37.5%;
+  }
+
+}
+
+.card2, .card4, .back-card2, .back-card4 {
+  right: 18%;
+  right: -100%;
+  
+  @include tabletLandscape {
+    right: 17.7%;
+  }
+  
+  @include tablet {
+    right: 25%;
+  }
+
+  @include mobile {
+    right: 22.5%;
+  }
+}
+
+.card1, .card2 {
+  bottom: 39%;
+  bottom: 100%;
+
+  @include tabletLandscape {
+    bottom: 34.5%;
+  }
+
+  @include tablet {
+    bottom: 36%;
+  }
+
+  @include mobile {
+    bottom: 37.5%;
+  }
+
+}
+
+.card3, .card4 {
+  bottom: 5%;
+  bottom: -100%;
+
+  @include tabletLandscape {
+    bottom: 0;
+  }
+  
+  @include tablet {
+    bottom: 9%;
+  }
+
+  @include mobile {
+    bottom: 16.5%;
+  }
+}
+
+.back-card1, .back-card2 {
+  bottom: 53.5%;
+  bottom: 100%;
+
+  @include tabletLandscape {
+    bottom: 49.2%;
+  }  
+
+  @include tablet {
+    bottom: 47.5%;
+  }
+
+  @include mobile {
+    bottom: 46.5%;
+  }
+}
+
+.back-card3, .back-card4 {
+  bottom: 19.5%;
+  bottom: 100%;
+  
+  @include tabletLandscape {
+    bottom: 14.7%;
+  }
+
+  @include tablet {
+    bottom: 20.5%;
+  }
+
+  @include mobile {
+    bottom: 25.5%;
+  }
+
+}
+
+
+@mixin card-base($border-color, $rotation-x: -30, $rotation-y: -50, $rotation-z: 0) {
+  @extend .center;
+  @include rotate($rotation-x, $rotation-y, $rotation-z);
+  position: absolute;
+  width: 32vh;
+  height: 32vh;
+  color: white;
+  font-family: Mono;
+  font-size: 2rem;
+  opacity: 1;
+  background-color: #131313be;
+  border: 10px double $border-color;
+  z-index: 5;
+  cursor: pointer;
+  pointer-events: auto;
+  
+  transition: 
+    1s ease all, 
+    z-index 2s ease;
+
+  @include tablet {
+    width: 25vh;
+    height: 25vh;
+  }
+
+  @include mobile {
+    width: 20vh;
+    height: 20vh;
+    border: 5px double $border-color;
+
+    font-size: 1rem;
+  }
+}
+
+@mixin back-card-base($border-color, $bg-color, $rotation-x: -30, $rotation-y: 50, $rotation-z: 0) {
+  @extend .center;
+  @include rotate($rotation-x, $rotation-y, $rotation-z);
+  position: absolute;
+  width: 32vh;
+  height: 32vh;
+  color: white;
+  font-family: Mono;
+  font-size: 2rem;
+  opacity: 1;
+  background-color: $bg-color;
+  border: 10px double $border-color;
+  pointer-events: auto;
+  
+  @include tablet {
+    width: 25vh;
+    height: 25vh;
+  }
+
+  @include mobile {
+    width: 20vh;
+    height: 20vh;
+    border: 5px double $border-color;
+  }
+}
+
+@mixin card-open-state($rotation-x: -360, $side: left) {
+  @include rotate($rotation-x, 0, 0);
+  background-color: #131313e1;
+  color: transparent;
+  opacity: 1;
+  scale: 2;
+  visibility: visible;
+  z-index: 10;
+  bottom: 17.5%;
+
+  transition: 
+    1s ease all,
+    opacity 0.5s ease 1s,
+    visibility 0s linear 1s;
+  
+  @if $side == left {
+    left: 31% !important;
+    bottom: 23% !important;
+  } @else {
+    right: 31% !important;
+    bottom: 23% !important;
+  }
+
+  @include tabletLandscape {
+    scale: 1.8;
+
+    @if $side == left {
+      left: 31% !important;
+      bottom: 17% !important;
+    } @else {
+      right: 31% !important;
+      bottom: 17% !important;
+    }
+  }
+
+  @include tablet {
+    scale: 1.8;
+
+    @if $side == left {
+      left: 35% !important;
+      bottom: 25% !important;
+    } @else {
+      right: 35% !important;
+      bottom: 25% !important;
+    }
+  }
+
+  @include mobile {
+    scale: 1.6;
+
+    @if $side == left {
+      left: 38% !important;
+      bottom: 30% !important;
+    } @else {
+      right: 37% !important;
+      bottom: 30% !important;
+    }
+  }
+}
+
+.card-content {
+  @extend .center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  color: white;
+  opacity: 0;
+  font-size: 1rem;
+  visibility: hidden;
+  text-align: center;
+  
+  transition: 
+    opacity 0.5s ease 0s,
+    visibility 0s linear 0s;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+
+    transition:
+      opacity 0.5s ease .6s,
+      visibility 0s linear .6s;
+  }
+
+  span {
+    position: absolute;
+    margin: 1rem auto;
+    top: 0;
+  }
+
+  @include mobile {
+    font-size: .6rem;
+  }
+}
+
+.card1 {
+  @include card-base(#3664fc, -30, -50, 0);
+  animation: flashing-card1-out 0.5s forwards;
+
+  &:hover:not(.card1-open),
+  &:hover:not(.card1-open) ~ .back-card1 {
+    @include flashingCard(#3664fc, 'flashing-card1');
+  }
+}
+
+.back-card-done {
+  transition: 
+    .8s ease all 0s;
+}
+
+
+.back-card1 {
+  @include back-card-base(#3664fc, #1E40AF80, -30, 50, 0);
+  animation: flashing-card1-out 0.5s forwards;
+}
+
+.card1-open {
+  @include card-open-state(-360, left);
+}
+
+.card2 {
+  @include card-base(#0bc993, -30, 50, 0);
+  animation: flashing-card2-out 0.5s forwards;
+
+  &:hover:not(.card2-open),
+  &:hover:not(.card2-open) ~ .back-card2 {
+    @include flashingCard(#0bc993, 'flashing-card2');
+  }
+}
+
+.back-card2 {
+  @include back-card-base(#0bc993, #04785780, -30, -50, 0);
+  animation: flashing-card2-out 0.5s forwards;
+}
+
+.card2-open {
+  @include card-open-state(-360, right);
+}
+
+.card3 {
+  @include card-base(#F59E0B, -30, -50, 0);
+  animation: flashing-card3-out 0.5s forwards;
+
+  &:hover:not(.card3-open),
+  &:hover:not(.card3-open) ~ .back-card3 {
+    @include flashingCard(#F59E0B, 'flashing-card3');
+  }
+}
+
+
+.back-card3 {
+  @include back-card-base(#F59E0B, #F59E0B80, -30, 50, 0);
+  animation: flashing-card3-out 0.5s forwards;
+}
+
+.card3-open {
+  @include card-open-state(360, left);
+}
+
+.card4 {
+  @include card-base(#9532e6, -30, 50, 0);
+  animation: flashing-card4-out 0.5s forwards;
+
+  &:hover:not(.card4-open),
+  &:hover:not(.card4-open) ~ .back-card4 {
+    @include flashingCard(#9532e6, 'flashing-card4');
+  }
+}
+
+.back-card4 {
+  @include back-card-base(#9532e6, #6B21A880, -30, -50, 0);
+  animation: flashing-card4-out 0.5s forwards;
+}
+
+.card4-open {
+  @include card-open-state(360, right);
+}

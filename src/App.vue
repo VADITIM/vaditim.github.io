@@ -15,12 +15,12 @@ tablet 820 x 1180 -->
 </template>
 
 <script setup lang="ts">
-import IntroPage from './components/Intro-Page/IntroPage.vue'
-import InfoPage from './components/Info-Page/InfoPage.vue'
-import WorkPage from './components/Work-Page/WorkPage.vue'
-import SectionBackgrounds from './components/SectionBackgrounds.vue';
-import Sections from './components/Sections.vue';
-import LoadingPage from './components/LoadingPage.vue';
+import IntroPage from './components/Pages/Main/1 Intro Page/1-Intro-Page.vue';
+import InfoPage from './components/Pages/Main/2 Info Page/2-Info-Page.vue';
+import WorkPage from './components/Pages/Main/3 Work Page/3-Work-Page.vue';
+import SectionBackgrounds from './components/Sections/Section-Color-Backgrounds.vue';
+import Sections from './components/Sections/Sections-Display.vue';
+import LoadingPage from './components/Pages/Main/LoadingPage.vue';
 
 import { ref } from 'vue';
 

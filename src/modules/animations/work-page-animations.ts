@@ -1,6 +1,6 @@
 import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { activeProjectIndex, currentProjectIndex, projectsContainer, } from "../projects";
+import { activeProjectIndex, currentProjectIndex, projectsContainer, } from "../3 Work Page/work-projects";
 import { ref, watch } from "vue";
 
 let _scrollRafId: number | null = null;
