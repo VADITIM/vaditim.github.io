@@ -1,16 +1,13 @@
 @use "../variables.scss" as *;
 
 
-.container {
+.projects-container {
   width: 100vw;
   height: 100vh;
   perspective: 1000px;
   user-select: none;
-  // Remove overflow: hidden to not clip other page content
-  // overflow is handled by carousel-container instead
 }
 
-// 3D Carousel Container
 .carousel-container {
   @include absoluteCenter(50%, 50%);
   width: 100%;
@@ -20,7 +17,7 @@
   align-items: center;
   perspective: 1200px;
   z-index: 10;
-  overflow: hidden; // Contain the 3D carousel overflow here
+  overflow: hidden;
   background-color: #181818;
   
   transition: z-index 0s ease .75s;
@@ -31,7 +28,6 @@
   }
 }
 
-// 3D Carousel
 .carousel {
   position: relative;
   width: 280px;
@@ -50,7 +46,6 @@
   }
 }
 
-// Carousel Item (Project Card)
 $projectWidth: 21rem;
 $projectHeight: 23rem;
 
@@ -58,33 +53,56 @@ $projectHeight: 23rem;
   position: absolute;
   width: $projectWidth;
   height: $projectHeight;
-  left: 0;
+  left: 50%;
+  margin-left: calc($projectWidth / -2);
   top: 10%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   border-radius: 15px;
-  background: linear-gradient(135deg, rgba(0, 81, 255, 0.9), rgba(0, 40, 128, 0.9));
   backface-visibility: visible;
   transform-style: preserve-3d;
-  cursor: pointer;
+  cursor: default;
+  opacity: 1;
+
   transition: 
     transform 0.5s ease-out,
-    opacity 0.3s ease,
+    opacity  0s 0s ease,
     filter 0.3s ease;
-  
-  &:hover {
-    filter: brightness(1.1);
-  }
-  
+
   &.active {
-    transition: opacity 0s 0s;
+    opacity: 0;
+    
+    transition: 
+      all 0s .75s;
+
+      &>.p-name {
+        left: -100vw;
+      }
   }
 
-  &>* {
+  &>.p-name {
+    @include outline(black);
     position: absolute;
-    z-index: 1;
+    top: -20%;
+    left: 0;
+    width: fit-content;
+    height: fit-content;
+    transform: translateY(-45px) translateZ(60px);
+    text-wrap: nowrap;
+    text-align: left;
+    color: $red;
+    font-size: 3rem;
+    cursor: default;
+    filter: drop-shadow(0px 0px 30px rgba(255, 255, 255, 0));
+    opacity: 0;
+
+    transition: 
+      opacity .4s,
+      transform .8s,
+      left .9s;
+
   }
 
   &>.year {
@@ -122,30 +140,17 @@ $projectHeight: 23rem;
     }
   }
 
-  &>.p-name {
-    position: absolute;
-    top: -20%;
-    text-wrap: nowrap;
-    text-align: center;
-    width: fit-content;
-    color: $red;
-    font-size: 3rem;
-    @include outline(white);
-    transform: translateY(-45px) translateZ(60px);
-    opacity: 0;
-
-    transition: 
-      opacity 0.4s ease .4s,
-      transform 0.4s ease .4s;
-  }
-
-  // When carousel-item is current, fade and slide in the text
   &.current {
-    filter: drop-shadow(0px 0px 40px rgba(255, 255, 255, 0.4));
+    cursor: pointer;
+    filter: drop-shadow(0px 0px 30px rgba(255, 255, 255, 0.2));
     
+    transition: 
+      all 1s;
+
     &>.p-name {
       opacity: 1;
       transform: translateY(0);
+      
     }
     
     &>.year {
@@ -164,7 +169,6 @@ $projectHeight: 23rem;
     color: white;
     font-size: 1.5rem;
     font-family: Exo;
-    filter: drop-shadow(0px 0px 30px black);
   }
 
   &>span {
@@ -172,7 +176,6 @@ $projectHeight: 23rem;
     font-size: 2.5rem;
     font-family: Exo;
     line-height: 1.2;
-    filter: drop-shadow(0px 0px 30px black);
 
     &>span:nth-child(2) {
       text-align: start;
@@ -181,9 +184,34 @@ $projectHeight: 23rem;
       font-family: Mono;
     }
   }
+
+  & > .project-image {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    pointer-events: none;
+
+    .active {
+      opacity: 0;
+    }
+  }
+
+  & > .project-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    background-color: rgba(0, 0, 0, 0.6);
+    background-blend-mode: multiply;
+    border-radius: inherit;
+    clip-path: inherit;
+    opacity: 0.85;
+    transform: rotateY(180deg) translateZ(1px);
+    backface-visibility: hidden;
+    pointer-events: none;
+  }
 }
 
-.project-image {
+.carousel-item > .project-image {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -192,31 +220,14 @@ $projectHeight: 23rem;
   background-repeat: no-repeat;
   border-radius: 15px;
   z-index: 0;
-}
+  clip-path: polygon(0 0, 70% 0, 100% 100%, 30% 100%);
 
-// Keep copy-container for ProjectsCopy
-.copy-container {
-  @extend .center;
-  @include absoluteCenter(50%, 45%);
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
-
-$projectWidht: 22%;
-.project-copy {
-  @extend .center;
-  @include outline(black);
-  position: relative;
-  top: 100%;
-  min-width: $projectWidht;
-  min-height: 70%;
-  width: $projectWidht;
-  height: 70%;
-  text-align: center;
-  cursor: pointer;
+  transition: 
+    scale 0.15s ease-in-out;
+    
+  &:hover {
+    scale: 1.05;
+  }
 }
 
 .project-image {
@@ -238,6 +249,12 @@ $projectWidht: 22%;
     filter: drop-shadow(0px 0px 00px rgba(255, 255, 255, 0.295));
     transition: .05s all
   }
+
+  &.active {
+    opacity: 0;
+
+    transition: opacity 0s 0s;
+  }
 }
 
 .project-name-container {
@@ -250,7 +267,6 @@ $projectWidht: 22%;
   line-height: 5rem;
   z-index: 15;
   perspective: 1000px;
-  filter: drop-shadow(0px 0px 30px black);
   cursor: pointer;
 
   transition: 
@@ -269,29 +285,3 @@ $projectWidht: 22%;
     font-family: Wosker;
   }
 }
-
-.spacer,
-.spacer2 {
-  @extend .center;
-  flex-direction: column;
-  align-items: start;
-  text-align: center;
-  position: relative;
-  min-width: 24%;
-  min-height: 100%;
-  font-size: 3rem;
-  font-family: Mono;
-
-  transition: 
-    color 0s 1.5s;
-
-  &.transparent {
-    color: transparent;
-
-    transition: 
-      color .3s .0s;
-
-  }
-}
-
-
