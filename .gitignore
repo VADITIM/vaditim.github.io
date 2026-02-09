@@ -17,7 +17,7 @@ docs/
 .env.*.local
 
 # Editor directories and files
-.vscode/*
+.vscode/
 !.vscode/extensions.json
 .idea/
 *.suo
