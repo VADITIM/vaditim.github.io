@@ -10,7 +10,7 @@
 
 <script setup lang="ts" >
 import { onMounted } from 'vue';
-import { ScrollBackgroundSections } from '../../modules/animations/section-backgrounds';
+import { ScrollBackgroundSections } from '../../modules/animations/General/section-backgrounds';
 import { activeProjectIndex } from '../../modules/3 Work Page/work-projects';
 
 onMounted(() => {
@@ -36,7 +36,7 @@ onMounted(() => {
     top: 0;
     left: -10%;
     width: 30%;
-    height: 300vh;
+    height: 100vh;
     background-color: rgb(255, 221, 28);
     background: #FFDD1B;
     background: linear-gradient(180deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
@@ -58,7 +58,7 @@ onMounted(() => {
     position: absolute;
     left: -30%;
     width: 30%;
-    height: 300vh;
+    height: 100vh;
     background-color: blue;
     background: linear-gradient(180deg,rgba(0, 64, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
     clip-path: polygon(0 0, 100% 0, 0 100%, 0% 100%);
@@ -78,7 +78,7 @@ onMounted(() => {
     position: absolute;
     left: -30%;
     width: 30%;
-    height: 300vh;
+    height: 100vh;
     background-color: rgb(24, 24, 177);
     background: linear-gradient(180deg,rgba(0, 30, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
     clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
@@ -97,7 +97,7 @@ onMounted(() => {
     position: absolute;
     right: -40%;
     width: 25%;
-    height: 300vh;
+    height: 100vh;
     background-color: rgb(134, 12, 12);
     background: linear-gradient(180deg,rgba(51, 8, 8, 1) 21%, rgba(102, 14, 14, 1) 80%, rgba(134, 12, 12, 1) 100%);
     clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
@@ -132,7 +132,7 @@ onMounted(() => {
     position: absolute;
     right: -40%;
     width: 40%;
-    height: 300vh;
+    height: 100vh;
     background-color: $red;
     background: linear-gradient(180deg,rgba(105, 17, 34, 1) 21%, rgba(153, 9, 38, 1) 55%, rgba(220, 20, 60, 1) 100%);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);

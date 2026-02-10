@@ -5,7 +5,7 @@ tablet 820 x 1180 -->
 
 <template>
   <main class="app-container" ref="container">
-    <LoadingPage v-if="showLoadingPage" />
+    <!-- <LoadingPage v-if="showLoadingPage" /> -->
     <SectionBackgrounds />
     <IntroPage />
     <InfoPage />
@@ -22,9 +22,18 @@ import SectionBackgrounds from './components/Sections/Section-Color-Backgrounds.
 import Sections from './components/Sections/Sections-Display.vue';
 import LoadingPage from './components/Pages/Main/LoadingPage.vue';
 
-import { ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { destroyVirtualScroll, initVirtualScroll } from './modules/virtual-scroll';
 
 const showLoadingPage = ref(true);
+
+onMounted(() => {
+  initVirtualScroll(3);
+});
+
+onBeforeUnmount(() => {
+  destroyVirtualScroll();
+});
 
 // onMounted(() => {
 //   setTimeout(() => {
@@ -39,6 +48,15 @@ const showLoadingPage = ref(true);
 
 <style scoped lang="scss">
 @use "./style/variables.scss" as *;
+
+.app-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
 .app-container>* {
   @extend .center;
