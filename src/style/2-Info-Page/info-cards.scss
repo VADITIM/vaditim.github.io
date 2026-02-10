@@ -160,9 +160,7 @@
   cursor: pointer;
   pointer-events: auto;
   
-  transition: 
-    1s ease all, 
-    z-index 2s ease;
+  transition: none;
 
   @include tablet {
     width: 25vh;
@@ -191,6 +189,7 @@
   background-color: $bg-color;
   border: 10px double $border-color;
   pointer-events: auto;
+  transition: none;
   
   @include tablet {
     width: 25vh;
@@ -310,8 +309,7 @@
 }
 
 .back-card-done {
-  transition: 
-    .8s ease all 0s;
+  transition: none;
 }
 
 
