@@ -1,5 +1,5 @@
 import { ref, onMounted } from 'vue';
-import { createFloatingAnimation } from '../animations/floating-elements';
+import { createFloatingAnimation } from '../animations/General/floating-elements';
 
 export const firstNameRef = ref<HTMLElement>();
 export const lastNameRef = ref<HTMLElement>();

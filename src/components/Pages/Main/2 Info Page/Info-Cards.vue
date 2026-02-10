@@ -15,14 +15,6 @@
 
 <script setup lang="ts">
   import { cards } from '../../../../modules/2 Info Page/info-cards';
-  import { CardsAnimations, BackCardsAnimations } from '../../../../modules/animations/card-animations';
-  import { onMounted } from 'vue';
-
-  onMounted(() => {
-    CardsAnimations();
-    BackCardsAnimations();
-
-  })
 </script>
 
 <style lang="scss" scoped>

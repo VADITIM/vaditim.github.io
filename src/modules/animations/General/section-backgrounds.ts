@@ -1,6 +1,6 @@
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { currentSection } from '../sections'
+import { currentSection } from '../../sections'
 import { watch } from 'vue'
 
 gsap.defaults({ immediateRender: false })

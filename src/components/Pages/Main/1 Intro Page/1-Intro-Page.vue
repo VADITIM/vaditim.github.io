@@ -10,10 +10,10 @@
   import Name from './Intro-Name.vue'
 
   import { onMounted } from 'vue';
-  import { IntroPageAnimations } from '../../../../modules/animations/intro-page-animations';
+  import { DesktopAnimationIntroPage } from '../../../../modules/animations/Desktop/intro-page-animations';
 
   onMounted(() => {
-    IntroPageAnimations();
+    DesktopAnimationIntroPage();
   })
 </script>
 
