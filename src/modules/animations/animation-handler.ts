@@ -1,4 +1,4 @@
-import { gsap } from "gsap/gsap-core";
+import { gsap } from "gsap";
 import { PerksAnimationDesktop } from "./Desktop/Perks-Animation-Handler";
 import { ProfileAnimationDesktop } from "./Desktop/Profile-Animation-Handler";
 import { ProjectAnimationDesktop } from "./Desktop/Projects-Animation-Handler";

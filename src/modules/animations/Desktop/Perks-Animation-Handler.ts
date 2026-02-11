@@ -1,4 +1,4 @@
-import { gsap } from "gsap/gsap-core";
+import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { breakpoints } from "../animation-handler";
 
@@ -16,7 +16,7 @@ function Skills()
 	if (document.querySelector(".skill")) {
 		const skillsTimeline = gsap.timeline({
 			scrollTrigger: {
-				trigger: ".intro-scroller",
+				trigger: ".perks-section-trigger",
 				toggleActions: "play none none reverse",
 				start: "top 40%",
 				end: "bottom 0%",
@@ -52,7 +52,7 @@ function Name() {
 		{
 			x: "150%",
 			duration: 0.5,
-			scrollTrigger: { trigger: ".intro-scroller", scrub: false, toggleActions: "play none none reverse",
+			scrollTrigger: { trigger: ".perks-section-trigger", scrub: false, toggleActions: "play none none reverse",
 				start: "top 40%", 
 				end: "bottom 0%",
 				// markers: true,

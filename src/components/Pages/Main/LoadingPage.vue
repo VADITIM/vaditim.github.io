@@ -11,7 +11,6 @@
 			{{ text.content }}
 			<div class="hidder" :class="{ open: open }" :style="{ '--stagger': `${index * 0.15}s` }"></div>
 		</div>
-
 	</div>
 </template>
 
@@ -46,7 +45,7 @@
 </script>
 
 <style scoped lang="scss">
-	@use "../../../style/variables.scss" as *;
+	@use "@styleVariables" as *;
 
 	.loading-container {
 		@extend .disable-selection;

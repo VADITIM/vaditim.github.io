@@ -1,28 +1,24 @@
-import { gsap } from "gsap/gsap-core";
+import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { breakpoints } from "../animation-handler";
-import { onSectionChange } from "../../sections";
+import { onSectionChange } from "@modules/sections";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
 
-// Track rapid section changes
 let sectionChangeCount = 0;
 let sectionChangeTimeout: number | null = null;
-const RAPID_CHANGE_THRESHOLD = 300; // 0.3 seconds
+const RAPID_CHANGE_THRESHOLD = 300;
 
 function trackRapidSectionChange(): boolean {
   sectionChangeCount++;
   
-  // If this is the second change within the timeout, it's a rapid change
   const isRapidChange = sectionChangeCount >= 2;
   
-  // Clear existing timeout
   if (sectionChangeTimeout) {
     clearTimeout(sectionChangeTimeout);
   }
   
-  // Reset counter after threshold
   sectionChangeTimeout = window.setTimeout(() => {
     sectionChangeCount = 0;
     sectionChangeTimeout = null;
@@ -43,20 +39,17 @@ function ContactAnimation() {
     if (document.querySelector(".contact-container")) {
       let contactAnimation: gsap.core.Tween | null = null;
       
-      // State machine: listen to section changes
       onSectionChange((current, previous, direction) => {
-        const isEnteringFromIntro = current === 1 && previous === 0; // Perks → Profile
-        const isLeavingToIntro = current === 0 && previous === 1;     // Profile → Perks (reverse)
-        const isLeavingToWork = current === 2 && previous === 1;      // Profile → Work
-        const isReturningFromWork = current === 1 && previous === 2;  // Work → Profile (reverse)
+        const isEnteringFromIntro = current === 1 && previous === 0; 
+        const isLeavingToIntro = current === 0 && previous === 1;    
+        const isLeavingToWork = current === 2 && previous === 1;     
+        const isReturningFromWork = current === 1 && previous === 2; 
         const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
         
         if (isSkippingProfile) {
-          // Skipping profile section - hide instantly
           if (contactAnimation) contactAnimation.kill();
           gsap.set(".contact-container", { opacity: 0 });
         } else if (isEnteringFromIntro) {
-          // Entering profile from perks - show contact
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -67,7 +60,6 @@ function ContactAnimation() {
             ease: "power2.out"
           });
         } else if (isLeavingToIntro) {
-          // Leaving profile back to perks - reverse (hide down)
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -78,7 +70,6 @@ function ContactAnimation() {
             ease: "power2.in"
           });
         } else if (isLeavingToWork) {
-          // Leaving profile to work - hide up
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -88,7 +79,6 @@ function ContactAnimation() {
             duration: 0.7
           });
         } else if (isReturningFromWork) {
-          // Returning from work to profile - reverse (show from top)
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -140,20 +130,17 @@ function FrontCardsAnimation() {
       card4: { bottom: "-200%" },
     };
 
-    // State machine: listen to section changes
     onSectionChange((current, previous, direction) => {
-      const isEnteringFromIntro = current === 1 && previous === 0; // Perks → Profile
-      const isLeavingToIntro = current === 0 && previous === 1;     // Profile → Perks (reverse)
-      const isLeavingToWork = current === 2 && previous === 1;      // Profile → Work
-      const isReturningFromWork = current === 1 && previous === 2;  // Work → Profile (reverse)
+      const isEnteringFromIntro = current === 1 && previous === 0; 
+      const isLeavingToIntro = current === 0 && previous === 1;    
+      const isLeavingToWork = current === 2 && previous === 1;     
+      const isReturningFromWork = current === 1 && previous === 2; 
       const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
       
       if (isSkippingProfile) {
-        // Skipping profile section - hide instantly
         if (frontCardsTimeline) frontCardsTimeline.kill();
         gsap.set(".card1, .card2, .card3, .card4", { opacity: 0 });
       } else if (isEnteringFromIntro || isReturningFromWork) {
-        // Show front cards - entering profile
         if (frontCardsTimeline) frontCardsTimeline.kill();
         
         frontCardsTimeline = gsap.timeline();
@@ -162,7 +149,6 @@ function FrontCardsAnimation() {
         frontCardsTimeline.fromTo(".card3", startPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.11);
         frontCardsTimeline.fromTo(".card4", startPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.11);
       } else if (isLeavingToWork) {
-        // Hide front cards up - leaving to work
         if (frontCardsTimeline) frontCardsTimeline.kill();
         
         frontCardsTimeline = gsap.timeline();
@@ -171,7 +157,6 @@ function FrontCardsAnimation() {
         frontCardsTimeline.fromTo(".card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.6 }, 0.28);
         frontCardsTimeline.fromTo(".card4", finalPosition.card4, { ...hideUpPosition.card4, opacity: 1, duration: 0.6 }, 0.21);
       } else if (isLeavingToIntro) {
-        // Hide front cards down - reverse back to perks
         if (frontCardsTimeline) frontCardsTimeline.kill();
         
         frontCardsTimeline = gsap.timeline();
@@ -219,26 +204,22 @@ function BackCardsAnimation() {
       card4: { bottom: "-200%" },
     };
     
-    // Set initial back card positions
     gsap.set(".back-card1", startPosition.card1);
     gsap.set(".back-card2", startPosition.card2);
     gsap.set(".back-card3", startPosition.card3);
     gsap.set(".back-card4", startPosition.card4);
 
-    // State machine: listen to section changes
     onSectionChange((current, previous, direction) => {
-      const isEnteringFromIntro = current === 1 && previous === 0; // Perks → Profile
-      const isLeavingToIntro = current === 0 && previous === 1;     // Profile → Perks (reverse)
-      const isLeavingToWork = current === 2 && previous === 1;      // Profile → Work
-      const isReturningFromWork = current === 1 && previous === 2;  // Work → Profile (reverse)
+      const isEnteringFromIntro = current === 1 && previous === 0; 
+      const isLeavingToIntro = current === 0 && previous === 1;    
+      const isLeavingToWork = current === 2 && previous === 1;     
+      const isReturningFromWork = current === 1 && previous === 2; 
       const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
       
       if (isSkippingProfile) {
-        // Skipping profile section - hide instantly
         if (backCardsTimeline) backCardsTimeline.kill();
         gsap.set(".back-card1, .back-card2, .back-card3, .back-card4", { opacity: 0 });
       } else if (isEnteringFromIntro || isReturningFromWork) {
-        // Show back cards - entering profile
         if (backCardsTimeline) backCardsTimeline.kill();
         
         backCardsTimeline = gsap.timeline();
@@ -247,7 +228,6 @@ function BackCardsAnimation() {
         backCardsTimeline.to(".back-card3", { ...finalPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.30);
         backCardsTimeline.to(".back-card2", { ...finalPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.35);
       } else if (isLeavingToWork) {
-        // Hide back cards down - leaving to work
         if (backCardsTimeline) backCardsTimeline.kill();
         
         backCardsTimeline = gsap.timeline();
@@ -256,7 +236,6 @@ function BackCardsAnimation() {
         backCardsTimeline.fromTo(".back-card3", finalPosition.card3, { ...hideDownPosition.card3, opacity: 1, duration: 0.7 }, 0.1);
         backCardsTimeline.fromTo(".back-card4", finalPosition.card4, { ...hideDownPosition.card4, opacity: 1, duration: 0.7 }, 0.16);
       } else if (isLeavingToIntro) {
-        // Hide back cards - reverse back to perks
         if (backCardsTimeline) backCardsTimeline.kill();
         
         backCardsTimeline = gsap.timeline();
