@@ -3,7 +3,7 @@ let resizeRaf = 0;
 let wheelRaf = 0;
 let pendingWheelDelta = 0;
 
-const SCROLL_MULTIPLIER = 7;
+const SCROLL_MULTIPLIER = 3;
 
 const updateScrollHeight = () => {
   const height = window.innerHeight * totalSections;

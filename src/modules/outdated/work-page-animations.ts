@@ -1,6 +1,6 @@
 import { gsap } from "gsap/gsap-core";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { currentProjectIndex } from "../../3 Work Page/work-projects";
+import { currentProjectIndex } from "../3 Work Page/work-projects";
 import { watch } from "vue";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -8,17 +8,18 @@ gsap.defaults({ immediateRender: false });
 
 export function WorkPageAnimations() {
   gsap.matchMedia().add("(min-width: 100px)", () => {
+
 	if (document.querySelector(".projects-container")) {
 		gsap.set(".carousel-item .p-name", { opacity: 0 });
 		gsap.fromTo(".projects-container",
-		{ y: 1000 },
+		{ top: "100%" },
 		{
-			y: 0,
+			top: "0%",
 			duration: .6,
 			scrollTrigger: { trigger: ".work-scroller", scrub: false, toggleActions: "play none none reverse",
 				start: "top 30%",
 				end: "bottom 30%",
-				markers: true,
+				// markers: true,
 				onEnter: () => {
 					const items = document.querySelectorAll(".carousel-item");
 					const current = items[currentProjectIndex.value];

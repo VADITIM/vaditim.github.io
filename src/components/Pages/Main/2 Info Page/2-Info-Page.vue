@@ -12,23 +12,19 @@
 
 <script setup lang="ts">
   import Cards from './Info-Cards.vue';
+  import Contact from './Info-Contact.vue';
+  // import InfoBackground from './Info-Background.vue';
 
   import { onMounted } from 'vue';
-  import { InfoPageAnimations } from '../../../../modules/animations/2 Info Page/info-page-animations';
-  import { InfoPageAnimationsOut } from '../../../../modules/animations/2 Info Page/info-page-animations-out';
-  import Contact from './Info-Contact.vue';
-  import InfoBackground from './Info-Background.vue';
-  import { BackCardsAnimations, CardsAnimations } from '../../../../modules/animations/2 Info Page/card-animations';
-  import { CardAnimationsOut } from '../../../../modules/animations/2 Info Page/card-animations-out';
+  import { ProfileAnimationDesktop } from '../../../../modules/animations/Desktop/Profile-Animation-Handler';
 
-  
 
   onMounted(() => {
-    InfoPageAnimations();
-    InfoPageAnimationsOut();
-    CardsAnimations();
-    CardAnimationsOut();
-    BackCardsAnimations();
+    // ProfileAnimationDesktop();
+    // InfoPageAnimationsOut();
+    // CardsAnimations();
+    // CardAnimationsOut();
+    // BackCardsAnimations();
   })
 </script>
 

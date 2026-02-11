@@ -11,11 +11,14 @@
 <script setup lang="ts">
   import Projects from './Work-Projects.vue';
   import TechContainer from './Work-Project-Info-Container.vue';
-  import { WorkPageAnimations } from '../../../../modules/animations/3 Work Page/work-page-animations';
+
   import { onMounted } from 'vue';
+  import { WorkPageAnimations } from '../../../../modules/outdated/work-page-animations'; 
+  import { ProjectAnimationDesktop } from '../../../../modules/animations/Desktop/Projects-Animation-Handler';
 
   onMounted(() => {
-    WorkPageAnimations();
+    // WorkPageAnimations();
+    // ProjectAnimationDesktop();
   })
 </script>
 

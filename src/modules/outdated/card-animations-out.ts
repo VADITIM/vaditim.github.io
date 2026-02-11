@@ -14,7 +14,7 @@ export function CardAnimationsOut() {
                 toggleActions: "play none none reverse",
                 start: "top -70%",
                 end: "bottom -40%",
-                markers: true,
+                // markers: true,
             };
 
             gsap.to(".card1", {

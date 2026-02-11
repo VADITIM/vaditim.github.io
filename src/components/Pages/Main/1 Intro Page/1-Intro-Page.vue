@@ -8,13 +8,6 @@
 <script setup lang="ts">
   import Roles from './Intro-Perks.vue'
   import Name from './Intro-Name.vue'
-
-  import { onMounted } from 'vue';
-  import { DesktopAnimationIntroPage } from '../../../../modules/animations/Desktop/intro-page-animations';
-
-  onMounted(() => {
-    DesktopAnimationIntroPage();
-  })
 </script>
 
 <style lang="scss" scoped>

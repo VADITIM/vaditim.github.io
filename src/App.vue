@@ -21,6 +21,7 @@ import WorkPage from './components/Pages/Main/3 Work Page/3-Work-Page.vue';
 import SectionBackgrounds from './components/Sections/Section-Color-Backgrounds.vue';
 import Sections from './components/Sections/Sections-Display.vue';
 import LoadingPage from './components/Pages/Main/LoadingPage.vue';
+import { PageAnimations } from './modules/animations/animation-handler';
 
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { destroyVirtualScroll, initVirtualScroll } from './modules/virtual-scroll';
@@ -29,21 +30,19 @@ const showLoadingPage = ref(true);
 
 onMounted(() => {
   initVirtualScroll(3);
+  PageAnimations();
 });
 
 onBeforeUnmount(() => {
   destroyVirtualScroll();
 });
 
-// onMounted(() => {
-//   setTimeout(() => {
-//     showLoadingPage.value = false;
-//   }, 3000);
-// });
+onMounted(() => {
+  setTimeout(() => {
+    showLoadingPage.value = false;
+  }, 3000);
+});
 
-// import { container, InitializeScrollSnap } from './modules/scroll-snapping'
-
-// InitializeScrollSnap();
 </script>
 
 <style scoped lang="scss">
@@ -68,6 +67,11 @@ onBeforeUnmount(() => {
 
   @include allTablets {
     overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  @include allDesktops {
+    overflow-x: visible;
     overflow-y: visible;
   }
 }

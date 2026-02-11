@@ -96,7 +96,7 @@ export function ScrollBackgroundSectionsOld() {
       // const timeline = gsap.timeline({
       //   scrollTrigger: { trigger: ".scrollerBackgrounds", 
       //     start: "top 50%",
-      //     // markers: true,
+          // markers: true,
       //   }
       // });
 
