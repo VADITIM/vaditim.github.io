@@ -1,6 +1,6 @@
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { currentSection } from '../../sections'
+import { currentSection } from '@modules/sections'
 import { watch } from 'vue'
 
 gsap.defaults({ immediateRender: false })
@@ -9,11 +9,11 @@ export function ScrollBackgroundSections() {
   watch(currentSection, (newSection) => {
     if (newSection === 0) {
       const targets = [
-        ".intro-background",
-        ".info-background-back",
-        ".info-background-front",
-        ".work-background-back",
-        ".work-background-front",
+        ".perks-section-background",
+        ".profile-section-background-back",
+        ".profile-section-background-front",
+        ".projects-section-background-back",
+        ".projects-section-background-front",
       ];
       const els = gsap.utils.toArray(targets);
       els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'));
@@ -22,20 +22,20 @@ export function ScrollBackgroundSections() {
         onComplete: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
       });
 
-      tl.to(".intro-background", { left: "-10%", ease: "back.out", duration: 0.45 }, 0);
-      tl.to(".info-background-back", { left: "-30%", ease: "back.out", duration: 0.45 }, 0);
-      tl.to(".info-background-front", { left: "-30%", ease: "back.out", duration: 0.45 }, 0.1);
-      tl.to(".work-background-back", { right: "-40%", ease: "back.in", duration: 0.45 }, 0);
-      tl.to(".work-background-front", { right: "-40%", ease: "back.in", duration: 0.45 }, 0.1);
+      tl.to(".perks-section-background", { left: "-10%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".profile-section-background-back", { left: "-30%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".profile-section-background-front", { left: "-30%", ease: "back.out", duration: 0.45 }, 0.1);
+      tl.to(".projects-section-background-back", { right: "-40%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".projects-section-background-front", { right: "-40%", ease: "back.in", duration: 0.45 }, 0.1);
     }
     
     if (newSection === 1) {
       const targets = [
-        ".intro-background",
-        ".info-background-back",
-        ".info-background-front",
-        ".work-background-back",
-        ".work-background-front",
+        ".perks-section-background",
+        ".profile-section-background-back",
+        ".profile-section-background-front",
+        ".projects-section-background-back",
+        ".projects-section-background-front",
       ];
       const els = gsap.utils.toArray(targets);
       els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'));
@@ -44,20 +44,20 @@ export function ScrollBackgroundSections() {
         onComplete: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
       });
 
-      tl.to(".intro-background", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
-      tl.to(".info-background-back", { left: "-10%", ease: "back.out", duration: 0.45 }, 0);
-      tl.to(".info-background-front", { left: "-10%", ease: "back.out", duration: 0.45 }, 0.1);
-      tl.to(".work-background-back", { right: "-40%", ease: "back.in", duration: 0.45 }, 0);
-      tl.to(".work-background-front", { right: "-40%", ease: "back.in", duration: 0.45 }, 0.1);
+      tl.to(".perks-section-background", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".profile-section-background-back", { left: "-10%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".profile-section-background-front", { left: "-10%", ease: "back.out", duration: 0.45 }, 0.1);
+      tl.to(".projects-section-background-back", { right: "-40%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".projects-section-background-front", { right: "-40%", ease: "back.in", duration: 0.45 }, 0.1);
     }
     
     if (newSection === 2) {
       const targets = [
-        ".intro-background",
-        ".info-background-back",
-        ".info-background-front",
-        ".work-background-back",
-        ".work-background-front",
+        ".perks-section-background",
+        ".profile-section-background-back",
+        ".profile-section-background-front",
+        ".projects-section-background-back",
+        ".projects-section-background-front",
       ];
       const els = gsap.utils.toArray(targets);
       els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'));
@@ -66,11 +66,11 @@ export function ScrollBackgroundSections() {
         onComplete: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
       });
 
-      tl.to(".intro-background", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
-      tl.to(".info-background-back", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
-      tl.to(".info-background-front", { left: "-30%", ease: "back.in", duration: 0.45 }, 0.05);
-      tl.to(".work-background-back", { right: "-10%", ease: "back.out", duration: 0.45 }, 0);
-      tl.to(".work-background-front", { right: "-10%", ease: "back.out", duration: 0.45 }, 0.1);
+      tl.to(".perks-section-background", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".profile-section-background-back", { left: "-30%", ease: "back.in", duration: 0.45 }, 0);
+      tl.to(".profile-section-background-front", { left: "-30%", ease: "back.in", duration: 0.45 }, 0.05);
+      tl.to(".projects-section-background-back", { right: "-10%", ease: "back.out", duration: 0.45 }, 0);
+      tl.to(".projects-section-background-front", { right: "-10%", ease: "back.out", duration: 0.45 }, 0.1);
     }
   });
 }
@@ -79,7 +79,7 @@ export function ScrollBackgroundSectionsOld() {
 	ScrollTrigger.matchMedia({
 		"(min-width: 1800px)": function() {
       
-      // gsap.fromTo(".intro-background", 
+      // gsap.fromTo(".perks-section-background", 
       // { left: "200%",}, 
       // {
       //   left: "0%",
@@ -87,7 +87,7 @@ export function ScrollBackgroundSectionsOld() {
       //   duration: .7,
       // });
 
-      // gsap.to(".intro-background", {
+      // gsap.to(".perks-section-background", {
       //   width: "20%",
       //   delay: 2.1,
       //   duration: .7,
@@ -100,14 +100,14 @@ export function ScrollBackgroundSectionsOld() {
       //   }
       // });
 
-      // timeline.fromTo(".intro-background", { left: "200%",}, 
+      // timeline.fromTo(".perks-section-background", { left: "200%",}, 
       // {
       //   left: "0%",
       //   delay: 2.1,
       //   duration: .3,
       // });
 
-      // timeline.fromTo(".intro-background", { width: "100%",}, 
+      // timeline.fromTo(".perks-section-background", { width: "100%",}, 
       // {
       //   width: "20%",
       //   delay: .2,
@@ -120,7 +120,7 @@ export function ScrollBackgroundSectionsOld() {
 
       // INTRO ---------------------------------
 			// In / Out
-			gsap.fromTo(".intro-background", {}, 
+			gsap.fromTo(".perks-section-background", {}, 
       {
 				left: "-30%",
         ease: "back.in",
@@ -134,7 +134,7 @@ export function ScrollBackgroundSectionsOld() {
 
       // INFO ---------------------------------
 			// In
-      gsap.to(".info-background-back", 
+      gsap.to(".profile-section-background-back", 
       {
        left: "-10%",
         ease: "back.out",
@@ -145,7 +145,7 @@ export function ScrollBackgroundSectionsOld() {
         },
       })
 
-      gsap.to(".info-background-front", 
+      gsap.to(".profile-section-background-front", 
       {
        left: "-10%",
         ease: "back.out",
@@ -157,7 +157,7 @@ export function ScrollBackgroundSectionsOld() {
       })
 
 			// Out
-      gsap.fromTo(".info-background-back", 
+      gsap.fromTo(".profile-section-background-back", 
 			{},
       {
        left: "-30%",
@@ -169,7 +169,7 @@ export function ScrollBackgroundSectionsOld() {
         },
       })
 
-      gsap.fromTo(".info-background-front", 
+      gsap.fromTo(".profile-section-background-front", 
 			{},
       {
        left: "-30%",
@@ -184,7 +184,7 @@ export function ScrollBackgroundSectionsOld() {
 
       // WORK ---------------------------------
 			// In / Out
-			gsap.fromTo(".work-background-back", 
+			gsap.fromTo(".projects-section-background-back", 
 			{},
       {
        right: "-10%",
@@ -197,7 +197,7 @@ export function ScrollBackgroundSectionsOld() {
       })
 
 			// In / Out
-      gsap.fromTo(".work-background-front", 
+      gsap.fromTo(".projects-section-background-front", 
 			{},
       {
        right: "-10%",

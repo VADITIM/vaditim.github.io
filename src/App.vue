@@ -1,78 +1,75 @@
-<!-- 
-1280 x 720
-tabletland 1180 x 820
-tablet 820 x 1180 -->
-
 <template>
   <main class="app-container" ref="container">
     <!-- <LoadingPage v-if="showLoadingPage" /> -->
     <SectionBackgrounds />
-    <IntroPage />
-    <InfoPage />
-    <WorkPage />
-    <Sections />
+    <PerksPage />
+    <ProfilePage />
+    <ProjectsPage />
+    <SectionsDisplay />
   </main>
 </template>
 
 <script setup lang="ts">
-import IntroPage from './components/Pages/Main/1 Intro Page/1-Intro-Page.vue';
-import InfoPage from './components/Pages/Main/2 Info Page/2-Info-Page.vue';
-import WorkPage from './components/Pages/Main/3 Work Page/3-Work-Page.vue';
-import SectionBackgrounds from './components/Sections/Section-Color-Backgrounds.vue';
-import Sections from './components/Sections/Sections-Display.vue';
-import LoadingPage from './components/Pages/Main/LoadingPage.vue';
-import { PageAnimations } from './modules/animations/animation-handler';
+  import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { destroyVirtualScroll, initVirtualScroll } from './modules/virtual-scroll';
+  import PerksPage from '@perks/aPerks-Section.vue';
+  import ProfilePage from '@profile/aProfile-Section.vue';
+  import ProjectsPage from '@projects/aProjects-Section.vue';
 
-const showLoadingPage = ref(true);
+  import SectionBackgrounds from '@sections/Section-Background-Display.vue';
+  import SectionsDisplay from '@sections/Sections-State-Display.vue';
 
-onMounted(() => {
-  initVirtualScroll(3);
-  PageAnimations();
-});
+  import LoadingPage from '@components/Pages/Main/LoadingPage.vue';
 
-onBeforeUnmount(() => {
-  destroyVirtualScroll();
-});
+  import { PageAnimations } from '@modules/animations/animation-handler';
+  import { destroyVirtualScroll, initVirtualScroll } from '@modules/virtual-scroll';
 
-onMounted(() => {
-  setTimeout(() => {
-    showLoadingPage.value = false;
-  }, 3000);
-});
+  const showLoadingPage = ref(true);
 
-</script>
+  onMounted(() => {
+    initVirtualScroll(3);
+  });
 
-<style scoped lang="scss">
-@use "./style/variables.scss" as *;
+  onBeforeUnmount(() => {
+    destroyVirtualScroll();
+  });
 
-.app-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+  onMounted(() => {
+    setTimeout(() => {
+      showLoadingPage.value = false;
+    }, 3000);
+  });
 
-.app-container>* {
-  @extend .center;
+  </script>
 
-  @include mobile {
-    overflow-x: clip;
-    overflow-y: visible;
+  <style scoped lang="scss">
+  @use "@styleVariables" as *;
+
+  .app-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  @include allTablets {
-    overflow-x: clip;
-    overflow-y: visible;
-  }
+  .app-container>* {
+    @extend .center;
 
-  @include allDesktops {
-    overflow-x: visible;
-    overflow-y: visible;
+    @include mobile {
+      overflow-x: clip;
+      overflow-y: visible;
+    }
+
+    @include allTablets {
+      overflow-x: clip;
+      overflow-y: visible;
+    }
+
+    @include allDesktops {
+      overflow-x: visible;
+      overflow-y: visible;
+    }
   }
-}
 </style>
