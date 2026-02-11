@@ -1,16 +1,15 @@
 <template>
   <div class="projects-container">
-    <PaginationDots />
     <div class="project-name-container" :class="{ active: activeProjectIndex !== null }" @click="closeActiveProject">
       <div class="project-name" v-html="projects[currentProjectIndex]?.name"></div>
     </div>
-    <div class="carousel-container">
+    <div class="projects-carousel-container">
       <div ref="carouselRef" class="carousel" :class="{ active: activeProjectIndex !== null }" :style="carouselStyle">
-        <div v-for="(project, index) in projects" :key="index" class="carousel-item" :style="getItemStyle(index)"
+        <div v-for="(project, index) in projects" :key="index" class="carousel-project" :style="getItemStyle(index)"
           @click="handleProjectClick(index)"
           :class="{ active: activeProjectIndex === index, current: currentProjectIndex === index }">
-          <span v-html="project.name" class="p-name"></span>
-          <span v-if="!project.wip" class="year" :class="{ active: activeProjectIndex !== null }">{{ project.year
+          <span v-html="project.name" class="project-name"></span>
+          <span v-if="!project.wip" class="project-year" :class="{ active: activeProjectIndex !== null }">{{ project.year
             }}</span>
           <span v-if="project.wip" class="wip">
             <span>WORK IN PROGRESS <br></br> </span>
@@ -22,8 +21,29 @@
         </div>
       </div>
     </div>
-    <ProjectsCopy />
+    <div class="project-display"
+  :class="{ active: activeProjectIndex !== null }"
+  @click="closeActiveProject($event)">
+
+  <span :class="{ active: activeProjectIndex !== null }" v-html="currentProject.name" class="p-name"></span>
+  <span :class="{ active: activeProjectIndex !== null }" v-if="!currentProject.wip" class="year">{{ currentProject.year }}</span>
+  <span :class="{ active: activeProjectIndex !== null }" v-if="currentProject.wip" class="wip">
+    <span>WORK IN PROGRESS <br> </span>
+    <span class="estimated" :class="{ active: activeProjectIndex !== null }">Estimated {{ currentProject.estimated }}</span>
+  </span>
+
+  <Transition name="notice-fade">
+    <p :class="{clicked: clicked}"
+      v-if="currentProject.ai && activeProjectIndex !== null"
+      class="notice active">Visual concept generated with AI tools and refined using assets from the original game.</p>
+  </Transition>
+  <div class="project-image" :style="{ backgroundImage: `url(${currentProject.img})` }"></div>
+    </div>
   </div>
+
+    <PaginationDots />
+
+  <!-- <ProjectsCopy /> -->
 </template>
 
 <script setup lang="ts">
@@ -41,6 +61,8 @@
 
   import PaginationDots from './Work-Pagination-Dots.vue';
   import ProjectsCopy from './Work-Projects-Copy.vue';
+  import { clicked } from '../../../../modules/3 Work Page/work-tech-container';
+  const currentProject = computed(() => projects[currentProjectIndex.value]);
 
   const isPointerDown = ref(false);
   const isDragging = ref(false);
@@ -116,14 +138,14 @@
   }
 
   onMounted(() => {
-    const container = document.querySelector('.carousel-container');
+    const container = document.querySelector('.projects-carousel-container');
     if (container) {
       container.addEventListener('mousedown', handleMouseDown as any);
     }
   });
 
   onUnmounted(() => {
-    const container = document.querySelector('.carousel-container');
+    const container = document.querySelector('.projects-carousel-container');
     if (container) {
       container.removeEventListener('mousedown', handleMouseDown as any);
     }
@@ -134,4 +156,77 @@
 
 <style lang="scss" scoped>
   @use "../../../../style/3-Work-Page/projects.scss" as *;
+  @use "@/style/variables.scss" as *;
+
+
+
+
+.project-display {
+  @include absoluteCenter(100%, 50%);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: $projectWidth;
+  height: $projectHeight;
+  margin-left: calc($projectWidth / -2);
+  border-radius: 15px;
+  backface-visibility: visible;
+  transform-style: preserve-3d;
+  cursor: default;
+  opacity: 1;
+  z-index: -1;
+  scale: 1.3;
+
+  transition: 
+    top .4s, 
+    left .35s, 
+    width 0.75s, 
+    height 0.75s, 
+    border-radius 1s, 
+    z-index .9s .1s, 
+    transform .5s ,
+    opacity 0s .75s,
+    scale .2s;
+
+  &.active {
+    top: 10%;
+    transform: translate(-10%, 0%);
+    left: 20%;
+    pointer-events: pointer;
+    width: 80%;
+    height: 85%;
+    opacity: 1;
+    z-index: 1;
+    scale: 1;
+
+    transition: 
+      width 0.75s, 
+      height 0.75s, 
+      top .5s .1s, 
+      left .35s, 
+      border-radius 1s, 
+      z-index 0s, 
+      transform .5s,
+      scale .2s;
+  }
+
+  &.project-image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+
+    transition:
+      border-radius 3.8s 0s linear;
+  }
+
+  &.active .project-image {
+  }
+}
+
 </style>

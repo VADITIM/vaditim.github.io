@@ -1,5 +1,7 @@
 import { gsap } from "gsap/gsap-core";
-import { WorkPageAnimations } from "./3 Work Page/work-page-animations";
+import { PerksAnimationDesktop } from "./Desktop/Perks-Animation-Handler";
+import { ProfileAnimationDesktop } from "./Desktop/Profile-Animation-Handler";
+import { ProjectAnimationDesktop } from "./Desktop/Projects-Animation-Handler";
 
 gsap.defaults({ immediateRender: false });
 
@@ -12,9 +14,11 @@ export const breakpoints = {
     largeDesktop: 2140,
 } as const;
 
-export function PageAnimations() {
-
-    WorkPageAnimations();
+export function PageAnimations() 
+{
+    PerksAnimationDesktop();
+    ProfileAnimationDesktop();
+    ProjectAnimationDesktop();
 }
   
 

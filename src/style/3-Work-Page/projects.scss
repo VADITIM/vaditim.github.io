@@ -2,13 +2,14 @@
 
 
 .projects-container {
+  @include absoluteCenter(50%, 50%);
   width: 100vw;
   height: 100vh;
   perspective: 1000px;
   user-select: none;
 }
 
-.carousel-container {
+.projects-carousel-container {
   @include absoluteCenter(50%, 50%);
   width: 100%;
   height: 100%;
@@ -18,7 +19,6 @@
   perspective: 1200px;
   z-index: 10;
   overflow: hidden;
-  background-color: #181818;
   
   transition: 
     z-index 0s ease .75s;
@@ -53,17 +53,15 @@
 $projectWidth: 21rem;
 $projectHeight: 23rem;
 
-.carousel-item {
+.carousel-project {
   position: absolute;
-  width: $projectWidth;
-  height: $projectHeight;
-  left: 50%;
-  margin-left: calc($projectWidth / -2);
-  top: 10%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: $projectWidth;
+  height: $projectHeight;
+  margin-left: calc($projectWidth / -2);
   border-radius: 15px;
   backface-visibility: visible;
   transform-style: preserve-3d;
@@ -72,21 +70,16 @@ $projectHeight: 23rem;
 
   transition: 
     transform 0.5s ease-out,
-    opacity  0s 0s ease,
     filter 0.3s ease;
+    opacity: 0s 0s ease;
 
   &.active {
-    opacity: 0;
-    
-    transition: 
-      all 0s .75s;
-
-      &>.p-name {
-        left: -100vw;
-      }
+    &>.project-name {
+      left: -100vw;
+    }
   }
 
-  &>.p-name {
+  &>.project-name {
     @include outline(black);
     position: absolute;
     top: -20%;
@@ -108,7 +101,7 @@ $projectHeight: 23rem;
       left .9s;
   }
 
-  &>.year {
+  &>.project-year {
     @include outline(black);
     position: absolute;
     left: 5%;
@@ -150,13 +143,13 @@ $projectHeight: 23rem;
     transition: 
       all 1s;
 
-    &>.p-name {
+    &>.project-name {
       opacity: 1;
       transform: translateY(0);
       
     }
     
-    &>.year {
+    &>.project-year {
       opacity: 1;
       transform: translateX(0);
     }
@@ -214,7 +207,7 @@ $projectHeight: 23rem;
   }
 }
 
-.carousel-item > .project-image {
+.carousel-project > .project-image {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -223,7 +216,7 @@ $projectHeight: 23rem;
   background-repeat: no-repeat;
   border-radius: 15px;
   z-index: 0;
-  clip-path: polygon(0 0, 70% 0, 100% 100%, 30% 100%);
+  // clip-path: polygon(0 0, 70% 0, 100% 100%, 30% 100%);
 
   transition: 
     scale 0.15s ease-in-out;
@@ -241,26 +234,27 @@ $projectHeight: 23rem;
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 10px;
-  z-index: 0;
+  z-index: 1;
+  opacity: 1;
+
+  transition:
+    z-index 0s 0.75s,
+    opacity 0.1s ease;
 
   &.current {
     filter: drop-shadow(0px 0px 60px rgba(255, 255, 255, 0.295));
     
     transition:
-      .3s .0s all;
-  }
-
-  &.transitioning {
-    filter: drop-shadow(0px 0px 00px rgba(255, 255, 255, 0.295));
-
-    transition:
-    .05s all
+      z-index 0s ease 0s,
+      opacity .1s ease .5s;
   }
 
   &.active {
+    z-index: -1;
     opacity: 0;
 
     transition: 
+      z-index 0s 0s,
       opacity 0s 0s;
   }
 }
