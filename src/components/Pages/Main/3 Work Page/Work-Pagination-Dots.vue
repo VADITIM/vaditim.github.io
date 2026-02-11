@@ -11,8 +11,9 @@
 
 <style lang="scss" scoped>
   @use "@/style/variables.scss" as *;
+
   .pagination-dots {
-    @include absoluteCenter(50%, 20.5%);
+    @include absoluteCenter(200%, 10%);
     width: 2rem;
     display: flex;
     flex-direction: column;

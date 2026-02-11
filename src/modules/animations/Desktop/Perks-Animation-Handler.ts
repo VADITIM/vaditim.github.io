@@ -5,7 +5,7 @@ import { breakpoints } from "../animation-handler";
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
 
-export function DesktopAnimationIntroPage() {
+export function PerksAnimationDesktop() {
 	Skills();
 	Name();
 }
@@ -26,7 +26,7 @@ function Skills()
 
 		skillsTimeline.fromTo(".skill", { },
 			{
-				x: "-100%",
+				x: "-210%",
 				duration: 0.21,
 				stagger: 0.12,
 			}
