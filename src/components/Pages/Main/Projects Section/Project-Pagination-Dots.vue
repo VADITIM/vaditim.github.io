@@ -12,7 +12,7 @@
 <style lang="scss" scoped>
   @use "@styleVariables" as *;
   .pagination-dots {
-    @include absoluteCenter(50%, 5%);
+    @include absoluteCenter(50%, 98.5%);
     width: 2rem;
     display: flex;
     flex-direction: column;
@@ -54,6 +54,7 @@
 
     &.active {
       background-color: rgb(255, 0, 0);
+      background-color: rgb(255, 255, 255);
       transform: scale(1.3);
       box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
     }

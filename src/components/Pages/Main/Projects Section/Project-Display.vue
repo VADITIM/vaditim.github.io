@@ -35,13 +35,13 @@
   justify-content: center;
   align-items: center;
   top: 50%;
-  left: 20%;
+  left: 85%;
   width: 16rem;
   height: 16rem;
   transform: translate(-50%, -50%);
   border-radius: 15px;
   border-radius: 50%;
-  opacity: 1;
+  opacity: 0;
   z-index: -1;
   cursor: pointer;
 
@@ -54,7 +54,7 @@
     transform .5s ,
     scale .2s,
     opacity 0s .75s, 
-    z-index .9s .1s !important;
+    z-index 0s 0s !important;
 
   &.active {
     top: 10%;
@@ -65,7 +65,7 @@
     border-radius: 30px;
     opacity: 1;
     scale: 1;
-    z-index: 1;
+    z-index: 3;
     pointer-events: pointer;
 
     transition: 

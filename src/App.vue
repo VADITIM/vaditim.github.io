@@ -2,19 +2,22 @@
   <main class="app-container" ref="container">
     <!-- <LoadingPage v-if="showLoadingPage" /> -->
     <SectionBackgrounds />
-    <PerksPage />
-    <ProfilePage />
-    <ProjectsPage />
+    <PerksPage :style="{ zIndex: currentSection === 0 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 0 ? 'auto' : 'none' }" />
+    <ProjectsPage :style="{ zIndex: currentSection === 2 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 2 ? 'auto' : 'none' }" />
+    <ProfilePage :style="{ zIndex: currentSection === 1 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 1 ? 'auto' : 'none' }" />
     <SectionsDisplay />
   </main>
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-  import PerksPage from '@perks/aPerks-Section.vue';
-  import ProfilePage from '@profile/aProfile-Section.vue';
-  import ProjectsPage from '@projects/aProjects-Section.vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+
+import { currentSection } from '@modules/sections';
+
+import PerksPage from '@perks/aPerks-Section.vue';
+import ProfilePage from '@profile/aProfile-Section.vue';
+import ProjectsPage from '@projects/aProjects-Section.vue';
 
   import SectionBackgrounds from '@sections/Section-Background-Display.vue';
   import SectionsDisplay from '@sections/Sections-State-Display.vue';

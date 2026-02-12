@@ -23,7 +23,7 @@
 <style lang="scss" scoped>
   .profile-section-container {
     position: absolute;
-    top: 100vh;
+    top: 0vh;
     left: 0;
     width: 100vw;
     height: 100vh;

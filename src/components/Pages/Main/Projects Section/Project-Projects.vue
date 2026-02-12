@@ -28,7 +28,9 @@
           :class="{ 
             helper: getPositionForProject(index) === 0,
             current: getPositionForProject(index) === 2,
-            active: activeProjectIndex !== null
+            active: activeProjectIndex !== null,
+            'no-opacity-transition':
+              skipOpacityTransition && getPositionForProject(index) === 2
           }"
           :style="{ 
             top: allPositions[getPositionForProject(index)].top, 
@@ -46,7 +48,7 @@
 
 <script setup lang="ts">
   
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, computed, onMounted, watch } from 'vue';
   import gsap from 'gsap';
 
   import ProjectProjectDisplay from '@projects/Project-Display.vue';
@@ -58,13 +60,14 @@
   const currentProject = computed(() => projects[currentProjectIndex.value]);
 
   const allPositions = [
-    { top: '130%', left: '-30%' },    // Position 0: helper (off-screen)
-    { top: '25%', left: '10%' },      // Position 1: First visible
-    { top: '50%', left: '20%' },      // Position 2: Middle visible
-    { top: '75%', left: '10%' },      // Position 3: Last visible
+    { top: '50%', left: '150%' },    // Position 0: helper (off-screen)
+    { top: '20%', left: '90%' },      // Position 1: First visible
+    { top: '50%', left: '85%' },      // Position 2: Middle visible
+    { top: '80%', left: '90%' },      // Position 3: Last visible
   ];
   const visibleProjectIndices = ref([0, 1, 2]);
   const bubbleRefs = ref<HTMLElement[]>([]);
+  const skipOpacityTransition = ref(false);
 
   onMounted(() => {
     bubbleRefs.value.forEach((bubble, index) => {
@@ -96,6 +99,15 @@
         });
       }
     });
+  });
+
+  watch(activeProjectIndex, (newValue, oldValue) => {
+    if (oldValue !== null && newValue === null) {
+      skipOpacityTransition.value = true;
+      requestAnimationFrame(() => {
+        skipOpacityTransition.value = false;
+      });
+    }
   });
 
   const getPositionForProject = (projectIndex: number): number => {
@@ -141,8 +153,8 @@
 
   .projects-container {
     position: absolute;
-    top: 100%;
-    left: 0;
+    top: 0;
+    right: -50%;
     width: 100vw;
     height: 100vh;
   }
@@ -154,29 +166,31 @@
     width: 100%;
     height: 100%;
     filter: url(#gooey-filter);
+    z-index: 3;
   }
 
   .bubble {
+    --opacity-duration: 0.6s;
     position: absolute;
-    width: 12rem;
-    height: 12rem;
+    width: 15rem;
+    height: 15rem;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1;
+    z-index: 21;
     cursor: pointer;
     opacity: 1;
     
     transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                z-index 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+          width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+          height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity var(--opacity-duration) cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+          box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+          z-index 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:not(.helper):hover {
       filter: brightness(1.1);
@@ -184,9 +198,9 @@
     }
 
     &.current {
-      width: 16rem;
-      height: 16rem;
-      z-index: 2;
+      width: 18rem;
+      height: 18rem;
+      z-index: 22;
       box-shadow: 0 0 20px rgba(185, 26, 26, 0.5);
       
       &.active {
@@ -201,6 +215,10 @@
       pointer-events: none;
       opacity: 0;
       z-index: 0;
+    }
+
+    &.no-opacity-transition {
+      --opacity-duration: 1.8s;
     }
   }
 
