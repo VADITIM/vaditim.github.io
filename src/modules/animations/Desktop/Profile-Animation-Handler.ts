@@ -169,6 +169,7 @@ function FrontCardsAnimation() {
   });
 }
 
+
 function BackCardsAnimation() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
     
@@ -177,10 +178,10 @@ function BackCardsAnimation() {
     let backCardsTimeline: gsap.core.Timeline | null = null;
     
     const startPosition = {
-      card1: { left: "-100%", bottom: "100%" },
-      card2: { right: "-100%", bottom: "100%" },
-      card3: { left: "-100%", bottom: "50%" },
-      card4: { right: "-100%", bottom: "50%" },
+      card1: { left: "18%", bottom: "200%" },
+      card2: { right: "18%", bottom: "200%" },
+      card3: { left: "18%", bottom: "150%" },
+      card4: { right: "18%", bottom: "150%" },
     };
 
     const finalPosition = {
@@ -210,39 +211,47 @@ function BackCardsAnimation() {
     gsap.set(".back-card4", startPosition.card4);
 
     onSectionChange((current, previous, direction) => {
-      const isEnteringFromIntro = current === 1 && previous === 0; 
-      const isLeavingToIntro = current === 0 && previous === 1;    
-      const isLeavingToWork = current === 2 && previous === 1;     
-      const isReturningFromWork = current === 1 && previous === 2; 
+      const isEnteringFromPerks = current === 1 && previous === 0; 
+      const isLeavingToPerks = current === 0 && previous === 1;    
+      const isLeavingToProjects = current === 2 && previous === 1;     
+      const isEnteringFromProjects = current === 1 && previous === 2; 
       const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
       
       if (isSkippingProfile) {
         if (backCardsTimeline) backCardsTimeline.kill();
         gsap.set(".back-card1, .back-card2, .back-card3, .back-card4", { opacity: 0 });
-      } else if (isEnteringFromIntro || isReturningFromWork) {
-        if (backCardsTimeline) backCardsTimeline.kill();
         
+      } else if (isEnteringFromPerks) {
+        if (backCardsTimeline) backCardsTimeline.kill();
         backCardsTimeline = gsap.timeline();
-        backCardsTimeline.to(".back-card1", { ...finalPosition.card1, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.37);
-        backCardsTimeline.to(".back-card4", { ...finalPosition.card4, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.25);
-        backCardsTimeline.to(".back-card3", { ...finalPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.30);
-        backCardsTimeline.to(".back-card2", { ...finalPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.35);
-      } else if (isLeavingToWork) {
-        if (backCardsTimeline) backCardsTimeline.kill();
+        backCardsTimeline.fromTo(".back-card1", hideUpPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.37);
+        backCardsTimeline.fromTo(".back-card4", hideUpPosition.card2, { ...finalPosition.card4, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.25);
+        backCardsTimeline.fromTo(".back-card3", hideUpPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.30);
+        backCardsTimeline.fromTo(".back-card2", hideUpPosition.card4, { ...finalPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.35);
         
+      } else if (isLeavingToPerks) {
+        if (backCardsTimeline) backCardsTimeline.kill();
+        backCardsTimeline = gsap.timeline();
+        backCardsTimeline.fromTo(".back-card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.12);
+        backCardsTimeline.fromTo(".back-card4", finalPosition.card2, { ...hideUpPosition.card4, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.10);
+        backCardsTimeline.fromTo(".back-card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.15);
+        backCardsTimeline.fromTo(".back-card2", finalPosition.card4, { ...hideUpPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.20);
+
+      } else if (isLeavingToProjects) {
+        if (backCardsTimeline) backCardsTimeline.kill();
         backCardsTimeline = gsap.timeline();
         backCardsTimeline.fromTo(".back-card1", finalPosition.card1, { ...hideDownPosition.card1, opacity: 1, duration: 0.7 }, 0.29);
         backCardsTimeline.fromTo(".back-card2", finalPosition.card2, { ...hideDownPosition.card2, opacity: 1, duration: 0.7 }, 0.20);
         backCardsTimeline.fromTo(".back-card3", finalPosition.card3, { ...hideDownPosition.card3, opacity: 1, duration: 0.7 }, 0.1);
         backCardsTimeline.fromTo(".back-card4", finalPosition.card4, { ...hideDownPosition.card4, opacity: 1, duration: 0.7 }, 0.16);
-      } else if (isLeavingToIntro) {
+
+      } else if (isEnteringFromProjects) {
         if (backCardsTimeline) backCardsTimeline.kill();
-        
         backCardsTimeline = gsap.timeline();
-        backCardsTimeline.to(".back-card1", { ...startPosition.card1, opacity: 1, duration: 0.3 }, 0);
-        backCardsTimeline.to(".back-card2", { ...startPosition.card2, opacity: 1, duration: 0.3 }, 0);
-        backCardsTimeline.to(".back-card3", { ...startPosition.card3, opacity: 1, duration: 0.3 }, 0);
-        backCardsTimeline.to(".back-card4", { ...startPosition.card4, opacity: 1, duration: 0.3 }, 0);
+        backCardsTimeline.fromTo(".back-card1" ,hideDownPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.30);
+        backCardsTimeline.fromTo(".back-card2" ,hideDownPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.25);
+        backCardsTimeline.fromTo(".back-card3" ,hideDownPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.12);
+        backCardsTimeline.fromTo(".back-card4" ,hideDownPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.28);
       }
     });
   });

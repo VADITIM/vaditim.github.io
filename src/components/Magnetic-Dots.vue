@@ -1,5 +1,5 @@
 <template>
-  <div class="info-background-container" :class="{ disabled: isDisabled }">
+  <div class="magnetic-dots-container" :class="{ disabled: isDisabled }">
     <div
       class="dots-grid"
       ref="gridRef"
@@ -200,14 +200,15 @@
 </script>
 
 <style lang="scss" scoped>
-  .info-background-container {
+  .magnetic-dots-container {
     position: absolute;
-    top: 0;
+    top: 2%;
     right: 0%;
     width: 50vw;
     height: 100vh;
-    z-index: -1;
+    z-index: -3;
     pointer-events: auto;
+    opacity: 0;
     transition: pointer-events 0s;
 clip-path: polygon(28% 0, 100% 0, 100% 100%, 59% 100%);
 
@@ -219,7 +220,7 @@ clip-path: polygon(28% 0, 100% 0, 100% 100%, 59% 100%);
   .dot {
     width: 5px;
     height: 5px;
-    background-color: rgba(218, 31, 25, 0.705);
+    background-color: rgba(218, 32, 25, 0.411);
     border-radius: 50%;
     transform-origin: center;
     will-change: transform;

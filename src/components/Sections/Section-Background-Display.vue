@@ -101,7 +101,7 @@ onMounted(() => {
     background-color: rgb(134, 12, 12);
     background: linear-gradient(180deg,rgba(51, 8, 8, 1) 21%, rgba(102, 14, 14, 1) 80%, rgba(134, 12, 12, 1) 100%);
     clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
-    z-index: 3;
+    z-index: 4;
     
     transition: 
       $backgroundTransitionTime all ease-out;
@@ -136,7 +136,7 @@ onMounted(() => {
     background-color: $red;
     background: linear-gradient(180deg,rgba(105, 17, 34, 1) 21%, rgba(153, 9, 38, 1) 55%, rgba(220, 20, 60, 1) 100%);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
-    z-index: 3;
+    z-index: 4;
     
     transition: 
       $backgroundTransitionTime all ease-out;
