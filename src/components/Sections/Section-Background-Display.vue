@@ -9,13 +9,13 @@
 </template>
 
 <script setup lang="ts" >
-import { onMounted } from 'vue';
-import { ScrollBackgroundSections } from '@modules/animations/General/section-backgrounds';
-import { activeProjectIndex } from '@modules/Projects Section/projects';
+  import { onMounted } from 'vue';
+  import { ScrollBackgroundSections } from '@modules/animations/General/section-backgrounds';
+  import { activeProjectIndex } from '@modules/Projects Section/projects';
 
-onMounted(() => {
-  ScrollBackgroundSections();
-})
+  onMounted(() => {
+    ScrollBackgroundSections();
+  })
 </script>
 
 <style lang="scss">

@@ -6,14 +6,8 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted } from 'vue';
   import Roles from '@perks/Perks-Perks-Display.vue'
   import Name from '@perks/Perks-Name.vue'
-  import { PerksAnimationDesktop } from '@modules/animations/Desktop/Perks-Animation-Handler';
-
-  onMounted(() => {
-    PerksAnimationDesktop();
-  })
 </script>
 
 <style lang="scss" scoped>

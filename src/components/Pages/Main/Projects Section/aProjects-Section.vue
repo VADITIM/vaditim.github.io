@@ -1,25 +1,19 @@
 <template>
   <div class="projects-section-container">
-    <ProjectProjects />
+    <ProjectList />
+    <Projects />
     <ProjectsTechnologyContainer />
-    <InfoBackground :isDisabled="activeProjectIndex !== null" />
+    <MagneticDots :isDisabled="activeProjectIndex !== null" />
   </div>
   <div class="project-section-trigger"></div>
 </template>
 
 <script setup lang="ts">
-  import { onMounted } from 'vue';
-
-  import ProjectProjects from '@projects/Project-Projects.vue';
+  import Projects from '@projects/Project-Projects.vue';
   import ProjectsTechnologyContainer from '@projects/Project-Technology-Container.vue';
-  import InfoBackground from '@components/Magnetic-Dots.vue';
+  import MagneticDots from '@components/Magnetic-Dots.vue';
+  import ProjectList from '@components/Project-List.vue';
   import { activeProjectIndex } from '@modules/Projects Section/projects';
-
-  import { ProjectAnimationDesktop } from '@modules/animations/Desktop/Projects-Animation-Handler';
-
-  onMounted(() => {
-    ProjectAnimationDesktop();
-  })
 </script>
 
 <style lang="scss" scoped>

@@ -31,8 +31,6 @@ export const clickStartY = ref(0)
 export const scrollLeft = ref(0)
 export const transitioning = ref(false)
 
-// 3D Carousel rotation state
-export const carouselRotation = ref(0)
 export const anglePerItem = () => 360 / projects.length
 
 export const projects: Project[] = [
@@ -191,97 +189,6 @@ export function closeActiveProject(event?: MouseEvent) {
   activeProjectIndex.value = null;
 }
 
-export function startDrag(event: MouseEvent) {
-  if (!projectsContainer.value) return
-  
-  isDragging.value = true
-  startX.value = event.pageX - projectsContainer.value.offsetLeft
-  startY.value = event.pageY
-  clickStartX.value = event.pageX
-  clickStartY.value = event.pageY
-  scrollLeft.value = projectsContainer.value.scrollLeft
-  
-  projectsContainer.value.style.cursor = 'grabbing'
-}
-
-export function drag(event: MouseEvent) {
-  if (!isDragging.value || !projectsContainer.value) return
-  
-  event.preventDefault()
-  const x = event.pageX - projectsContainer.value.offsetLeft
-  const walk = (x - startX.value) * 3 
-  projectsContainer.value.scrollLeft = scrollLeft.value - walk
-  
-  const distanceX = Math.abs(event.pageX - clickStartX.value)
-  const distanceY = Math.abs(event.pageY - clickStartY.value)
-  
-  const projects = document.querySelectorAll('.project')
-  projects.forEach((proj) => {
-    if (distanceX > 5 || distanceY > 5) {
-      (proj as HTMLElement).style.cursor = 'grabbing'
-    }
-  })
-}
-
-export function endDrag() {
-  isDragging.value = false
-  
-  if (projectsContainer.value) {
-    projectsContainer.value.style.cursor = 'grab'
-  }
-  
-  const projects = document.querySelectorAll('.project')
-  projects.forEach((proj) => {
-    (proj as HTMLElement).style.cursor = 'pointer'
-  })
-}
-
-export const nextClicked = ref(false);
-export const previousClicked = ref(false);
-
-export function nextProject() {
-	if (currentProjectIndex.value >= projects.length - 1) return
-	
-  nextClicked.value = true
-  setTimeout(() => {
-    nextClicked.value = false
-  }, 500)
-
-	currentProjectIndex.value++
-	navigateToCarouselProject(currentProjectIndex.value)
-}
-
-export function previousProject() {
-	if (currentProjectIndex.value <= 0) return
-
-  previousClicked.value = true
-  setTimeout(() => {
-    previousClicked.value = false
-  }, 500)
-
-	currentProjectIndex.value--
-	navigateToCarouselProject(currentProjectIndex.value)
-}
-
-export function navigateToCarouselProject(index: number) {
-  const targetRotation = -index * anglePerItem()
-  const currentRotation = carouselRotation.value
-  
-  const normalizedCurrent = ((currentRotation % 360) + 360) % 360
-  const normalizedTarget = ((targetRotation % 360) + 360) % 360
-  
-  let diff = normalizedTarget - normalizedCurrent
-  
-  if (diff > 180) {
-    diff -= 360
-  } else if (diff < -180) {
-    diff += 360
-  }
-  
-  carouselRotation.value = currentRotation + diff
-  currentProjectIndex.value = index
-}
-
 export function updateCurrentProject() {
   if (!projectsContainer.value) return
 
@@ -299,8 +206,4 @@ export function updateCurrentProject() {
   const currentIndex = Math.floor((scrollLeft + projectSpacing / 2) / projectSpacing)
   
   currentProjectIndex.value = Math.max(0, Math.min(currentIndex, projects.length - 1))
-}
-
-export function scrollToProject(index: number) {
-  navigateToCarouselProject(index)
 }
