@@ -1,11 +1,19 @@
 <template>
 	<div class="mobile-notice">
-		<div class="test">This Website is currently only available on desktop devices.</div>
-		<div class="test2">The Mobile version is Work in Progress.</div>
+		<div class="test">Mobile Devices currently unsupported.</div>
+		<div class="test2">Check out the Desktop version!</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { createFloatingAnimation } from '@modules/animations/General/floating-elements';
+import { onMounted } from 'vue';
+
+
+onMounted(() => {
+		createFloatingAnimation(".test", { amplitude: 5})
+		createFloatingAnimation(".test2", { amplitude: 15})
+})
 
 
 
@@ -25,7 +33,6 @@
 		height: 100%;
 		background-color: rgb(22, 22, 22);
 		color: white;
-		padding: 2rem;
 		text-align: center;
 		z-index: -9999;
 		opacity: 0;
@@ -40,14 +47,15 @@
 
 	.test {
 		@include absoluteCenter(40%, 50%);
-		font-size: 2.5rem;
-		width: 50%;
+		font-size: 1.6rem;
+		width: 80%;
 		color: $red;
 	}
 
 	.test2 {
 		@include absoluteCenter(85%, 50%);
-		font-size: 1.8rem;
+		width: 95%;
+		font-size: 1rem;
 	}
 
 </style>
