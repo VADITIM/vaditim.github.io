@@ -1,5 +1,6 @@
 <template>
   <main class="app-container" ref="container">
+    <MobileNotice />
     <HardwareAccelerationNotice />
     <LoadingPage v-if="showLoadingPage && !hardwareNoticeActive" />
     <template v-if="!hardwareNoticeActive">
@@ -31,6 +32,7 @@
 
   import HardwareAccelerationNotice from '@components/Hardware-Acceleration-Notice.vue';
   import { hardwareNoticeActive } from '@modules/hardware-notice';
+  import MobileNotice from '@components/Mobile-Notice.vue';
 
   const showLoadingPage = ref(true);
   const hasInitialized = ref(false);
