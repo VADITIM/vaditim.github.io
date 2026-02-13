@@ -30,23 +30,17 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		width: 100%;
-		height: 100%;
-		background-color: rgba(0, 0, 0, 0.8);
+		width: 100svw;
+		height: 100svh;
+		background-color: rgba(0, 0, 0, 0.97);
 		color: white;
-		padding: 2rem;
 		text-align: center;
 		z-index: 9999;
 		font-family: Wosker;
 
-		h2 {
-		margin-bottom: 1rem;
-		font-size: 1.5rem;
-		}
-
-		p {
-		font-size: 1rem;
-		line-height: 1.5;
+		@include allMobileDevices {
+			z-index: -9999;
+			opacity: 0;
 		}
 	}
 
@@ -55,12 +49,24 @@
 		font-size: 5rem;
 		text-wrap: nowrap;
 		color: $red;
+		
+		@include allMobileDevices {
+			width: 80%;
+			text-wrap: wrap;
+			font-size: 1.6rem;
+		}
 	}
 
 	.test2 {
 		@include absoluteCenter(50%, 50%);
 		font-size: 1.8rem;
 		text-wrap: nowrap;
+
+		@include allMobileDevices {
+			width: 95%;
+			text-wrap: wrap;
+			font-size: .9rem;
+		}
 	}
 
 	.confirm {
