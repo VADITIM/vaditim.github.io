@@ -21,5 +21,5 @@
 
 <style lang="scss" scoped>
   @use "@styleVariables" as *;
-  @use "@project/projects-description.scss" as *;
+  @use "@projectsStyle/projects-description.scss" as *;
 </style>
