@@ -9,6 +9,12 @@ pnpm-debug.log*
 # Node modules
 node_modules/
 
+<<<<<<< HEAD
+=======
+# Build output
+docs/
+
+>>>>>>> no-scroll
 # Local environment files
 .env.local
 .env.*.local

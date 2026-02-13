@@ -1,56 +1,92 @@
-<!-- 
-1280 x 720
-tabletland 1180 x 820
-tablet 820 x 1180 -->
-
 <template>
   <main class="app-container" ref="container">
-    <LoadingPage v-if="showLoadingPage" />
-    <SectionBackgrounds />
-    <IntroPage />
-    <InfoPage />
-    <WorkPage />
-    <Sections />
+    <HardwareAccelerationNotice />
+    <LoadingPage v-if="showLoadingPage && !hardwareNoticeActive" />
+    <template v-if="!hardwareNoticeActive">
+      <SectionBackgrounds />
+      <PerksPage :style="{ zIndex: currentSection === 0 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 0 ? 'auto' : 'none' }" />
+      <ProjectsPage :style="{ zIndex: currentSection === 2 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 2 ? 'auto' : 'none' }" />
+      <ProfilePage :style="{ zIndex: currentSection === 1 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 1 ? 'auto' : 'none' }" />
+      <SectionsDisplay />
+    </template>
   </main>
 </template>
 
 <script setup lang="ts">
-import IntroPage from './components/Pages/Main/1 Intro Page/1-Intro-Page.vue';
-import InfoPage from './components/Pages/Main/2 Info Page/2-Info-Page.vue';
-import WorkPage from './components/Pages/Main/3 Work Page/3-Work-Page.vue';
-import SectionBackgrounds from './components/Sections/Section-Color-Backgrounds.vue';
-import Sections from './components/Sections/Sections-Display.vue';
-import LoadingPage from './components/Pages/Main/LoadingPage.vue';
 
-import { ref } from 'vue';
+  import { nextTick, ref, watch } from 'vue';
 
-const showLoadingPage = ref(true);
+  import { currentSection } from '@modules/sections';
+  import { PageAnimations } from '@modules/animations/animation-handler';
+  import { InitializeVirtualScroll } from '@modules/virtual-scroll';
 
-// onMounted(() => {
-//   setTimeout(() => {
-//     showLoadingPage.value = false;
-//   }, 3000);
-// });
+  import PerksPage from '@perks/aPerks-Section.vue';
+  import ProfilePage from '@profile/aProfile-Section.vue';
+  import ProjectsPage from '@projects/aProjects-Section.vue';
 
-// import { container, InitializeScrollSnap } from './modules/scroll-snapping'
+  import SectionBackgrounds from '@sections/Section-Background-Display.vue';
+  import SectionsDisplay from '@sections/Sections-State-Display.vue';
 
-// InitializeScrollSnap();
+  import LoadingPage from '@components/Pages/Main/LoadingPage.vue';
+
+  import HardwareAccelerationNotice from '@components/Hardware-Acceleration-Notice.vue';
+  import { hardwareNoticeActive } from '@modules/hardware-notice';
+
+  const showLoadingPage = ref(true);
+  const hasInitialized = ref(false);
+
+  const initializeApp = () => {
+    if (hasInitialized.value) return;
+
+    InitializeVirtualScroll(3);
+    PageAnimations();
+    hasInitialized.value = true;
+
+    setTimeout(() => {
+      showLoadingPage.value = false;
+    }, 3000);
+  };
+
+  watch(
+    hardwareNoticeActive,
+    async (isActive) => {
+      if (isActive || hasInitialized.value) return;
+      await nextTick();
+      initializeApp();
+    },
+    { immediate: true, flush: 'post' }
+  );
+
 </script>
 
 <style scoped lang="scss">
-@use "./style/variables.scss" as *;
+  @use "@styleVariables" as *;
 
-.app-container>* {
-  @extend .center;
-
-  @include mobile {
-    overflow-x: clip;
-    overflow-y: visible;
+  .app-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  @include allTablets {
-    overflow-x: clip;
-    overflow-y: visible;
+  .app-container>* {
+    @extend .center;
+
+    @include mobile {
+      overflow-x: clip;
+      overflow-y: visible;
+    }
+
+    @include allTablets {
+      overflow-x: clip;
+      overflow-y: visible;
+    }
+
+    @include allDesktops {
+      overflow-x: visible;
+      overflow-y: visible;
+    }
   }
-}
 </style>
