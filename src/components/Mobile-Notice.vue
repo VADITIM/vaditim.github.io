@@ -17,6 +17,8 @@
 	.mobile-notice {
 		display: flex;
 		position: absolute;
+		justify-content: center;
+		align-items: center;
 		top: 0;
 		left: 0;
 		width: 100%;
@@ -38,15 +40,14 @@
 
 	.test {
 		@include absoluteCenter(40%, 50%);
-		font-size: 3rem;
+		font-size: 2.5rem;
 		width: 50%;
 		color: $red;
 	}
 
 	.test2 {
-		@include absoluteCenter(50%, 50%);
+		@include absoluteCenter(85%, 50%);
 		font-size: 1.8rem;
-		text-wrap: nowrap;
 	}
 
 </style>
