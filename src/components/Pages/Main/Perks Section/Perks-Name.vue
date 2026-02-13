@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { firstName, lastName, InitializeFloatingElements, firstNameRef, lastNameRef, tilts } from '@modules/Perks Section/perks-name';
+import { firstName, lastName, InitializeFloatingElements, tilts } from '@modules/Perks Section/perks-name';
 import { InitializeTilt } from '@modules/vanilla-tilt';
 
 InitializeFloatingElements();

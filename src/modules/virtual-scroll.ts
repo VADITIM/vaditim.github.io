@@ -3,7 +3,7 @@ let resizeRaf = 0;
 let wheelRaf = 0;
 let pendingWheelDelta = 0;
 
-const SCROLL_MULTIPLIER = 3;
+const SCROLL_MULTIPLIER = 7;
 
 const updateScrollHeight = () => {
   const height = window.innerHeight * totalSections;
@@ -49,23 +49,23 @@ const handleWheel = (event: WheelEvent) => {
   });
 };
 
-export function initVirtualScroll(sectionCount = 3) {
+export function InitializeVirtualScroll(sectionCount = 3) {
   totalSections = sectionCount;
   updateScrollHeight();
   window.addEventListener("resize", handleResize);
   window.addEventListener("wheel", handleWheel, { passive: false });
 }
 
-export function destroyVirtualScroll() {
-  window.removeEventListener("resize", handleResize);
-  window.removeEventListener("wheel", handleWheel);
-  if (resizeRaf) {
-    window.cancelAnimationFrame(resizeRaf);
-    resizeRaf = 0;
-  }
-  if (wheelRaf) {
-    window.cancelAnimationFrame(wheelRaf);
-    wheelRaf = 0;
-  }
-  pendingWheelDelta = 0;
-}
+// export function destroyVirtualScroll() {
+//   window.removeEventListener("resize", handleResize);
+//   window.removeEventListener("wheel", handleWheel);
+//   if (resizeRaf) {
+//     window.cancelAnimationFrame(resizeRaf);
+//     resizeRaf = 0;
+//   }
+//   if (wheelRaf) {
+//     window.cancelAnimationFrame(wheelRaf);
+//     wheelRaf = 0;
+//   }
+//   pendingWheelDelta = 0;
+// }

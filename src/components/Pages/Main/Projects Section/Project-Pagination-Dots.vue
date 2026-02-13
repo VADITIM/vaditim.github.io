@@ -1,12 +1,12 @@
 <template>
   <div class="pagination-dots" :class="{ 'project-open': activeProjectIndex !== null }">
     <div v-for="(_project, index) in projects" :key="index" class="dot"
-      :class="{ active: index === currentProjectIndex, 'project-open': activeProjectIndex !== null }" @click="navigateToCarouselProject(index)"></div>
+      :class="{ active: index === currentProjectIndex, 'project-open': activeProjectIndex !== null }"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { projects, currentProjectIndex, navigateToCarouselProject, activeProjectIndex } from '@modules/Projects Section/projects';
+  import { projects, currentProjectIndex, activeProjectIndex } from '@modules/Projects Section/projects';
 </script>
 
 <style lang="scss" scoped>

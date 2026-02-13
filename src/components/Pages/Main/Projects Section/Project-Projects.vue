@@ -1,24 +1,6 @@
 <template>
     <div class="projects-container">
-
-
-      <svg style="position: absolute; width: 0; height: 0;">
-        <defs>
-          <filter id="gooey-filter">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-            <feColorMatrix in="blur" mode="matrix" values="
-              1 0 0 0 0
-              0 1 0 0 0
-              0 0 1 0 0
-              0 0 0 18 -7
-            " result="gooey" />
-            <feComposite in="SourceGraphic" in2="gooey" operator="atop" />
-          </filter>
-        </defs>
-      </svg>
-
-
-
+      <GooeyFilter />
       <div class="bubble-container">
         <div 
           v-for="(project, index) in projects" 
@@ -54,23 +36,22 @@
   import ProjectProjectDisplay from '@projects/Project-Display.vue';
   
   import { activeProjectIndex, ActiveProject, closeActiveProject, currentProjectIndex, projects } from '@modules/Projects Section/projects';
-  import { clicked } from '@modules/Projects Section/projects-technology';
   import ProjectPaginationDots from '@projects/Project-Pagination-Dots.vue';
+  import GooeyFilter from '@components/Gooey-Filter.vue';
 
-  const currentProject = computed(() => projects[currentProjectIndex.value]);
 
   const allPositions = [
-    { top: '50%', left: '150%' },    // Position 0: helper (off-screen)
-    { top: '20%', left: '90%' },      // Position 1: First visible
-    { top: '50%', left: '85%' },      // Position 2: Middle visible
-    { top: '80%', left: '90%' },      // Position 3: Last visible
+    { top: '50%', left: '150%' },    
+    { top: '-30%', left: '110%' },   
+    { top: '50%', left: '85%' },     
+    { top: '130%', left: '110%' },   
   ];
   const visibleProjectIndices = ref([0, 1, 2]);
   const bubbleRefs = ref<HTMLElement[]>([]);
   const skipOpacityTransition = ref(false);
 
   onMounted(() => {
-    bubbleRefs.value.forEach((bubble, index) => {
+    bubbleRefs.value.forEach((bubble) => {
       if (bubble) {
         const randomRadius = () => {
           const r1 = 40 + Math.random() * 20; 
@@ -108,6 +89,12 @@
         skipOpacityTransition.value = false;
       });
     }
+  });
+
+  watch(currentProjectIndex, (newIndex) => {
+    const prevIndex = newIndex - 1 < 0 ? projects.length - 1 : newIndex - 1;
+    const nextIndex = newIndex + 1 >= projects.length ? 0 : newIndex + 1;
+    visibleProjectIndices.value = [prevIndex, newIndex, nextIndex];
   });
 
   const getPositionForProject = (projectIndex: number): number => {
@@ -157,6 +144,7 @@
     right: -50%;
     width: 100vw;
     height: 100vh;
+    perspective: 1000px;
   }
 
   .bubble-container {
@@ -167,6 +155,7 @@
     height: 100%;
     filter: url(#gooey-filter);
     z-index: 3;
+    perspective: 1000px;
   }
 
   .bubble {
@@ -183,14 +172,15 @@
     cursor: pointer;
     opacity: 1;
     
-    transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity var(--opacity-duration) cubic-bezier(0.4, 0, 0.2, 1),
-          transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-          box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          z-index 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: 
+      top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity var(--opacity-duration) cubic-bezier(0.4, 0, 0.2, 1) .6s,
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+      z-index 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:not(.helper):hover {
       filter: brightness(1.1);
@@ -199,6 +189,7 @@
 
     &.current {
       width: 18rem;
+      opacity: 1;
       height: 18rem;
       z-index: 22;
       box-shadow: 0 0 20px rgba(185, 26, 26, 0.5);
@@ -213,14 +204,12 @@
 
     &.helper {
       pointer-events: none;
-      opacity: 0;
+      opacity: 1;
       z-index: 0;
     }
 
     &.no-opacity-transition {
-      --opacity-duration: 1.8s;
+      --opacity-duration: 0s;
     }
   }
-
-
 </style>

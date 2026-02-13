@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 export const currentSection = ref(0)
 export const previousSection = ref(0)
