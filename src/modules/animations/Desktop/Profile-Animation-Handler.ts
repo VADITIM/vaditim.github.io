@@ -1,31 +1,13 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { breakpoints } from "../animation-handler";
-import { onSectionChange } from "@modules/sections";
+import { breakpoints, onSectionStatesChange } from "../animation-handler";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
 
-let sectionChangeCount = 0;
-let sectionChangeTimeout: number | null = null;
-const RAPID_CHANGE_THRESHOLD = 300;
+const RAPID_PROFILE_PASS_WINDOW_MS = 200;
 
-function trackRapidSectionChange(): boolean {
-  sectionChangeCount++;
-  
-  const isRapidChange = sectionChangeCount >= 2;
-  
-  if (sectionChangeTimeout) {
-    clearTimeout(sectionChangeTimeout);
-  }
-  
-  sectionChangeTimeout = window.setTimeout(() => {
-    sectionChangeCount = 0;
-    sectionChangeTimeout = null;
-  }, RAPID_CHANGE_THRESHOLD);
-  
-  return isRapidChange;
-}
+
 
 export function ProfileAnimationDesktop() {
   ContactAnimation();
@@ -39,17 +21,18 @@ function ContactAnimation() {
     if (document.querySelector(".contact-container")) {
       let contactAnimation: gsap.core.Tween | null = null;
       
-      onSectionChange((current, previous, direction) => {
-        const isEnteringFromIntro = current === 1 && previous === 0; 
-        const isLeavingToIntro = current === 0 && previous === 1;    
-        const isLeavingToWork = current === 2 && previous === 1;     
-        const isReturningFromWork = current === 1 && previous === 2; 
-        const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
+      onSectionStatesChange(({ 
+        enterProfileFromPerks: EnterFromPerksSection,
+        leaveProfileToPerks: LeaveToPerksSection,
+        leaveProfileToProjects: LeaveToProjectsSection,
+        enterProfileFromProjects: EnterFromProjectsSection,
+        skipProfile: skipped,
+      }) => {
         
-        if (isSkippingProfile) {
+        if (skipped) {
           if (contactAnimation) contactAnimation.kill();
           gsap.set(".contact-container", { opacity: 0 });
-        } else if (isEnteringFromIntro) {
+        } else if (EnterFromPerksSection) {
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -57,9 +40,10 @@ function ContactAnimation() {
             top: "50%",
             left: "80%",
             duration: 0.6,
+            delay: .3,
             ease: "power2.out"
           });
-        } else if (isLeavingToIntro) {
+        } else if (LeaveToPerksSection) {
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -69,7 +53,7 @@ function ContactAnimation() {
             duration: 0.6,
             ease: "power2.in"
           });
-        } else if (isLeavingToWork) {
+        } else if (LeaveToProjectsSection) {
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -78,7 +62,7 @@ function ContactAnimation() {
             ease: "elastic.inOut(.3, 0.3)",
             duration: 0.7
           });
-        } else if (isReturningFromWork) {
+        } else if (EnterFromProjectsSection) {
           if (contactAnimation) contactAnimation.kill();
           
           contactAnimation = gsap.to(".contact-container", {
@@ -86,6 +70,7 @@ function ContactAnimation() {
             top: "50%",
             left: "80%",
             duration: 0.7,
+            delay: .3,
             ease: "elastic.inOut(.3, 0.3)"
           });
         }
@@ -101,6 +86,7 @@ function FrontCardsAnimation() {
     if (!document.querySelector(".card1")) return;
     
     let frontCardsTimeline: gsap.core.Timeline | null = null;
+    let lastProfileEnterAt: number | null = null;
     
     const startPosition = {
       card1: { left: "-100%", bottom: "100%" },
@@ -130,41 +116,84 @@ function FrontCardsAnimation() {
       card4: { bottom: "-200%" },
     };
 
-    onSectionChange((current, previous, direction) => {
-      const isEnteringFromIntro = current === 1 && previous === 0; 
-      const isLeavingToIntro = current === 0 && previous === 1;    
-      const isLeavingToWork = current === 2 && previous === 1;     
-      const isReturningFromWork = current === 1 && previous === 2; 
-      const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
+    onSectionStatesChange(({
+        enterProfileFromPerks: EnterFromPerksSection,
+        leaveProfileToPerks: LeaveToPerksSection,
+        leaveProfileToProjects: LeaveToProjectsSection,
+        enterProfileFromProjects: EnterFromProjectsSection,
+        skipProfile: skipped,
+      }) => {
+
+      const enteringProfile = EnterFromPerksSection || EnterFromProjectsSection;
+      if (enteringProfile) {
+        lastProfileEnterAt = performance.now();
+      }
+
+      const leavingProfile = LeaveToPerksSection || LeaveToProjectsSection;
+      const rapidPassThrough =
+        leavingProfile &&
+        lastProfileEnterAt !== null &&
+        performance.now() - lastProfileEnterAt <= RAPID_PROFILE_PASS_WINDOW_MS;
+
+      if (rapidPassThrough) {
+        if (frontCardsTimeline) frontCardsTimeline.kill();
+
+        if (LeaveToPerksSection) {
+          gsap.set(".card1", { ...startPosition.card1, opacity: 1 });
+          gsap.set(".card2", { ...startPosition.card2, opacity: 1 });
+          gsap.set(".card3", { ...startPosition.card3, opacity: 1 });
+          gsap.set(".card4", { ...startPosition.card4, opacity: 1 });
+        } else {
+          gsap.set(".card1", { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 });
+          gsap.set(".card2", { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 });
+          gsap.set(".card3", { ...finalPosition.card3, ...hideUpPosition.card3, opacity: 1 });
+          gsap.set(".card4", { ...finalPosition.card4, ...hideUpPosition.card4, opacity: 1 });
+        }
+
+        lastProfileEnterAt = null;
+        return;
+      }
       
-      if (isSkippingProfile) {
+      if (skipped) {
         if (frontCardsTimeline) frontCardsTimeline.kill();
         gsap.set(".card1, .card2, .card3, .card4", { opacity: 0 });
-      } else if (isEnteringFromIntro || isReturningFromWork) {
+        lastProfileEnterAt = null;
+      } else if (EnterFromPerksSection  ) {
         if (frontCardsTimeline) frontCardsTimeline.kill();
         
-        frontCardsTimeline = gsap.timeline();
-        frontCardsTimeline.fromTo(".card1", startPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.20);
-        frontCardsTimeline.fromTo(".card2", startPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.20);
-        frontCardsTimeline.fromTo(".card3", startPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.11);
-        frontCardsTimeline.fromTo(".card4", startPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.11);
-      } else if (isLeavingToWork) {
+          frontCardsTimeline = gsap.timeline();
+          frontCardsTimeline.fromTo(".card1", startPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.50);
+          frontCardsTimeline.fromTo(".card2", startPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.50);
+          frontCardsTimeline.fromTo(".card3", startPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.41);
+          frontCardsTimeline.fromTo(".card4", startPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.41);
+      } else if (LeaveToProjectsSection) {
         if (frontCardsTimeline) frontCardsTimeline.kill();
         
-        frontCardsTimeline = gsap.timeline();
-        frontCardsTimeline.fromTo(".card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.6 }, 0.12);
-        frontCardsTimeline.fromTo(".card2", finalPosition.card2, { ...hideUpPosition.card2, opacity: 1, duration: 0.6 }, 0.17);
-        frontCardsTimeline.fromTo(".card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.6 }, 0.28);
+          frontCardsTimeline = gsap.timeline();
+          frontCardsTimeline.fromTo(".card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.6 }, 0.12);
+          frontCardsTimeline.fromTo(".card2", finalPosition.card2, { ...hideUpPosition.card2, opacity: 1, duration: 0.6 }, 0.17);
+          frontCardsTimeline.fromTo(".card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.6 }, 0.28);
         frontCardsTimeline.fromTo(".card4", finalPosition.card4, { ...hideUpPosition.card4, opacity: 1, duration: 0.6 }, 0.21);
-      } else if (isLeavingToIntro) {
+        lastProfileEnterAt = null;
+      } else if (LeaveToPerksSection) {
         if (frontCardsTimeline) frontCardsTimeline.kill();
         
-        frontCardsTimeline = gsap.timeline();
-        frontCardsTimeline.to(".card1", { ...startPosition.card1, opacity: 1, duration: 0.3 }, 0);
-        frontCardsTimeline.to(".card2", { ...startPosition.card2, opacity: 1, duration: 0.3 }, 0);
-        frontCardsTimeline.to(".card3", { ...startPosition.card3, opacity: 1, duration: 0.3 }, 0);
-        frontCardsTimeline.to(".card4", { ...startPosition.card4, opacity: 1, duration: 0.3 }, 0);
+          frontCardsTimeline = gsap.timeline();
+          frontCardsTimeline.to(".card1", { ...startPosition.card1, opacity: 1, duration: 0.3 }, 0);
+          frontCardsTimeline.to(".card2", { ...startPosition.card2, opacity: 1, duration: 0.3 }, 0);
+          frontCardsTimeline.to(".card3", { ...startPosition.card3, opacity: 1, duration: 0.3 }, 0);
+          frontCardsTimeline.to(".card4", { ...startPosition.card4, opacity: 1, duration: 0.3 }, 0);
+            lastProfileEnterAt = null;
       }
+       else if (EnterFromProjectsSection) {
+        if (frontCardsTimeline) frontCardsTimeline.kill();
+        
+          frontCardsTimeline = gsap.timeline();
+          frontCardsTimeline.fromTo(".card1", hideUpPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.70);
+          frontCardsTimeline.fromTo(".card2", hideUpPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.70);
+          frontCardsTimeline.fromTo(".card3", hideUpPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.61);
+          frontCardsTimeline.fromTo(".card4", hideUpPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.61);
+       }
     });
   });
 }
@@ -176,6 +205,7 @@ function BackCardsAnimation() {
     if (!document.querySelector(".back-card1")) return;
     
     let backCardsTimeline: gsap.core.Timeline | null = null;
+    let lastProfileEnterAt: number | null = null;
     
     const startPosition = {
       card1: { left: "18%", bottom: "200%" },
@@ -210,48 +240,82 @@ function BackCardsAnimation() {
     gsap.set(".back-card3", startPosition.card3);
     gsap.set(".back-card4", startPosition.card4);
 
-    onSectionChange((current, previous, direction) => {
-      const isEnteringFromPerks = current === 1 && previous === 0; 
-      const isLeavingToPerks = current === 0 && previous === 1;    
-      const isLeavingToProjects = current === 2 && previous === 1;     
-      const isEnteringFromProjects = current === 1 && previous === 2; 
-      const isSkippingProfile = (current === 0 && previous === 2) || (current === 2 && previous === 0); // Projects ↔ Perks
+    onSectionStatesChange(({
+        enterProfileFromPerks: EnterFromPerksSection,
+        leaveProfileToPerks: LeaveToPerksSection,
+        leaveProfileToProjects: LeaveToProjectsSection,
+        enterProfileFromProjects: EnterFromProjectsSection,
+        skipProfile: skipped,
+      }) => {
+
+      const enteringProfile = EnterFromPerksSection || EnterFromProjectsSection;
+      if (enteringProfile) {
+        lastProfileEnterAt = performance.now();
+      }
+
+      const leavingProfile = LeaveToPerksSection || LeaveToProjectsSection;
+      const rapidPassThrough =
+        leavingProfile &&
+        lastProfileEnterAt !== null &&
+        performance.now() - lastProfileEnterAt <= RAPID_PROFILE_PASS_WINDOW_MS;
+
+      if (rapidPassThrough) {
+        if (backCardsTimeline) backCardsTimeline.kill();
+
+        if (LeaveToPerksSection) {
+          gsap.set(".back-card1", { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 });
+          gsap.set(".back-card2", { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 });
+          gsap.set(".back-card3", { ...finalPosition.card3, ...hideUpPosition.card3, opacity: 1 });
+          gsap.set(".back-card4", { ...finalPosition.card4, ...hideUpPosition.card4, opacity: 1 });
+        } else {
+          gsap.set(".back-card1", { ...finalPosition.card1, ...hideDownPosition.card1, opacity: 1 });
+          gsap.set(".back-card2", { ...finalPosition.card2, ...hideDownPosition.card2, opacity: 1 });
+          gsap.set(".back-card3", { ...finalPosition.card3, ...hideDownPosition.card3, opacity: 1 });
+          gsap.set(".back-card4", { ...finalPosition.card4, ...hideDownPosition.card4, opacity: 1 });
+        }
+
+        lastProfileEnterAt = null;
+        return;
+      }
       
-      if (isSkippingProfile) {
+      if (skipped) {
         if (backCardsTimeline) backCardsTimeline.kill();
         gsap.set(".back-card1, .back-card2, .back-card3, .back-card4", { opacity: 0 });
+        lastProfileEnterAt = null;
         
-      } else if (isEnteringFromPerks) {
+      } else if (EnterFromPerksSection) {
         if (backCardsTimeline) backCardsTimeline.kill();
         backCardsTimeline = gsap.timeline();
-        backCardsTimeline.fromTo(".back-card1", hideUpPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.37);
-        backCardsTimeline.fromTo(".back-card4", hideUpPosition.card2, { ...finalPosition.card4, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.25);
-        backCardsTimeline.fromTo(".back-card3", hideUpPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.30);
-        backCardsTimeline.fromTo(".back-card2", hideUpPosition.card4, { ...finalPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.35);
+        backCardsTimeline.fromTo(".back-card1", hideUpPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.77);
+        backCardsTimeline.fromTo(".back-card4", hideUpPosition.card2, { ...finalPosition.card4, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.55);
+        backCardsTimeline.fromTo(".back-card3", hideUpPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.60);
+        backCardsTimeline.fromTo(".back-card2", hideUpPosition.card4, { ...finalPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.65);
         
-      } else if (isLeavingToPerks) {
+      } else if (LeaveToPerksSection) {
         if (backCardsTimeline) backCardsTimeline.kill();
         backCardsTimeline = gsap.timeline();
         backCardsTimeline.fromTo(".back-card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.12);
         backCardsTimeline.fromTo(".back-card4", finalPosition.card2, { ...hideUpPosition.card4, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.10);
         backCardsTimeline.fromTo(".back-card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.15);
         backCardsTimeline.fromTo(".back-card2", finalPosition.card4, { ...hideUpPosition.card2, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.20);
+        lastProfileEnterAt = null;
 
-      } else if (isLeavingToProjects) {
+      } else if (LeaveToProjectsSection) {
         if (backCardsTimeline) backCardsTimeline.kill();
         backCardsTimeline = gsap.timeline();
         backCardsTimeline.fromTo(".back-card1", finalPosition.card1, { ...hideDownPosition.card1, opacity: 1, duration: 0.7 }, 0.29);
         backCardsTimeline.fromTo(".back-card2", finalPosition.card2, { ...hideDownPosition.card2, opacity: 1, duration: 0.7 }, 0.20);
         backCardsTimeline.fromTo(".back-card3", finalPosition.card3, { ...hideDownPosition.card3, opacity: 1, duration: 0.7 }, 0.1);
         backCardsTimeline.fromTo(".back-card4", finalPosition.card4, { ...hideDownPosition.card4, opacity: 1, duration: 0.7 }, 0.16);
+        lastProfileEnterAt = null;
 
-      } else if (isEnteringFromProjects) {
+      } else if (EnterFromProjectsSection) {
         if (backCardsTimeline) backCardsTimeline.kill();
         backCardsTimeline = gsap.timeline();
-        backCardsTimeline.fromTo(".back-card1" ,hideDownPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.30);
-        backCardsTimeline.fromTo(".back-card2" ,hideDownPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.25);
-        backCardsTimeline.fromTo(".back-card3" ,hideDownPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.12);
-        backCardsTimeline.fromTo(".back-card4" ,hideDownPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.28);
+        backCardsTimeline.fromTo(".back-card1" ,hideDownPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.60);
+        backCardsTimeline.fromTo(".back-card2" ,hideDownPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.55);
+        backCardsTimeline.fromTo(".back-card3" ,hideDownPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.42);
+        backCardsTimeline.fromTo(".back-card4" ,hideDownPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.58);
       }
     });
   });

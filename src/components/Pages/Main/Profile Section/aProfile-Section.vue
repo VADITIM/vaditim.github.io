@@ -10,14 +10,6 @@
 <script setup lang="ts">
   import Cards from '@profile/Profile-Cards.vue';
   import Contact from '@profile/Profile-Contact.vue';
-
-  import { onMounted } from 'vue';
-  import { ProfileAnimationDesktop } from '@modules/animations/Desktop/Profile-Animation-Handler';
-
-
-  onMounted(() => {
-    ProfileAnimationDesktop();
-  })
 </script>
 
 <style lang="scss" scoped>

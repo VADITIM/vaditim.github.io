@@ -203,14 +203,14 @@
   .magnetic-dots-container {
     position: absolute;
     top: 2%;
-    right: 0%;
+    left: 0%;
     width: 50vw;
     height: 100vh;
     z-index: -3;
     pointer-events: auto;
     opacity: 0;
     transition: pointer-events 0s;
-clip-path: polygon(28% 0, 100% 0, 100% 100%, 59% 100%);
+  clip-path: polygon(0 0, 79% 0, 51% 100%, 0 100%);
 
     &.disabled {
       pointer-events: none;
@@ -218,8 +218,8 @@ clip-path: polygon(28% 0, 100% 0, 100% 100%, 59% 100%);
   }
 
   .dot {
-    width: 5px;
-    height: 5px;
+    width: 3px;
+    height: 3px;
     background-color: rgba(218, 32, 25, 0.411);
     border-radius: 50%;
     transform-origin: center;
