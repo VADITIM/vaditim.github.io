@@ -53,6 +53,13 @@ $backgroundTransitionTime: 0.3s;
   }
 }
 
+@mixin allMobileDevices {
+  @media screen and (min-width: #{$mobile}) and (max-width: #{$tabletLandscape}) {
+    @content;
+  }
+}
+
+
 @mixin smallDesktop {
   @media screen and (min-width: #{$tabletLandscape}) and (max-width: #{$small-desktop}) {
     @content;
