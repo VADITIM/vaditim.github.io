@@ -88,7 +88,7 @@
 		font-family: Wosker;
 		perspective: 1000px;
 		opacity: 1;
-		z-index: 20;
+		z-index: 1;
 		filter: drop-shadow(0px 0px 30px black);
 
 		.list-container {

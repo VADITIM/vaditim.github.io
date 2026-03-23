@@ -1,11 +1,13 @@
 <template>
-	<div class="perks-section-background"></div>
-	<div class="profile-section-background-back"></div>
-	<div class="profile-section-background-front"></div>
-	<div class="projects-section-background-back" :class="{active: activeProjectIndex !== null}"></div>
-	<div class="projects-section-background-front" :class="{active: activeProjectIndex !== null}"></div>
-	<div class="scrollerBackgrounds"></div>
-	<div class="scrollerBackgrounds2"></div>
+  <div class="section-background-layer">
+    <div class="perks-section-background"></div>
+    <div class="profile-section-background-back"></div>
+    <div class="profile-section-background-front"></div>
+    <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null}"></div>
+    <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null}"></div>
+    <div class="scrollerBackgrounds"></div>
+    <div class="scrollerBackgrounds2"></div>
+  </div>
 </template>
 
 <script setup lang="ts" >
@@ -20,6 +22,13 @@
 
 <style lang="scss">
   @use "@styleVariables" as *;
+
+  .section-background-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
 
   .scrollerBackgrounds {
     position: absolute;

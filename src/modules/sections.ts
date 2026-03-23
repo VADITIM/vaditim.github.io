@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { getVirtualSectionHeightPx } from './virtual-scroll'
 
 export const currentSection = ref(0)
 export const previousSection = ref(0)
@@ -23,8 +24,7 @@ function notifySectionChange(current: number, previous: number, direction: 'forw
 
 function updateCurrentSection() {
   const scrollY = window.scrollY
-  const viewportHeight = window.innerHeight
-  const sectionHeight = viewportHeight 
+  const sectionHeight = getVirtualSectionHeightPx()
   
   const currentSectionIndex = Math.floor(scrollY / sectionHeight)
   const progressInSection = (scrollY % sectionHeight) / sectionHeight
@@ -38,7 +38,6 @@ function updateCurrentSection() {
     isTransitioning.value = true
     previousSection.value = currentSection.value
     
-    // Determine direction
     if (newSection > currentSection.value) {
       sectionDirection.value = 'forward'
     } else if (newSection < currentSection.value) {
@@ -49,10 +48,8 @@ function updateCurrentSection() {
     
     currentSection.value = newSection
     
-    // Notify subscribers
     notifySectionChange(currentSection.value, previousSection.value, sectionDirection.value)
     
-    // Reset transitioning flag after a short delay
     setTimeout(() => {
       isTransitioning.value = false
     }, 100)
@@ -62,13 +59,13 @@ function updateCurrentSection() {
 }
 
 export function scrollToSection(sectionIndex: number) {
-  const viewportHeight = window.innerHeight
-  const targetScroll = sectionIndex * viewportHeight
+  const sectionHeight = getVirtualSectionHeightPx()
+  const targetScroll = sectionIndex * sectionHeight
   
   window.scrollTo({
     top: targetScroll,
     behavior: 'smooth'
-  })
+  }) 
 }
 
 export function initSectionTracking() {

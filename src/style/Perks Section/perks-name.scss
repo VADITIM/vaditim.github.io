@@ -6,7 +6,7 @@
 	right: 0;
 	width: 100%;
 	height: 100%;
-	// z-index: 1;
+	z-index: 1;
 	overflow-x: hidden;
 }
 
@@ -16,7 +16,7 @@
 	display: flex;
 	flex-direction: column;
 	right: -100%;
-	width: fit-content;
+	width: 100%;
 	top: 50%;
 	transform: translateY(-50%);
 	color: $purple !important;
@@ -64,11 +64,13 @@
 }
 
 .first-name {
-	@include rotate(-22, -30, -12);
+	@include rotate(-12, -25, -5);
 	display: flex;
 	position: relative;
 	align-items: center;
 	height: 15rem;
+	padding-bottom: 2rem;
+	// background-color: red;
 	
 	@include mobile {
 		height: 3.5rem;
@@ -90,10 +92,12 @@
 }
 
 .last-name {
-	@include rotate(-22, -30, -12);
+	@include rotate(-12, -25, -5);
 	display: flex;
 	align-items: center;
 	height: 15rem;
+	font-size: 19rem;
+	// background-color: green;
 
 	@include mobile {
 		height: 3.5rem;
@@ -132,10 +136,11 @@
 }
 
 .name-underline {
-	@include rotate(-22, -30, -12);
+	@include rotate(-12, -25, -5);
 	position: absolute;
-	bottom: -10%;
-	width: 100%;
+	bottom: 5%;
+	left: 7%;
+	width: 60%;
 	height: 2rem;
 	background-color: $yellow !important;
 	clip-path: polygon(0 90%, 100% 0, 100% 100%, 0 100%);

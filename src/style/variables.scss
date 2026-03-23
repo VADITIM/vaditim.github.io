@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "sass:list";
+
 @font-face { font-family: "Wosker"; src: url('../assets/fonts/Wosker.otf') format('opentype'); }
 @font-face { font-family: "DT"; src: url('../assets/fonts/DTGetaiGroteskDisplay-Black.ttf');}
 @font-face { font-family: "Vague"; src: url('../assets/fonts/nouvelle_vague_final.ttf') format('truetype'); }
@@ -109,6 +112,18 @@ $backgroundTransitionTime: 0.3s;
 
 // Methods -------------------------------------------------------------------------
 
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
 @mixin outline($color) {
   text-shadow: -1px -1px 0 $color, 1px -1px 0 $color, -1px 1px 0 $color, 1px 1px 0 $color;
 
@@ -123,8 +138,8 @@ $backgroundTransitionTime: 0.3s;
 
   @for $i from 1 through $depth {
     $darkness: if($i <= 5, $i * 10%, 50%);
-    $shadow: #{$i}px #{-$i}px 0 darken($color, $darkness);
-    $shadows: append($shadows, $shadow, comma);
+    $shadow: #{$i}px #{-$i}px 0 color.adjust($color, $lightness: -$darkness);
+    $shadows: list.append($shadows, $shadow, $separator: comma);
   }
   
   text-shadow: $shadows;

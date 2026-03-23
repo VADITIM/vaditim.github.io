@@ -27,7 +27,7 @@
       isDisabled?: boolean;
     }>();
 
-    type DotState = { baseX: number; baseY: number; x: number; y: number; vx: number; vy: number; scale: number;};
+    type DotState = { baseX: number; baseY: number; x: number; y: number; vx: number; vy: number; scale: number; alpha: number;};
     const dotStates = ref<DotState[]>([]);
     const mouse = { x: 0, y: 0, active: false,};
 
@@ -35,7 +35,10 @@
     const gap = 2;
     const dragRadius = 6;
     const scaleRadius = 2;
+    const brightnessRadius = 9;
     const maxScale = 1.1;
+    const minAlpha = 0.2;
+    const maxAlpha = 0.95;
 
     const columns = ref(0);
     const rows = ref(0);
@@ -84,7 +87,7 @@
         const rect = el.getBoundingClientRect();
         const baseX = rect.left - gridRect.left + rect.width / 2;
         const baseY = rect.top - gridRect.top + rect.height / 2;
-        return { baseX, baseY, x: 0, y: 0, vx: 0, vy: 0, scale: 1, };
+      return { baseX, baseY, x: 0, y: 0, vx: 0, vy: 0, scale: 1, alpha: minAlpha, };
     });
     dotStates.value = newStates;
     };
@@ -105,9 +108,11 @@
 
     const dragRadiusPx = rootFontSize.value * dragRadius;
     const scaleRadiusPx = rootFontSize.value * scaleRadius;
+    const brightnessRadiusPx = rootFontSize.value * brightnessRadius;
     const stiffness = 0.12;
     const damping = 0.82;
     const scaleLerp = 0.18;
+    const alphaLerp = 0.2;
 
     if (states.length && states.length === elements.length) {
         for (let i = 0; i < states.length; i += 1) {
@@ -115,6 +120,7 @@
         let targetX = 0;
         let targetY = 0;
         let targetScale = 1;
+        let targetAlpha = minAlpha;
 
         if (mouse.active) {
             const dx = mouse.x - state.baseX;
@@ -131,6 +137,11 @@
             const scaleStrength = 1 - dist / scaleRadiusPx;
             targetScale = 1 + scaleStrength * (maxScale - 1);
             }
+
+            if (dist < brightnessRadiusPx) {
+            const brightnessStrength = 1 - dist / brightnessRadiusPx;
+            targetAlpha = minAlpha + brightnessStrength * (maxAlpha - minAlpha);
+            }
         }
 
         state.vx += (targetX - state.x) * stiffness;
@@ -142,8 +153,10 @@
         state.y += state.vy;
 
         state.scale += (targetScale - state.scale) * scaleLerp;
+        state.alpha += (targetAlpha - state.alpha) * alphaLerp;
 
         elements[i].style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        elements[i].style.backgroundColor = `rgba(218, 32, 25, ${state.alpha})`;
         }
     }
 

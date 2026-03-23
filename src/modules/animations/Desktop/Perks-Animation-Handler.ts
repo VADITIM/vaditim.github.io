@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { breakpoints, onSectionStatesChange } from "../animation-handler";
+import { breakpoints } from "../animation-config";
+import { onSectionStatesChange } from "../section-state-machine";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
@@ -19,6 +20,12 @@ const blockedScrollKeys = new Set([
 	"End",
 	" ",
 ]);
+
+export function PerksAnimationDesktop() {
+	InitialAnimations();
+	Skills();
+	Name();
+}
 
 const preventScrollEvent = (event: Event) => {
 	event.preventDefault();
@@ -57,109 +64,7 @@ function unlockScrollForInitialAnimations() {
 	window.removeEventListener("keydown", preventScrollKey);
 }
 
-export function PerksAnimationDesktop() {
-	InitialAnimations();
-	Skills();
-	Name();
-}
-
-function Skills() 
-{
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
-	if (document.querySelector(".skill")) {
-		let skillsAnimation: gsap.core.Tween | null = null;
-		let lineAnimation: gsap.core.Tween | null = null;
-
-		if (hasPlayedInitialPerksAnimations) {
-			gsap.set(".skill", { x: "0%", opacity: 1 });
-			if (document.querySelector(".skills-line-container")) {
-				gsap.set(".skills-line-container", { y: 0 });
-			}
-		}
-
-		const skillsTimeline = gsap.timeline({
-			scrollTrigger: {
-				trigger: ".perks-section-trigger",
-				toggleActions: "play none none reverse",
-				start: "top 40%",
-				end: "bottom 0%",
-				// markers: true,
-			},
-		});
-
-		skillsTimeline.fromTo(".skill", { },
-			{
-				x: "-210%",
-				duration: 0.21,
-				stagger: 0.12,
-			}
-		);
-
-		if (document.querySelector(".skills-line-container")) {
-			skillsTimeline.fromTo(
-				".skills-line-container",
-				{ y: 0 },
-				{
-					y: -1000,
-					duration: 0.2,
-				},
-				0
-);
-		}
-
-		onSectionStatesChange(({
-			enterPerksFromProfile,
-			enterPerksFromProjects,
-			leavePerksToProfile,
-			leavePerksToProjects,
-		}) => {
-			if (enterPerksFromProfile || enterPerksFromProjects) {
-				if (skillsAnimation) skillsAnimation.kill();
-				if (lineAnimation) lineAnimation.kill();
-
-				skillsAnimation = gsap.to(".skill", {
-					x: "0%",
-					opacity: 1,
-					duration: 0.35,
-					delay: .5,
-					ease: "power2.out",
-					overwrite: "auto",
-				});
-
-				if (document.querySelector(".skills-line-container")) {
-					lineAnimation = gsap.to(".skills-line-container", {
-						y: 0,
-						duration: 0.35,
-						ease: "power2.out",
-						overwrite: "auto",
-					});
-				}
-			} else if (leavePerksToProfile || leavePerksToProjects) {
-				if (skillsAnimation) skillsAnimation.kill();
-				if (lineAnimation) lineAnimation.kill();
-
-				skillsAnimation = gsap.to(".skill", {
-					x: "-210%",
-					opacity: 1,
-					duration: 0.21,
-					stagger: 0.12,
-					ease: "power2.inOut",
-					overwrite: "auto",
-				});
-
-				if (document.querySelector(".skills-line-container")) {
-					lineAnimation = gsap.to(".skills-line-container", {
-						y: -1000,
-						duration: 0.2,
-						ease: "power2.inOut",
-						overwrite: "auto",
-					});
-				}
-			}
-		});
-	}
-  })
-};
+//---------------------------------------------------------------------------------------------------------
 
 function InitialAnimations() {
 	if (hasPlayedInitialPerksAnimations) return;
@@ -195,7 +100,7 @@ function InitialAnimations() {
 	});
 
 	initialTimeline.to(".name-container", {
-		right: "18%",
+		right: "-15%",
 		duration: 0.5,
 		delay: 2.6,
 		ease: "power2.out",
@@ -227,6 +132,107 @@ function InitialAnimations() {
 
 }
 
+//---------------------------------------------------------------------------------------------------------
+
+function Skills() 
+{
+  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+	if (document.querySelector(".skill")) {
+		let skillsAnimation: gsap.core.Tween | null = null;
+		let lineAnimation: gsap.core.Tween | null = null;
+
+		if (hasPlayedInitialPerksAnimations) {
+			gsap.set(".skill", { x: "0%", opacity: 1 });
+			if (document.querySelector(".skills-line-container")) {
+				gsap.set(".skills-line-container", { y: 0 });
+			}
+		}
+
+		const skillsTimeline = gsap.timeline({
+			scrollTrigger: {
+				trigger: ".perks-section-trigger",
+				toggleActions: "play none none reverse",
+				start: "top 40%",
+				end: "bottom 0%",
+			},
+		});
+
+		skillsTimeline.fromTo(".skill", { },
+			{
+				x: "-210%",
+				duration: 0.21,
+				stagger: 0.12,
+			}
+		);
+
+		if (document.querySelector(".skills-line-container")) {
+			skillsTimeline.fromTo(
+				".skills-line-container",
+				{ y: 0 },
+				{
+					y: -1000,
+					duration: 0.2,
+				},
+				0
+);
+		}
+
+		onSectionStatesChange(({
+			enterPerksFromProfile,
+			enterPerksFromProjects,
+			leavePerksToProfile,
+			leavePerksToProjects,
+		}) => {
+		// ENTER
+			if (enterPerksFromProfile || enterPerksFromProjects) {
+				if (skillsAnimation) skillsAnimation.kill();
+				if (lineAnimation) lineAnimation.kill();
+
+				skillsAnimation = gsap.to(".skill", {
+					x: "0%",
+					opacity: 1,
+					duration: 0.35,
+					delay: .5,
+					ease: "power2.out",
+					overwrite: "auto",
+				});
+
+				if (document.querySelector(".skills-line-container")) {
+					lineAnimation = gsap.to(".skills-line-container", {
+						y: 0,
+						ease: "power2.out",
+						overwrite: "auto",
+					});
+				}
+			// LEAVE
+			} else if (leavePerksToProfile || leavePerksToProjects) {
+				if (skillsAnimation) skillsAnimation.kill();
+				if (lineAnimation) lineAnimation.kill();
+
+				skillsAnimation = gsap.to(".skill", {
+					x: "-210%",
+					opacity: 1,
+					duration: 0.21,
+					stagger: 0.12,
+					ease: "power2.inOut",
+					overwrite: "auto",
+				});
+
+				if (document.querySelector(".skills-line-container")) {
+					lineAnimation = gsap.to(".skills-line-container", {
+						y: -1000,
+						duration: 0.5,
+						ease: "power2.inOut",
+						overwrite: "auto",
+					});
+				}
+			}
+		});
+	}
+  })
+};
+
+//---------------------------------------------------------------------------------------------------------
 
 function Name() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
@@ -236,29 +242,24 @@ function Name() {
 
 		gsap.fromTo(".name-container", { },
 		{
-			right: "18%",
+			right: "100%",
 			duration: 0.5,
 			scrollTrigger: { trigger: ".perks-section-trigger", scrub: false, toggleActions: "play none none reverse",
 				start: "top 40%", 
 				end: "bottom 0%",
 				// markers: true,
 },})
-
-		onSectionStatesChange(({
-			enterPerksFromProfile,
-			enterPerksFromProjects,
-			leavePerksToProfile,
-			leavePerksToProjects,
-		}) => {
+		onSectionStatesChange(({ enterPerksFromProfile, enterPerksFromProjects, leavePerksToProfile, leavePerksToProjects,}) => {
 			if (enterPerksFromProfile || enterPerksFromProjects) {
 				if (nameAnimation) nameAnimation.kill();
 				nameAnimation = gsap.to(".name-container", {
-					right: "18%",
+					right: "-15%",
 					duration: 0.35,
 					delay: .4,
 					ease: "power2.out",
 					overwrite: "auto",
 				});
+
 			} else if (leavePerksToProfile || leavePerksToProjects) {
 				if (nameAnimation) nameAnimation.kill();
 				nameAnimation = gsap.to(".name-container", {

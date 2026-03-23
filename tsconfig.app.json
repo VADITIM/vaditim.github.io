@@ -6,6 +6,7 @@
       "@components/*": ["components/*"],
       "@modules/*": ["modules/*"],
       "@assets/*": ["assets/*"],
+      "@styles/*": ["style/*"],
       "@perks/*": ["components/Pages/Main/Perks Section/*"],
       "@profile/*": ["components/Pages/Main/Profile Section/*"],
       "@projects/*": ["components/Pages/Main/Projects Section/*"],

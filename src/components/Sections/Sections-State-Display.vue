@@ -1,6 +1,8 @@
 <template>
   <div class="content-list-container" :class="{active: activeProjectIndex !== null}">
-		<div class="line"></div>
+		<div class="line">
+			<!-- <div class="dot" :style="dotStyle"></div> -->
+		</div>
     <p class="intro-header-list" :class="{active: currentSection === 0}" @click="scrollToSection(0)">PERKS</p>
     <p class="info-header-list" :class="{active: currentSection === 1}" @click="scrollToSection(1)">DEV PROFILE</p>
     <p class="work-header-list" :class="{active: currentSection === 2}" @click="scrollToSection(2)">PROJECTS</p>
@@ -8,16 +10,41 @@
 </template>
 
 <script setup lang="ts">
-	import { onMounted, onUnmounted } from 'vue'
+	import { computed, onMounted, onUnmounted, ref } from 'vue'
 	import { currentSection, initSectionTracking, cleanupSectionTracking, scrollToSection } from '@modules/sections'
 	import { activeProjectIndex } from '@modules/Projects Section/projects'
 
+	const dotProgress = ref(0)
+
+	const updateDotProgress = () => {
+		const maxScroll = Math.max(
+			0,
+			document.documentElement.scrollHeight - window.innerHeight
+		)
+
+		if (maxScroll === 0) {
+			dotProgress.value = 0
+			return
+		}
+
+		dotProgress.value = Math.min(1, Math.max(0, window.scrollY / maxScroll))
+	}
+
+	const dotStyle = computed(() => ({
+		top: `${dotProgress.value * 100}%`
+	}))
+
 	onMounted(() => {
 		initSectionTracking()
+		updateDotProgress()
+		window.addEventListener('scroll', updateDotProgress)
+		window.addEventListener('resize', updateDotProgress)
 	})
 
 	onUnmounted(() => {
 		cleanupSectionTracking()
+		window.removeEventListener('scroll', updateDotProgress)
+		window.removeEventListener('resize', updateDotProgress)
 	})
 </script>
 
@@ -47,6 +74,19 @@
 		@include largeDesktop {
 			bottom: 3%;
 		}
+	}
+
+	.dot {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: .8rem;
+		height: .8rem;
+		background-color: $red;
+		border-radius: 50%;
+		border: solid 3px $red;
+		transition: top .15s linear;
 	}
 
 	.intro-header-list,
