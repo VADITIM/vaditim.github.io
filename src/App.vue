@@ -3,11 +3,15 @@
     <MobileNotice />
     <HardwareAccelerationNotice />
     <LoadingPage v-if="showLoadingPage && !hardwareNoticeActive" />
+
+    <SectionsNextSection />
+    <SectionsPreviousSection />
+
     <template v-if="!hardwareNoticeActive">
       <SectionBackgrounds />
-      <PerksPage :style="{ zIndex: currentSection === 0 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 0 ? 'auto' : 'none' }" />
-      <ProjectsPage :style="{ zIndex: currentSection === 2 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 2 ? 'auto' : 'none' }" />
-      <ProfilePage :style="{ zIndex: currentSection === 1 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 1 ? 'auto' : 'none' }" />
+      <div :style="{ zIndex: currentSection === 0 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 0 ? 'auto' : 'none' }"><PerksPage /></div>
+      <div :style="{ zIndex: currentSection === 2 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 2 ? 'auto' : 'none' }"><ProjectsPage /></div>
+      <div :style="{ zIndex: currentSection === 1 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 1 ? 'auto' : 'none' }"><ProfilePage /></div>
       <SectionsDisplay />
     </template>
   </main>
@@ -33,14 +37,18 @@
   import HardwareAccelerationNotice from '@components/Hardware-Acceleration-Notice.vue';
   import { hardwareNoticeActive } from '@modules/hardware-notice';
   import MobileNotice from '@components/Mobile-Notice.vue';
+  import SectionsNextSection from '@components/Sections/Sections-Next-Section.vue';
+  import SectionsPreviousSection from '@components/Sections/Sections-Previous-Section.vue';
 
-  const showLoadingPage = ref(true);
+  // const showLoadingPage = ref(true);
+  const showLoadingPage = ref(false);
   const hasInitialized = ref(false);
+  const sectionHeightVh = 100;
 
   const initializeApp = () => {
     if (hasInitialized.value) return;
 
-    InitializeVirtualScroll(3);
+    InitializeVirtualScroll(3, sectionHeightVh);
     PageAnimations();
     hasInitialized.value = true;
 

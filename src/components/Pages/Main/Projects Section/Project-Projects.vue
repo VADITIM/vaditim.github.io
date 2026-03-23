@@ -46,7 +46,7 @@
     { top: '50%', left: '85%' },     
     { top: '130%', left: '110%' },   
   ];
-  const visibleProjectIndices = ref([0, 1, 2]);
+  const visibleProjectIndices = ref([projects.length - 1, 0, 1]);
   const bubbleRefs = ref<HTMLElement[]>([]);
   const skipOpacityTransition = ref(false);
 
@@ -156,6 +156,7 @@
     filter: url(#gooey-filter);
     z-index: 3;
     perspective: 1000px;
+    pointer-events: none;
   }
 
   .bubble {
@@ -171,6 +172,7 @@
     z-index: 21;
     cursor: pointer;
     opacity: 1;
+    pointer-events: auto;
     
     transition: 
       top 0.6s cubic-bezier(0.4, 0, 0.2, 1),

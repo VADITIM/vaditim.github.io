@@ -1,8 +1,8 @@
 <template>
 	<div v-if="isVisible" class="hardware-acceleration-notice">
-		<div class="test">Hardware Acceleration Required</div>
-		<div class="test2">For the best experience, please enable hardware acceleration in your browser settings.</div>
-		<button class="confirm" @click="dismissNotice">OK</button>
+		<div class="header">Hardware Acceleration Required</div>
+		<div class="extra">For the best experience, please enable hardware acceleration in your browser settings.</div>
+		<button class="button" @click="dismissNotice">OK</button>
 	</div>
 </template>
 
@@ -27,12 +27,15 @@
 	@use "@styleVariables" as *;
 	
 	.hardware-acceleration-notice {
+		@include flex;
+		justify-content: center;
+		align-items: center;
 		position: absolute;
 		top: 0;
 		left: 0;
 		width: 100svw;
 		height: 100svh;
-		background-color: rgba(0, 0, 0, 0.97);
+		background-color: rgba(20, 20, 20, 0.97);
 		color: white;
 		text-align: center;
 		z-index: 9999;
@@ -44,8 +47,9 @@
 		}
 	}
 
-	.test {
-		@include absoluteCenter(40%, 50%);
+	.header {
+		position: relative;
+		top: -10%;
 		font-size: 5rem;
 		text-wrap: nowrap;
 		color: $red;
@@ -57,7 +61,7 @@
 		}
 	}
 
-	.test2 {
+	.extra {
 		@include absoluteCenter(50%, 50%);
 		font-size: 1.8rem;
 		text-wrap: nowrap;
@@ -69,12 +73,14 @@
 		}
 	}
 
-	.confirm {
+	.button {
 		@include absoluteCenter(60%, 50%);
-		padding: 0.7rem 2rem;
 		font-family: Wosker;
-		font-size: 1.3rem;
+		font-size: 2.5rem;
 		border: none;
+		width: 7rem;
+		height: 4rem;
+		border-bottom: solid .7rem #910d28;
 		border-radius: 8px;
 		background-color: $red;
 		color: white;

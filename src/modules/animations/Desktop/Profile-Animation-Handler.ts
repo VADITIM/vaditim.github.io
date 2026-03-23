@@ -1,11 +1,12 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { breakpoints, onSectionStatesChange } from "../animation-handler";
+import { breakpoints } from "../animation-config";
+import { onSectionStatesChange } from "../section-state-machine";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
 
-const RAPID_PROFILE_PASS_WINDOW_MS = 200;
+const RAPID_PROFILE_PASS_WINDOW_MS = 500;
 
 
 
@@ -89,10 +90,10 @@ function FrontCardsAnimation() {
     let lastProfileEnterAt: number | null = null;
     
     const startPosition = {
-      card1: { left: "-100%", bottom: "100%" },
-      card2: { right: "-100%", bottom: "100%" },
-      card3: { left: "-100%", bottom: "50%" },
-      card4: { right: "-100%", bottom: "50%" },
+      card1: { left: "18%", bottom: "200%" },
+      card2: { right: "18%", bottom: "200%" },
+      card3: { left: "18%", bottom: "150%" },
+      card4: { right: "18%", bottom: "150%" },
     };
 
     const finalPosition = {
@@ -107,13 +108,6 @@ function FrontCardsAnimation() {
       card2: { bottom: "200%" },
       card3: { bottom: "200%" },
       card4: { bottom: "200%" },
-    };
-    
-    const hideDownPosition = {
-      card1: { bottom: "-200%" },
-      card2: { bottom: "-200%" },
-      card3: { bottom: "-200%" },
-      card4: { bottom: "-200%" },
     };
 
     onSectionStatesChange(({

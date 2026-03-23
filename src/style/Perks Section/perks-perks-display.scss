@@ -22,14 +22,21 @@
 
 .skills-container {
 	position: absolute;
-	left: -15%;
+	left: -255%;
 	display: flex;
+	width: 100%;
 	perspective: 1000px;
 	scale: .85;
 
 	@include largeDesktop {
 		scale: 1;
 		left: 0;
+	}
+
+	@include desktop {
+		left: -245%;
+		scale: 1;
+		padding-bottom: 5rem;
 	}
 
 	@include mobile {
@@ -53,7 +60,9 @@
 }
 
 .skills-line-container {
+	position: relative;
 	perspective: 1000px;
+	z-index: 100;
 }
 
 .skills-line {
@@ -114,14 +123,18 @@
 	@include rotate(0, 30, -2);
 	@include flex(start, start);
 	position: relative;
-	width: 120%;
+	z-index: 120;
+	width: 100%;
+	padding: 0rem 7rem;
+	text-wrap: nowrap;
+	text-align: center;
 	height: 3rem;
 
 	background-color: $blacktrans;
 	color: white;
 	margin: 1rem 4.5rem;
 	border-radius: 3px;
-	border-bottom: 3px solid $purple;
+	border-top: 3px solid $purple;
 	border-right: 3px solid $purple;
 	padding-inline-start: 1rem;
 	padding-block-start: .5rem;
@@ -137,11 +150,14 @@
 
 	@for $index from 1 through 10 {
 		&:nth-last-child(#{$index}) {
-			z-index: #{1 + ($index)};
+			z-index: #{120 + ($index)};
 		}
 	}
 
 	@include allDesktops {
+
+		font-size: 2.4rem;
+		
 		&:hover {
 			width: 140%;
 			height: 10.5rem;

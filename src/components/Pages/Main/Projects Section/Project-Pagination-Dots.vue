@@ -1,12 +1,18 @@
 <template>
   <div class="pagination-dots" :class="{ 'project-open': activeProjectIndex !== null }">
     <div v-for="(_project, index) in projects" :key="index" class="dot"
-      :class="{ active: index === currentProjectIndex, 'project-open': activeProjectIndex !== null }"></div>
+      :class="{ active: index === currentProjectIndex, 'project-open': activeProjectIndex !== null }"
+      @click="selectProject(index)"
+    ></div>
   </div>
 </template>
 
 <script setup lang="ts">
   import { projects, currentProjectIndex, activeProjectIndex } from '@modules/Projects Section/projects';
+
+  const selectProject = (index: number) => {
+    currentProjectIndex.value = index;
+  };
 </script>
 
 <style lang="scss" scoped>
@@ -24,6 +30,8 @@
     gap: 1rem;
     z-index: 100;
     filter: drop-shadow(0px 0px 15px white);
+    pointer-events: all;
+    isolation: isolate;
 
     transition: 
       all 0.3s ease-in-out;

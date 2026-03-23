@@ -1,8 +1,9 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { activeProjectIndex } from "@modules/Projects Section/projects";
+import { activeProjectIndex, closeActiveProject, currentProjectIndex } from "@modules/Projects Section/projects";
 import { watch } from "vue";
-import { breakpoints, onSectionStatesChange } from "../animation-handler";
+import { breakpoints } from "../animation-config";
+import { onSectionStatesChange } from "../section-state-machine";
 
 gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
@@ -43,6 +44,9 @@ function Projects() {
 				}
 				else if (LeaveProjectsSection)
 				{
+					closeActiveProject();
+					currentProjectIndex.value = 0;
+
 					gsap.set(".projects-container", { transition: "none" });
 
 					if (projectsAnimation) projectsAnimation.kill();
