@@ -40,8 +40,8 @@
   import SectionsNextSection from '@components/Sections/Sections-Next-Section.vue';
   import SectionsPreviousSection from '@components/Sections/Sections-Previous-Section.vue';
 
-  // const showLoadingPage = ref(true);
-  const showLoadingPage = ref(false);
+  const showLoadingPage = ref(true);
+  // const showLoadingPage = ref(false);
   const hasInitialized = ref(false);
   const sectionHeightVh = 100;
 
