@@ -20,19 +20,19 @@ const BACKGROUND_TARGETS = [
 ]
 
 const isPerksEnter = (states: SectionTransitionStates) =>
-  states.enterPerksFromProfile || states.enterPerksFromProjects
+ states.enterPerksFromProfile || states.enterPerksFromProjects || states.enterPerksFromNone
 
 const isPerksLeave = (states: SectionTransitionStates) =>
   states.leavePerksToProfile || states.leavePerksToProjects
 
 const isProfileEnter = (states: SectionTransitionStates) =>
-  states.enterProfileFromPerks || states.enterProfileFromProjects
+  states.enterProfileFromPerks || states.enterProfileFromProjects || states.enterProfileFromNone
 
 const isProfileLeave = (states: SectionTransitionStates) =>
   states.leaveProfileToPerks || states.leaveProfileToProjects
 
 const isProjectsEnter = (states: SectionTransitionStates) =>
-  states.enterProjectsFromProfile
+  states.enterProjectsFromProfile || states.enterProjectsFromNone
 
 const isProjectsLeave = (states: SectionTransitionStates) =>
   states.leaveProjectsToProfile
@@ -50,9 +50,9 @@ function runBackgroundTransition(buildTimeline: (timeline: gsap.core.Timeline) =
 }
 
 function playPerksEnter() {
-  runBackgroundTransition((tl) => {
-    tl.to('.perks-section-background', { left: '-10%', ease: 'back.out', duration: DURATION }, ENTER_DELAY)
-  })
+    runBackgroundTransition((tl) => {
+      tl.to('.perks-section-background',{ left: '-10%', ease: 'back.out', duration: DURATION },ENTER_DELAY)
+    })
 }
 
 function playPerksLeave() {
@@ -90,6 +90,13 @@ function playProjectsLeave() {
 }
 
 export function ScrollBackgroundSections() {
+  // Initialize all backgrounds to leave positions for NONE state
+  gsap.set('.perks-section-background', { left: '-30%' })
+  gsap.set('.profile-section-background-back', { left: '-30%' })
+  gsap.set('.profile-section-background-front', { left: '-30%' })
+  gsap.set('.projects-section-background-back', { right: '-40%' })
+  gsap.set('.projects-section-background-front', { right: '-40%' })
+
   const cleanupPerks = onSectionEnterLeaveAnimation({
     isEnter: isPerksEnter,
     isLeave: isPerksLeave,

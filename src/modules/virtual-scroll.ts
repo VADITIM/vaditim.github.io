@@ -153,7 +153,6 @@ const handleWheel = (event: WheelEvent) => {
     getMaxScroll()
   );
 
-  // Snap to exact section boundary
   const newSectionIndex = clamp(
     Math.round(newTargetY / sectionHeight),
     0,
@@ -161,7 +160,6 @@ const handleWheel = (event: WheelEvent) => {
   );
   targetScrollY = newSectionIndex * sectionHeight;
 
-  // Lock immediately if entering a new section
   if (newSectionIndex !== lastReachedSectionIndex) {
     lastReachedSectionIndex = newSectionIndex;
     beginSectionCooldown();
@@ -188,4 +186,11 @@ export function setVirtualSectionHeightVh(sectionVh: number) {
   updateScrollHeight();
   targetScrollY = clamp(targetScrollY, 0, getMaxScroll());
   lastReachedSectionIndex = getSectionIndexFromScroll(window.scrollY);
+}
+
+export function unlockScroll() {
+  unlockScrollInput();
+  if (sectionLockTimer) clearTimeout(sectionLockTimer);
+  scrollLockedUntilMs = 0;
+  sectionLockTimer = 0;
 }

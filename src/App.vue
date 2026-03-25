@@ -23,8 +23,10 @@
 
   import { currentSection } from '@modules/sections';
   import { PageAnimations } from '@modules/animations/animation-handler';
-  import { InitializeVirtualScroll } from '@modules/virtual-scroll';
+  import { InitializeVirtualScroll, unlockScroll } from '@modules/virtual-scroll';
+  import { finished } from '@modules/animations/section-state-machine';
 
+  import LoadingPage from '@components/Pages/Main/LoadingPage.vue';
   import PerksPage from '@perks/aPerks-Section.vue';
   import ProfilePage from '@profile/aProfile-Section.vue';
   import ProjectsPage from '@projects/aProjects-Section.vue';
@@ -32,7 +34,6 @@
   import SectionBackgrounds from '@sections/Section-Background-Display.vue';
   import SectionsDisplay from '@sections/Sections-State-Display.vue';
 
-  import LoadingPage from '@components/Pages/Main/LoadingPage.vue';
 
   import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
   import { hardwareNoticeActive } from '@modules/hardware-notice';
@@ -41,20 +42,18 @@
   import SectionsPreviousSection from '@components/Sections/Sections-Previous-Section.vue';
 
   const showLoadingPage = ref(true);
-  // const showLoadingPage = ref(false);
   const hasInitialized = ref(false);
   const sectionHeightVh = 100;
 
-  const initializeApp = () => {
-    if (hasInitialized.value) return;
+  const tryInitializeApp = () => {
+    if (hasInitialized.value || hardwareNoticeActive.value || !finished.value) return;
+
 
     InitializeVirtualScroll(3, sectionHeightVh);
     PageAnimations();
     hasInitialized.value = true;
 
-    setTimeout(() => {
-      showLoadingPage.value = false;
-    }, 3000);
+    showLoadingPage.value = false;
   };
 
   watch(
@@ -62,9 +61,18 @@
     async (isActive) => {
       if (isActive || hasInitialized.value) return;
       await nextTick();
-      initializeApp();
+      tryInitializeApp();
     },
     { immediate: true, flush: 'post' }
+  );
+
+  watch(
+    finished,
+    (isFinished) => {
+      if (!isFinished) return;
+      tryInitializeApp();
+      unlockScroll();
+    }
   );
 
 </script>

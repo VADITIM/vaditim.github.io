@@ -9,7 +9,7 @@ import {
 gsap.defaults({ immediateRender: false });
 
 const isPerksEnter = (states: SectionTransitionStates) =>
-	states.enterPerksFromProfile || states.enterPerksFromProjects;
+	states.enterPerksFromProfile || states.enterPerksFromProjects || states.enterPerksFromNone;
 
 const isPerksLeave = (states: SectionTransitionStates) =>
 	states.leavePerksToProfile || states.leavePerksToProjects;
@@ -18,6 +18,7 @@ export function PerksAnimationDesktop() {
 	Skills();
 	Name();
 }
+
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -34,24 +35,25 @@ function Skills() {
 			if (skillsAnimation) skillsAnimation.kill();
 			if (lineAnimation) lineAnimation.kill();
 
-			skillsAnimation = gsap.to(".skill", {
+			gsap.to(".skill", {
 				x: "0%",
 				opacity: 1,
 				duration: 0.35,
-				delay: .5,
+				delay: 0.5,
 				ease: "power2.out",
 				overwrite: "auto",
 			});
 
+			const hasSkillsLine = !!document.querySelector(".skills-line-container");
 			if (hasSkillsLine) {
-				lineAnimation = gsap.to(".skills-line-container", {
+				gsap.to(".skills-line-container", {
 					y: 0,
-				duration: 0.35,
-				delay: .75,
+					duration: 0.35,
+					delay: 0.75,
 					ease: "power2.out",
 					overwrite: "auto",
 				});
-			}
+			}		
 		};
 
 		const playLeave = () => {

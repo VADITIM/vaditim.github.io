@@ -1,6 +1,10 @@
+import { ref } from 'vue';
 import { currentSection, onSectionChange } from "@modules/sections";
 
+export const finished = ref<boolean>(false);
+
 export const SECTION_INDEX = {
+	NONE: -1,
 	PERKS: 0,
 	PROFILE: 1,
 	PROJECTS: 2,
@@ -10,6 +14,10 @@ export type SectionIndex = typeof SECTION_INDEX[keyof typeof SECTION_INDEX];
 export type SectionDirection = 'forward' | 'backward' | 'none';
 
 export function getSectionTransitionStates(current: number, previous: number) {
+	const enterPerksFromNone = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.NONE;
+	const enterProfileFromNone = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.NONE;
+	const enterProjectsFromNone = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.NONE;
+
 	const enterPerksFromProfile = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROFILE;
 	const leavePerksToProfile = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.PERKS;
 	const enterPerksFromProjects = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROJECTS;
@@ -28,6 +36,9 @@ export function getSectionTransitionStates(current: number, previous: number) {
 		(current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PERKS);
 
 	return {
+		enterPerksFromNone,
+		enterProfileFromNone,
+		enterProjectsFromNone,
 		enterPerksFromProfile,
 		leavePerksToProfile,
 		enterPerksFromProjects,

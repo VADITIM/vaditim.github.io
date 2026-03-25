@@ -1,14 +1,21 @@
 import { ref } from 'vue'
 import { getVirtualSectionHeightPx } from './virtual-scroll'
 
+type SectionChangeCallback = (current: number, previous: number, direction: 'forward' | 'backward' | 'none') => void
+const sectionChangeCallbacks: SectionChangeCallback[] = []
+
 export const currentSection = ref(0)
 export const previousSection = ref(0)
 export const sectionDirection = ref<'forward' | 'backward' | 'none'>('none')
 export const isTransitioning = ref(false)
 
-// State change callbacks
-type SectionChangeCallback = (current: number, previous: number, direction: 'forward' | 'backward' | 'none') => void
-const sectionChangeCallbacks: SectionChangeCallback[] = []
+export function resetSectionStateToPerks() {
+  currentSection.value = 0
+  previousSection.value = 0
+  sectionDirection.value = 'none'
+  isTransitioning.value = false
+}
+
 
 export function onSectionChange(callback: SectionChangeCallback) {
   sectionChangeCallbacks.push(callback)
@@ -18,10 +25,17 @@ export function onSectionChange(callback: SectionChangeCallback) {
   }
 }
 
+
+export function triggerSectionChange(current: number, previous: number, direction: 'forward' | 'backward' | 'none' = 'none') {
+  previousSection.value = previous
+  currentSection.value = current
+  sectionDirection.value = direction
+  notifySectionChange(current, previous, direction)
+}
+
 function notifySectionChange(current: number, previous: number, direction: 'forward' | 'backward' | 'none') {
   sectionChangeCallbacks.forEach(callback => callback(current, previous, direction))
 }
-
 function updateCurrentSection() {
   const scrollY = window.scrollY
   const sectionHeight = getVirtualSectionHeightPx()

@@ -5,20 +5,21 @@
     <div class="profile-section-background-front"></div>
     <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null}"></div>
     <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null}"></div>
-    <div class="scrollerBackgrounds"></div>
-    <div class="scrollerBackgrounds2"></div>
   </div>
 </template>
 
 <script setup lang="ts" >
-  import { onMounted, onBeforeUnmount } from 'vue';
+  import { onBeforeUnmount, watch } from 'vue';
   import { ScrollBackgroundSections } from '@modules/animations/General/section-backgrounds';
   import { activeProjectIndex } from '@modules/Projects Section/projects';
+  import { finished } from '@modules/animations/section-state-machine';
 
   let cleanupBackgroundAnimations: (() => void) | null = null;
 
-  onMounted(() => {
-    cleanupBackgroundAnimations = ScrollBackgroundSections();
+  watch(finished, (isFinished) => {
+    if (isFinished && !cleanupBackgroundAnimations) {
+      cleanupBackgroundAnimations = ScrollBackgroundSections();
+    }
   });
 
   onBeforeUnmount(() => {
@@ -39,20 +40,10 @@
     pointer-events: none;
   }
 
-  .scrollerBackgrounds {
-    position: absolute;
-    bottom: -100%;
-  }
-
-  .scrollerBackgrounds2 {
-    position: absolute;
-    bottom: 0%;
-  }
-
   .perks-section-background {
     position: absolute;
     top: 0;
-    left: -10%;
+    left: -30%;
     width: 30%;
     height: 100vh;
     background-color: rgb(255, 221, 28);
