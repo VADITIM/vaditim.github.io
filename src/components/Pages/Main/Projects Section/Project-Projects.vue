@@ -22,22 +22,23 @@
           @click="handleBubbleClick(getPositionForProject(index))",
         ></div>
       </div>
-
       <ProjectProjectDisplay />
       <ProjectPaginationDots />
+      <ProjectsHelix/>
     </div>
 </template>
 
 <script setup lang="ts">
   
-  import { ref, computed, onMounted, watch } from 'vue';
+  import { ref, onMounted, watch } from 'vue';
   import gsap from 'gsap';
 
   import ProjectProjectDisplay from '@projects/Project-Display.vue';
   
   import { activeProjectIndex, ActiveProject, closeActiveProject, currentProjectIndex, projects } from '@modules/Projects Section/projects';
   import ProjectPaginationDots from '@projects/Project-Pagination-Dots.vue';
-  import GooeyFilter from '@components/Gooey-Filter.vue';
+  import GooeyFilter from '@components/Misc/Gooey-Filter.vue';
+import ProjectsHelix from './Projects-Helix.vue';
 
 
   const allPositions = [
@@ -194,7 +195,7 @@
       opacity: 1;
       height: 18rem;
       z-index: 22;
-      box-shadow: 0 0 20px rgba(185, 26, 26, 0.5);
+      @include boxShadow(0 0 20px rgba(185, 26, 26, 0.5));
       
       &.active {
         opacity: 0;

@@ -11,13 +11,22 @@
 </template>
 
 <script setup lang="ts" >
-  import { onMounted } from 'vue';
+  import { onMounted, onBeforeUnmount } from 'vue';
   import { ScrollBackgroundSections } from '@modules/animations/General/section-backgrounds';
   import { activeProjectIndex } from '@modules/Projects Section/projects';
 
+  let cleanupBackgroundAnimations: (() => void) | null = null;
+
   onMounted(() => {
-    ScrollBackgroundSections();
-  })
+    cleanupBackgroundAnimations = ScrollBackgroundSections();
+  });
+
+  onBeforeUnmount(() => {
+    if (cleanupBackgroundAnimations) {
+      cleanupBackgroundAnimations();
+      cleanupBackgroundAnimations = null;
+    }
+  });
 </script>
 
 <style lang="scss">

@@ -1,4 +1,4 @@
-import { onSectionChange } from "@modules/sections";
+import { currentSection, onSectionChange } from "@modules/sections";
 
 export const SECTION_INDEX = {
 	PERKS: 0,
@@ -50,6 +50,16 @@ export type SectionTransitionMeta = {
 	direction: SectionDirection;
 };
 
+export type SectionAnimationPredicate = (states: SectionTransitionStates) => boolean;
+
+export type SectionEnterLeaveAnimationOptions = {
+	isEnter: SectionAnimationPredicate;
+	isLeave: SectionAnimationPredicate;
+	onEnter: () => void;
+	onLeave: () => void;
+	initialSection?: SectionIndex;
+};
+
 type SectionStatesChangeCallback = (
 	states: SectionTransitionStates,
 	meta: SectionTransitionMeta
@@ -82,4 +92,23 @@ export function onSectionLeave(
 			callback(states, meta);
 		}
 	});
+}
+
+export function onSectionEnterLeaveAnimation({
+	isEnter,
+	isLeave,
+	onEnter,
+	onLeave,
+	initialSection,
+}: SectionEnterLeaveAnimationOptions) {
+	const cleanup = onSectionStatesChange((states) => {
+		if (isEnter(states)) onEnter();
+		else if (isLeave(states)) onLeave();
+	});
+
+	if (initialSection !== undefined && currentSection.value === initialSection) {
+		onEnter();
+	}
+
+	return cleanup;
 }

@@ -34,9 +34,9 @@
 
   import LoadingPage from '@components/Pages/Main/LoadingPage.vue';
 
-  import HardwareAccelerationNotice from '@components/Hardware-Acceleration-Notice.vue';
+  import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
   import { hardwareNoticeActive } from '@modules/hardware-notice';
-  import MobileNotice from '@components/Mobile-Notice.vue';
+  import MobileNotice from '@components/Misc/Mobile-Notice.vue';
   import SectionsNextSection from '@components/Sections/Sections-Next-Section.vue';
   import SectionsPreviousSection from '@components/Sections/Sections-Previous-Section.vue';
 

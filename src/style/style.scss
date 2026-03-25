@@ -45,12 +45,8 @@ html {
 }
 
 html::-webkit-scrollbar {
-  display: flex; 
-}
-
-
-html::-webkit-scrollbar {
   display: none;
+  opacity: 0;
 }
 
 body {

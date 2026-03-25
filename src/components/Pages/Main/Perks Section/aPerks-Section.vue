@@ -13,10 +13,6 @@
 <style lang="scss" scoped>
   @use "@styleVariables" as *;
 
-  .perks-section-trigger {
-    position: absolute;
-    bottom: 0;
-  }
 
   .wip {
     position: fixed;
@@ -30,5 +26,6 @@
     font-size: 2rem;
     font-family: "Cutive";
     z-index: 1000;
+    overflow: hidden;
   }
 </style>

@@ -1,12 +1,17 @@
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { activeProjectIndex, closeActiveProject, currentProjectIndex } from "@modules/Projects Section/projects";
 import { watch } from "vue";
 import { breakpoints } from "../animation-config";
-import { onSectionStatesChange } from "../section-state-machine";
+import {
+  onSectionEnterLeaveAnimation,
+  type SectionTransitionStates,
+  SECTION_INDEX,
+} from "../section-state-machine";
 
-gsap.registerPlugin(ScrollTrigger);
 gsap.defaults({ immediateRender: false });
+
+const isProjectsEnter = (states: SectionTransitionStates) => states.enterProjectsFromProfile;
+const isProjectsLeave = (states: SectionTransitionStates) => states.leaveProjectsToProfile;
     
 export function ProjectAnimationDesktop() {
 	Projects();
@@ -17,165 +22,156 @@ export function ProjectAnimationDesktop() {
 
 function Projects() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+    if (!document.querySelector(".projects-container")) return;
 
-    if (document.querySelector(".projects-container")) {
-			let projectsAnimation: gsap.core.Tween | null = null;
+    let projectsAnimation: gsap.core.Tween | null = null;
 
+    const playEnter = () => {
+      gsap.set(".projects-container", { transition: "none" });
+      if (projectsAnimation) projectsAnimation.kill();
+      projectsAnimation = gsap.to(".projects-container", {
+        right: "10%",
+        duration: 0.6,
+        delay: 0.3,
+        ease: "power4.inOut",
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".projects-container", { clearProps: "transition" }); },
+      });
+    };
 
+    const playLeave = () => {
+      closeActiveProject();
+      currentProjectIndex.value = 0;
+      gsap.set(".projects-container", { transition: "none" });
+      if (projectsAnimation) projectsAnimation.kill();
+      projectsAnimation = gsap.to(".projects-container", {
+        right: "-50%",
+        duration: 0.6,
+        delay: 0,
+        ease: "power4.inOut",
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".projects-container", { clearProps: "transition" }); },
+      });
+    };
 
-			onSectionStatesChange(({
-				enterProjectsFromProfile: EnterProjectsSection,
-				leaveProjectsToProfile: LeaveProjectsSection,
-			}) => {
-				if (EnterProjectsSection) {
-					gsap.set(".projects-container", { transition: "none" });
+    gsap.set(".projects-container", { right: "-50%" });
 
-					if (projectsAnimation) projectsAnimation.kill();
+    const cleanupStates = onSectionEnterLeaveAnimation({
+      isEnter: isProjectsEnter,
+      isLeave: isProjectsLeave,
+      onEnter: playEnter,
+      onLeave: playLeave,
+      initialSection: SECTION_INDEX.PROJECTS,
+    });
 
-					projectsAnimation = gsap.to(".projects-container", {
-						right: "0%",
-						duration: 0.6,
-						delay: .3,
-						ease: "power4.inOut",
-						overwrite: "auto",
-
-						onComplete: () => { gsap.set(".projects-container", { clearProps: "transition" }); }
-					});
-				}
-				else if (LeaveProjectsSection)
-				{
-					closeActiveProject();
-					currentProjectIndex.value = 0;
-
-					gsap.set(".projects-container", { transition: "none" });
-
-					if (projectsAnimation) projectsAnimation.kill();
-
-					projectsAnimation = gsap.to(".projects-container", {
-						right: "-50%",
-						duration: 0.6,
-						delay: 0,
-						ease: "power4.inOut",
-						overwrite: "auto",
-
-						onComplete: () => { gsap.set(".projects-container", { clearProps: "transition" }); }
-					});
-				}
-			});
-    }
+    return () => {
+      cleanupStates();
+      if (projectsAnimation) projectsAnimation.kill();
+    };
   });
 }
 
 function ProjectList() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
 
-    if (document.querySelector(".project-list")) {
-      let listAnimation: gsap.core.Tween | null = null;
+    if (!document.querySelector(".project-list")) return;
 
-      gsap.set(".project-list", { clearProps: "left" });
+    let listAnimation: gsap.core.Tween | null = null;
 
-      gsap.fromTo(".project-list",
-        {
-          x: "0vw",
-        },
-        {
-          x: "-60vw",
-          duration: .6,
-          ease: "power4.inOut",
-          scrollTrigger: { trigger: ".project-section-trigger", scrub: false, toggleActions: "play none none reverse",
-            start: "top 30%",
-            end: "bottom 100%",
-          },
-        })
-
-      onSectionStatesChange(({
-          enterProjectsFromProfile: EnterProjectsSection,
-          leaveProjectsToProfile: LeaveProjectsSection,
-        }) => {
-
-        if (EnterProjectsSection) {
-          gsap.set(".project-list", { transition: "none", clearProps: "left" });
-
-          if (listAnimation) listAnimation.kill();
-
-          listAnimation = gsap.to(".project-list", {
-            x: "-60vw",
-            duration: 0.6,
-            delay: .3,
-            ease: "power4.inOut",
-            overwrite: "auto",
-
-            onComplete: () => { gsap.set(".project-list", { clearProps: "transition,left" }); }
-          });
-        }
-        else if (LeaveProjectsSection)
-        {
-          gsap.set(".project-list", { transition: "none", clearProps: "left" });
-
-          if (listAnimation) listAnimation.kill();
-
-          listAnimation = gsap.to(".project-list", {
-            x: "0vw",
-            duration: 0.6,
-            delay: 0,
-            ease: "power4.inOut",
-            overwrite: "auto",
-
-            onComplete: () => { gsap.set(".project-list", { clearProps: "transition,left" }); }
-          });
-        }
+    const playEnter = () => {
+      gsap.set(".project-list", { transition: "none", clearProps: "left" });
+      if (listAnimation) listAnimation.kill();
+      listAnimation = gsap.to(".project-list", {
+        x: "-70vw",
+        duration: 0.6,
+        delay: 0.3,
+        ease: "power4.inOut",
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".project-list", { clearProps: "transition,left" }); }
       });
+    };
 
-      watch(activeProjectIndex, (projectIndex) => {
-        if (projectIndex !== null) {
-          gsap.set(".project-list", { x: "-60vw", clearProps: "left" });
-        }
+    const playLeave = () => {
+      gsap.set(".project-list", { transition: "none", clearProps: "left" });
+      if (listAnimation) listAnimation.kill();
+      listAnimation = gsap.to(".project-list", {
+        x: "0vw",
+        duration: 0.6,
+        delay: 0,
+        ease: "power4.inOut",
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".project-list", { clearProps: "transition,left" }); }
       });
-    }
+    };
+
+    gsap.set(".project-list", { x: "0vw", clearProps: "left" });
+
+    const cleanupStates = onSectionEnterLeaveAnimation({
+      isEnter: isProjectsEnter,
+      isLeave: isProjectsLeave,
+      onEnter: playEnter,
+      onLeave: playLeave,
+      initialSection: SECTION_INDEX.PROJECTS,
+    });
+
+    const stopWatch = watch(activeProjectIndex, (projectIndex) => {
+      if (projectIndex !== null) {
+        gsap.set(".project-list", { x: "-70vw", clearProps: "left" });
+      }
+    });
+
+    return () => {
+      cleanupStates();
+      stopWatch();
+      if (listAnimation) listAnimation.kill();
+    };
   });
 }
 
 function InteractiveDot() {
     gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+    if (!document.querySelector(".magnetic-dots-container")) return;
 
-    if (document.querySelector(".magnetic-dots-container")) {
-        let dotsAnimation: gsap.core.Tween | null = null;
-        
-        onSectionStatesChange(({
-            enterProjectsFromProfile: EnterProjectsSection,
-            leaveProjectsToProfile: LeaveProjectsSection,
-          }) => {
-          
-          if (EnterProjectsSection) {
-            gsap.set(".magnetic-dots-container", { transition: "none" });
-            
-            if (dotsAnimation) dotsAnimation.kill();
-            
-            dotsAnimation = gsap.to(".magnetic-dots-container", {
-              opacity: 1,
-              duration: .5,
-              delay: 0,
-              overwrite: "auto",
-              
-              onComplete: () => { gsap.set(".magnetic-dots-container", { clearProps: "transition" }); }
-            });} 
-			else if (LeaveProjectsSection) 
-			{
-				gsap.set(".magnetic-dots-container", { transition: "none" });
-				
-				if (dotsAnimation) dotsAnimation.kill();
-				
-				dotsAnimation = gsap.to(".magnetic-dots-container", {
-					opacity: 0,
-					duration: 1,
-					delay: 0,
-					overwrite: "auto",
+    let dotsAnimation: gsap.core.Tween | null = null;
 
-					onComplete: () => { gsap.set(".magnetic-dots-container", { clearProps: "transition" }); }
-				});
-			}
-        });
-    }
+    const playEnter = () => {
+      gsap.set(".magnetic-dots-container", { transition: "none" });
+      if (dotsAnimation) dotsAnimation.kill();
+      dotsAnimation = gsap.to(".magnetic-dots-container", {
+        opacity: 1,
+        duration: 0.5,
+        delay: 0,
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".magnetic-dots-container", { clearProps: "transition" }); }
+      });
+    };
+
+    const playLeave = () => {
+      gsap.set(".magnetic-dots-container", { transition: "none" });
+      if (dotsAnimation) dotsAnimation.kill();
+      dotsAnimation = gsap.to(".magnetic-dots-container", {
+        opacity: 0,
+        duration: 1,
+        delay: 0,
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".magnetic-dots-container", { clearProps: "transition" }); }
+      });
+    };
+
+    gsap.set(".magnetic-dots-container", { opacity: 0 });
+
+    const cleanupStates = onSectionEnterLeaveAnimation({
+      isEnter: isProjectsEnter,
+      isLeave: isProjectsLeave,
+      onEnter: playEnter,
+      onLeave: playLeave,
+      initialSection: SECTION_INDEX.PROJECTS,
+    });
+
+    return () => {
+      cleanupStates();
+      if (dotsAnimation) dotsAnimation.kill();
+    };
   });
 }
 
@@ -183,45 +179,49 @@ function InteractiveDot() {
 function PaginationDots() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
 
-    if (document.querySelector(".pagination-dots")) {
-        let dotsAnimation: gsap.core.Tween | null = null;
-        
-        onSectionStatesChange(({
-            enterProjectsFromProfile: EnterProjectsSection,
-            leaveProjectsToProfile: LeaveProjectsSection,
-          }) => {
-          
-          if (EnterProjectsSection) {
-            gsap.set(".pagination-dots", { transition: "none" });
-            
-            if (dotsAnimation) dotsAnimation.kill();
-            
-            dotsAnimation = gsap.to(".pagination-dots", {
-              opacity: 1,
-              top: "50%",
-              duration: 0.6,
-              delay: 0.5,
-              overwrite: "auto",
-              
-              onComplete: () => { gsap.set(".pagination-dots", { clearProps: "transition" }); }
-            });} 
-			else if (LeaveProjectsSection) 
-			{
-				gsap.set(".pagination-dots", { transition: "none" });
-				
-				if (dotsAnimation) dotsAnimation.kill();
-				
-				dotsAnimation = gsap.to(".pagination-dots", {
-					opacity: 0,
-					top: "150%",
-					duration: 0.6,
-					delay: 0,
-					overwrite: "auto",
+    if (!document.querySelector(".pagination-dots")) return;
 
-					onComplete: () => { gsap.set(".pagination-dots", { clearProps: "transition" }); }
-				});
-			}
-        });
-    }
+    let dotsAnimation: gsap.core.Tween | null = null;
+
+    const playEnter = () => {
+      gsap.set(".pagination-dots", { transition: "none" });
+      if (dotsAnimation) dotsAnimation.kill();
+      dotsAnimation = gsap.to(".pagination-dots", {
+        opacity: 1,
+        left: "98.5%",
+        duration: 1.6,
+        delay: 0.5,
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".pagination-dots", { clearProps: "transition" }); }
+      });
+    };
+
+    const playLeave = () => {
+      gsap.set(".pagination-dots", { transition: "none" });
+      if (dotsAnimation) dotsAnimation.kill();
+      dotsAnimation = gsap.to(".pagination-dots", {
+        opacity: 0,
+        left: "110%",
+        duration: 1.6,
+        delay: 0,
+        overwrite: "auto",
+        onComplete: () => { gsap.set(".pagination-dots", { clearProps: "transition" }); }
+      });
+    };
+
+    gsap.set(".pagination-dots", { opacity: 0, left: "110%" });
+
+    const cleanupStates = onSectionEnterLeaveAnimation({
+      isEnter: isProjectsEnter,
+      isLeave: isProjectsLeave,
+      onEnter: playEnter,
+      onLeave: playLeave,
+      initialSection: SECTION_INDEX.PROJECTS,
+    });
+
+    return () => {
+      cleanupStates();
+      if (dotsAnimation) dotsAnimation.kill();
+    };
   });
 }

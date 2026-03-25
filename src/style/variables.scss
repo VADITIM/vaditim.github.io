@@ -158,6 +158,18 @@ $backgroundTransitionTime: 0.3s;
   align-items: $string2;
 }
 
+@mixin boxShadow($shadow, $legacyPrefixes: false) {
+  @if $legacyPrefixes {
+    -webkit-box-shadow: $shadow;
+    -khtml-box-shadow: $shadow;
+    -moz-box-shadow: $shadow;
+    -ms-box-shadow: $shadow;
+    -o-box-shadow: $shadow;
+  }
+
+  box-shadow: $shadow;
+}
+
 
 
 @mixin animationPopIn($duration: 0.2s) {

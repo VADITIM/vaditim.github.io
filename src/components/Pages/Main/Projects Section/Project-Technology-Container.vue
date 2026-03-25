@@ -1,6 +1,6 @@
 <template>
   <ProjectTech />
-  <!-- <ProjectDescription /> -->
+  <ProjectDescription />
 </template>
 
 <script setup lang="ts">

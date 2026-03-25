@@ -64,7 +64,7 @@
       background-color: rgb(255, 0, 0);
       background-color: rgb(255, 255, 255);
       transform: scale(1.3);
-      box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+      @include boxShadow(0 0 10px rgba(255, 0, 0, 0.5));
     }
   }
 </style>

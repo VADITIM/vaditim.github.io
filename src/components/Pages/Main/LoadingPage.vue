@@ -1,5 +1,5 @@
 <template>
-	<div class="loading-container" :class="{ open: open }" @click="toggleOpen">
+	<div ref="loadingContainer" class="loading-container" :class="{ open: open }" @click="toggleOpen">
 		<div class="top-background" :class="{ open: open }"></div>
 		<div class="bottom-background" :class="{ open: open }"></div>
 
@@ -14,9 +14,14 @@
 	</div>
 </template>
 
+<script lang="ts">
+	export const isAnimationEnded = ref(false);
+</script>
+
 <script setup lang="ts">
-	import { onMounted, ref } from 'vue';
+	import { onMounted, ref, onBeforeUnmount } from 'vue';
 	const open = ref<boolean>(false);
+	const loadingContainer = ref<HTMLElement | null>(null);
 
 	interface TextItem {
 		content: string;
@@ -24,9 +29,28 @@
 		left: string;
 	}
 
+	let observer: IntersectionObserver | null = null;
+
 	onMounted(() => {
 		toggleOpen();
+		
+		if (loadingContainer.value) {
+			observer = new IntersectionObserver((entries) => {
+				const entry = entries[0];
+				if (open.value && !entry.isIntersecting) {
+					isAnimationEnded.value = true;
+				}
+			}, { threshold: 0 }); 
+			
+			observer.observe(loadingContainer.value);
+		}
 	})
+
+	onBeforeUnmount(() => {
+		if (observer) {
+			observer.disconnect();
+		}
+	});
 
 	function toggleOpen() {
 		open.value = !open.value;
