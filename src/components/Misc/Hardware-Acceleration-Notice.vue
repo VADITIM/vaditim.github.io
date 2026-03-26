@@ -1,7 +1,7 @@
 <template>
 	<div v-if="isVisible" class="hardware-acceleration-notice">
 		<div class="header">Hardware Acceleration Required</div>
-		<div class="extra">For the best experience, please enable hardware acceleration in your browser settings.</div>
+		<div class="extra">For the best experience, please enable hardware acceleration in your browser settings. <br><br> If nothing's visible try resizing your viewport to FullHD+</div>
 		<button class="button" @click="dismissNotice">OK</button>
 	</div>
 </template>
