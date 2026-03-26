@@ -29,7 +29,6 @@
 	overscroll-behavior: none;
 	touch-action: none;
 
-
 	@include mobile {
 		left: -.5rem;
 		top: 10%;
@@ -45,22 +44,6 @@
 		transform: translateY(0);
 		font-size: 9rem;
 	}
-	
-	@include tabletLandscape {
-		right: 5%;
-		font-size: 10rem;
-	}
-		
-	@include smallDesktop {
-		right: 7%;
-		font-size: 14rem;
-	}
-
-	@include largeDesktop {
-		top: 47%;
-		right: 22%;
-		font-size: 23rem;
-	}
 }
 
 .first-name {
@@ -70,7 +53,6 @@
 	align-items: center;
 	height: 15rem;
 	padding-bottom: 2rem;
-	// background-color: red;
 	
 	@include mobile {
 		height: 3.5rem;
@@ -81,14 +63,6 @@
 	@include tablet {
 		height: fit-content
 	}
-
-	@include tabletLandscape {
-		height: fit-content
-	}
-
-	@include largeDesktop {
-		height: fit-content
-	}
 }
 
 .last-name {
@@ -97,7 +71,6 @@
 	align-items: center;
 	height: 15rem;
 	font-size: 19rem;
-	// background-color: green;
 
 	@include mobile {
 		height: 3.5rem;
@@ -105,10 +78,6 @@
 	}
 
 	@include tablet {
-		height: fit-content
-	}
-
-	@include tabletLandscape {
 		height: fit-content
 	}
 }
@@ -132,7 +101,6 @@
 		@include threeDElement(5);
 		filter:  none;
 	}
-
 }
 
 .name-underline {

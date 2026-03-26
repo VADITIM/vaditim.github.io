@@ -38,7 +38,7 @@ onMounted(() => {
 		opacity: 0;
 		font-family: Wosker;
 
-		@include allMobileDevices {
+		@include allMobile {
 			display: flex;
 			z-index: 9999;
 			opacity: 1;

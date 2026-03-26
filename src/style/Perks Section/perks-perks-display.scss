@@ -10,10 +10,6 @@
 	overflow: visible;
 	z-index: 3;
 
-	@include allTablets {
-		width: 30rem;
-	}
-	
 	@include mobile {
 		height: 100vh;
 		width: 100vw;
@@ -28,11 +24,6 @@
 	perspective: 1000px;
 	scale: .85;
 
-	@include largeDesktop {
-		scale: 1;
-		left: 0;
-	}
-
 	@include desktop {
 		left: -245%;
 		scale: 1;
@@ -44,13 +35,6 @@
 		height: 60%;
 		top: 30%;
 		width: 100%;
-	}
-
-	@include allTablets {
-		position: relative;
-		top: -5%;
-		left: -20%;
-		width: 65%;
 	}
 	
 	@include tablet {
@@ -93,8 +77,8 @@
 .skills-container:has(.skill.open) .skills-line {
   @include mobile {
     transform: translateY(50%) rotateY(40deg) scaleY(2);
-	border-top: solid 2px $purple;
-	border-bottom: solid 2px $purple;
+		border-top: solid 2px $purple;
+		border-bottom: solid 2px $purple;
 
     transition:
       transform .4s ease-in-out;
@@ -129,7 +113,6 @@
 	text-wrap: nowrap;
 	text-align: center;
 	height: 3rem;
-
 	background-color: $blacktrans;
 	color: white;
 	margin: 1rem 4.5rem;
@@ -154,7 +137,7 @@
 		}
 	}
 
-	@include allDesktops {
+	@include desktop {
 
 		font-size: 2.4rem;
 		
@@ -183,39 +166,6 @@
 		}
 
 		&:hover .skill-options-container {
-			left: 0%;
-
-			transition:
-				left 0s ease 0s;
-		}
-	}
-
-	@include allTablets {
-		&.open {
-			width: 140%;
-			height: 11.5rem;
-			border-color: $yellow;
-			filter: drop-shadow(5px 5px 10px #f5e67580);
-
-			transition:
-				width 0.2s ease-in-out 0s,      
-				height 0.2s ease-in-out 0.22s,   
-				border-color .4s ease-in-out,
-				filter .4s ease-in-out;
-		}
-
-		&.open .skill-option {
-			left: -3%;
-
-			@for $delay from 1 through 10 {
-				&:nth-child(#{$delay}) {
-					transition: 
-						left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
-				}
-			}
-		}
-
-		&.open .skill-options-container {
 			left: 0%;
 
 			transition:
@@ -277,10 +227,6 @@
 		left 0s ease 2s,
 		right 0s ease 2s;
 
-	@include allTablets {
-		height: 30%;
-	}
-		
 	@include mobile {
 		top: 2.2rem;
 		height: 30%;

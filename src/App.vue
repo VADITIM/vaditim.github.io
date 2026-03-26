@@ -3,10 +3,6 @@
     <MobileNotice />
     <HardwareAccelerationNotice />
     <LoadingPage v-if="showLoadingPage && !hardwareNoticeActive" />
-
-    <SectionsNextSection />
-    <SectionsPreviousSection />
-
     <template v-if="!hardwareNoticeActive">
       <SectionBackgrounds />
       <div :style="{ zIndex: currentSection === 0 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 0 ? 'auto' : 'none' }"><PerksPage /></div>
@@ -38,8 +34,6 @@
   import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
   import { hardwareNoticeActive } from '@modules/hardware-notice';
   import MobileNotice from '@components/Misc/Mobile-Notice.vue';
-  import SectionsNextSection from '@components/Sections/Sections-Next-Section.vue';
-  import SectionsPreviousSection from '@components/Sections/Sections-Previous-Section.vue';
 
   const showLoadingPage = ref(true);
   const hasInitialized = ref(false);
@@ -97,12 +91,7 @@
       overflow-y: visible;
     }
 
-    @include allTablets {
-      overflow-x: clip;
-      overflow-y: visible;
-    }
-
-    @include allDesktops {
+    @include desktop {
       overflow-x: visible;
       overflow-y: visible;
     }

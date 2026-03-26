@@ -106,10 +106,6 @@
 		@include absoluteCenter(50%, -20%);
 		opacity: 0;
 	}
-
-  @include largeDesktop() {
-    font-size: 4rem;
-  }
 }
 
 .wrapper {

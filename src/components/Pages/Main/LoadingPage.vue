@@ -34,7 +34,7 @@
 	function Finished() {
 		if (!finished.value) {
 			gsap.set(".name-container", { right: "-100%"});
-			gsap.set(".skills-line-container", { y: "-1000"});
+			gsap.set(".skills-line-container", { x: "-1000"});
 			gsap.set(".skill", { x: "-210%"});
 		}
 		else {

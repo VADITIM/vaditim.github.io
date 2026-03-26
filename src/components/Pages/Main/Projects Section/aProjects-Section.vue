@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
   import ProjectList from '@projects/Project-List.vue';
-  import MagneticDots from './Magnetic-Dots.vue';
+  import MagneticDots from '../../../Misc/Magnetic-Dots.vue';
   import Projects from '@projects/Project-Projects.vue';
   import { activeProjectIndex } from '@modules/Projects Section/projects';
 </script>

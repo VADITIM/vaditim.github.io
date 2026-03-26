@@ -30,6 +30,55 @@
   import { downloadRef, tilts, devItems} from '@modules/Projects Section/projects-technology';
   import { activeProjectIndex, currentProjectIndex, projects } from '@modules/Projects Section/projects';
   import { InitializeTilt } from '@modules/vanilla-tilt';
+  import { watch, ref } from 'vue';
+  import { gsap } from 'gsap';
+
+  let animationTimeline: gsap.core.Timeline | null = null;
+
+  const playLeaveAnimation = () => {
+    if (animationTimeline) animationTimeline.kill();
+    animationTimeline = gsap.timeline();
+
+    animationTimeline.to(
+      '.engine, .platform, .language',
+      { 
+        top: "100vh", 
+        duration: 0.4, 
+        ease: 'back.inOut',
+        stagger: { each: 0.05, from: 'end' }
+      },
+      0
+    );
+  };
+
+  const playEnterAnimation = () => {
+    if (animationTimeline) animationTimeline.kill();
+    animationTimeline = gsap.timeline();
+
+    animationTimeline.to(
+      '.engine, .platform, .language',
+      { 
+        top: 0, 
+        duration: 1, 
+        ease: 'back.out',
+        stagger: { each: 0.1, from: 'start' }
+      },
+      0
+    );
+  };
+
+  watch(activeProjectIndex, (newIndex) => {
+    const devContainer = document.querySelector('.dev-container');
+    if (!devContainer) return;
+
+    const isActive = devContainer.classList.contains('active');
+
+    if (isActive) {
+      playLeaveAnimation();
+    } else {
+      playEnterAnimation();
+    }
+  });
 
   InitializeTilt(tilts);
 </script>
@@ -40,7 +89,7 @@
   .tech-container {
     @extend .center;
     position: absolute;
-    top: 1%;
+    top: 0%;
     width: 100%;
     height: 100%;
     z-index: -1;
@@ -60,19 +109,12 @@
 
   .dev-container {
     position: absolute;
-    top: 5%;
-    right: -50%;
+    top: 25%;
+    right: -3%;
     filter: drop-shadow(0px 0px 30px black);
     perspective: 1000px;
 
-    transition:
-      all .3s ease-in-out;
-
     &.active {
-      right: -3%;
-
-      transition:
-        all 1s ease-in-out .6s;
     }
   }
 
@@ -81,8 +123,8 @@
   .language {
     @include rotate(-210, -20, 30);
     position: relative;
-    top: 0;
-    right: 50%;
+    top: 100vh;
+    right: 170%;
     width: 8rem;
     height: 8rem;
     background-size: contain;

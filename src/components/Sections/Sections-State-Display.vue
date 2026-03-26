@@ -30,10 +30,6 @@
 		dotProgress.value = Math.min(1, Math.max(0, window.scrollY / maxScroll))
 	}
 
-	const dotStyle = computed(() => ({
-		top: `${dotProgress.value * 100}%`
-	}))
-
 	onMounted(() => {
 		initSectionTracking()
 		updateDotProgress()
@@ -69,10 +65,6 @@
 
 		&.active {
 			left: -20%
-		}
-
-		@include largeDesktop {
-			bottom: 3%;
 		}
 	}
 
@@ -116,21 +108,6 @@
 			color: $red;
 			line-height: 1rem;
 			margin: 2rem 1rem;
-		}
-
-		@include largeDesktop {
-			font-size: 2rem;
-
-			&:hover {
-				font-size: 2.1rem;
-			}
-
-			&.active {
-				font-size: 5rem;
-				color: $red;
-				line-height: 1.2rem;
-				margin: 3rem 1rem;
-			}
 		}
 	}
 

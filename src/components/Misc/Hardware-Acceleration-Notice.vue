@@ -41,7 +41,7 @@
 		z-index: 9999;
 		font-family: Wosker;
 
-		@include allMobileDevices {
+		@include allMobile {
 			z-index: -9999;
 			opacity: 0;
 		}
@@ -54,7 +54,7 @@
 		text-wrap: nowrap;
 		color: $red;
 		
-		@include allMobileDevices {
+		@include allMobile {
 			width: 80%;
 			text-wrap: wrap;
 			font-size: 1.6rem;
@@ -66,7 +66,7 @@
 		font-size: 1.8rem;
 		text-wrap: nowrap;
 
-		@include allMobileDevices {
+		@include allMobile {
 			width: 95%;
 			text-wrap: wrap;
 			font-size: .9rem;

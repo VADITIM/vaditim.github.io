@@ -1,7 +1,7 @@
 <template>
-  <div class="pagination-dots" :class="{ 'project-open': activeProjectIndex !== null }">
+  <div class="pagination-dots" :class="{ 'active': activeProjectIndex !== null }">
     <div v-for="(_project, index) in projects" :key="index" class="dot"
-      :class="{ active: index === currentProjectIndex, 'project-open': activeProjectIndex !== null }"
+      :class="{ active: index === currentProjectIndex }"
       @click="selectProject(index)"
     ></div>
   </div>
@@ -23,6 +23,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+
+    transform: translate(-50%, -50%);
     align-items: center;
     padding-top: 1rem;
     padding-bottom: 1rem;
@@ -33,11 +35,16 @@
     pointer-events: all;
     isolation: isolate;
 
-    transition: 
-      all 0.3s ease-in-out;
 
-    &.project-open {
-      left: 5%;
+	transition:
+		left 0.5s ease .9s,
+		top 0s ease .3s,
+		transform 0.3s ease;
+
+    &.active {
+      left: 111% !important;
+      top: 17%;
+      transform: translate(-100vw, -50%);
     }
   }
 
@@ -51,10 +58,6 @@
     transition:
       all 0.3s ease;
       
-    &.project-open {
-      left: 5%;
-    }
-
     &:hover {
       background-color: rgba(214, 22, 22, 0.8);
       transform: scale(1.2);
@@ -62,7 +65,6 @@
 
     &.active {
       background-color: rgb(255, 0, 0);
-      background-color: rgb(255, 255, 255);
       transform: scale(1.3);
       @include boxShadow(0 0 10px rgba(255, 0, 0, 0.5));
     }

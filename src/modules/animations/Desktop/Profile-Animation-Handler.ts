@@ -48,12 +48,12 @@ function createTimeline(build: (timeline: gsap.core.Timeline) => void) {
 
 
 export function ProfileAnimationDesktop() {
-  ContactAnimation();
-  FrontCardsAnimation();
-  BackCardsAnimation();
+  ContactDesktop();
+  FrontCardsDesktop();
+  BackCardsDesktop();
 }
 
-function ContactAnimation() {
+function ContactDesktop() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
     if (!document.querySelector(".contact-container")) return;
 
@@ -122,7 +122,7 @@ function ContactAnimation() {
 }
 
 
-function FrontCardsAnimation() {
+function FrontCardsDesktop() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
     if (!document.querySelector(".card1")) return;
 
@@ -265,7 +265,7 @@ function FrontCardsAnimation() {
 }
 
 
-function BackCardsAnimation() {
+function BackCardsDesktop() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
     if (!document.querySelector(".back-card1")) return;
 

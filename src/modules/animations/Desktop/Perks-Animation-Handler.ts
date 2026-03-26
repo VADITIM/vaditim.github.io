@@ -15,14 +15,11 @@ const isPerksLeave = (states: SectionTransitionStates) =>
 	states.leavePerksToProfile || states.leavePerksToProjects;
 
 export function PerksAnimationDesktop() {
-	Skills();
-	Name();
+	SkillsDesktop();
+	NameDesktop();
 }
 
-
-//---------------------------------------------------------------------------------------------------------
-
-function Skills() {
+function SkillsDesktop() {
 	gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
 		if (!document.querySelector(".skill")) return;
 
@@ -39,6 +36,7 @@ function Skills() {
 				x: "0%",
 				opacity: 1,
 				duration: 0.35,
+				stagger: 0.12,
 				delay: 0.5,
 				ease: "power2.out",
 				overwrite: "auto",
@@ -47,7 +45,7 @@ function Skills() {
 			const hasSkillsLine = !!document.querySelector(".skills-line-container");
 			if (hasSkillsLine) {
 				gsap.to(".skills-line-container", {
-					y: 0,
+					x: 0,
 					duration: 0.35,
 					delay: 0.75,
 					ease: "power2.out",
@@ -71,7 +69,7 @@ function Skills() {
 
 			if (hasSkillsLine) {
 				lineAnimation = gsap.to(".skills-line-container", {
-					y: -1000,
+					x: -1000,
 					duration: 0.5,
 					ease: "power2.inOut",
 					overwrite: "auto",
@@ -81,7 +79,7 @@ function Skills() {
 
 		gsap.set(".skill", { x: "-210%", opacity: 1 });
 		if (hasSkillsLine) {
-			gsap.set(".skills-line-container", { y: -1000 });
+			gsap.set(".skills-line-container", { x: -1000 });
 		}
 
 		const cleanupStates = onSectionEnterLeaveAnimation({
@@ -102,7 +100,7 @@ function Skills() {
 
 //---------------------------------------------------------------------------------------------------------
 
-function Name() {
+function NameDesktop() {
   gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
 	if (!document.querySelector(".name-container")) return;
 

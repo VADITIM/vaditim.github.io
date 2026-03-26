@@ -14,11 +14,11 @@
 // Variables -------------------------------------------------------------------------
 
 
-$mobile: 435px; //360px
-$tablet: 840px; //1200px
-$tabletLandscape: 1200px; //1200px
-$small-desktop: 1600px;
-$large-desktop: 2140px;
+$mobile: 360px;
+$tablet: 768px;
+$small-desktop: 1200px;
+$mid-desktop: 1550px;
+$desktop: 1825px;
 
 $purple: #7e55dd;
 $black: #414141;
@@ -33,11 +33,6 @@ $backgroundTransitionTime: 0.3s;
 // Media Queries -------------------------------------------------------------------------
 
 
-@mixin allTablets {
-  @media screen and (min-width: #{$mobile}) and (max-width: #{$tabletLandscape}) {
-    @content;
-  }}
-
 @mixin mobile {
   @media screen and (max-width: #{$mobile}) {
     @content;
@@ -50,39 +45,27 @@ $backgroundTransitionTime: 0.3s;
   }
 }
 
-@mixin tabletLandscape {
-  @media screen and (min-width: #{$tablet}) and (max-width: #{$tabletLandscape}) {
-    @content;
-  }
-}
-
-@mixin allMobileDevices {
-  @media screen and (min-width: 0px) and (max-width: #{$tabletLandscape}) {
+@mixin allMobile {
+  @media screen and (min-width: 0px) and (max-width: #{$tablet}) {
     @content;
   }
 }
 
 
 @mixin smallDesktop {
-  @media screen and (min-width: #{$tabletLandscape}) and (max-width: #{$small-desktop}) {
-    @content;
-  }
-}
-
-@mixin desktop {
   @media screen and (min-width: #{$small-desktop}) {
     @content;
   }
 }
 
-@mixin largeDesktop {
-  @media screen and (min-width: #{$large-desktop}) {
+@mixin midDesktop {
+  @media screen and (min-width: #{$mid-desktop}) {
     @content;
   }
 }
 
-@mixin allDesktops {
-  @media screen and (min-width: #{$tabletLandscape}) {
+@mixin desktop {
+  @media screen and (min-width: #{$desktop}) {
     @content;
   }
 }
@@ -170,8 +153,6 @@ $backgroundTransitionTime: 0.3s;
   box-shadow: $shadow;
 }
 
-
-
 @mixin animationPopIn($duration: 0.2s) {
     animation: popIn $duration forwards;
 }
@@ -179,7 +160,6 @@ $backgroundTransitionTime: 0.3s;
 @mixin animationPopOut($duration: 0.2s) {
     animation: popOut $duration forwards;
 }
-
 
 // Keyframes ------------------------------------------------------------
 

@@ -1,4 +1,6 @@
 <template>
+  <ProjectsTech />
+  <ProjectsHelix/>
     <div class="projects-container">
       <GooeyFilter />
       <div class="bubble-container">
@@ -24,7 +26,6 @@
       </div>
       <ProjectProjectDisplay />
       <ProjectPaginationDots />
-      <ProjectsHelix/>
     </div>
 </template>
 
@@ -38,14 +39,15 @@
   import { activeProjectIndex, ActiveProject, closeActiveProject, currentProjectIndex, projects } from '@modules/Projects Section/projects';
   import ProjectPaginationDots from '@projects/Project-Pagination-Dots.vue';
   import GooeyFilter from '@components/Misc/Gooey-Filter.vue';
-import ProjectsHelix from './Projects-Helix.vue';
+  import ProjectsHelix from './Projects-Helix.vue';
+  import ProjectsTech from '@projects/Project-Technology-Detail.vue';
 
 
   const allPositions = [
-    { top: '50%', left: '150%' },    
-    { top: '-30%', left: '110%' },   
+    { top: '50%', left: '180%' },    
+    { top: '-30%', left: '140%' },   
     { top: '50%', left: '85%' },     
-    { top: '130%', left: '110%' },   
+    { top: '130%', left: '140%' },   
   ];
   const visibleProjectIndices = ref([projects.length - 1, 0, 1]);
   const bubbleRefs = ref<HTMLElement[]>([]);
@@ -140,24 +142,21 @@ import ProjectsHelix from './Projects-Helix.vue';
   @use "@styleVariables" as *;
 
   .projects-container {
-    position: absolute;
-    top: 0;
-    right: -50%;
-    width: 100vw;
-    height: 100vh;
-    perspective: 1000px;
-  }
-
-  .bubble-container {
-    position: absolute;
-    top: 0;
-    left: 0;
+		position: absolute;
+		display: flex;
+		right: -50%;
+		align-items: center;
     width: 100%;
     height: 100%;
-    filter: url(#gooey-filter);
-    z-index: 3;
+    perspective: 1000px;;  }
+
+  .bubble-container {
+    width: 100%;
+    height: 100%;
     perspective: 1000px;
     pointer-events: none;
+    filter: url(#gooey-filter);
+    z-index: 3;
   }
 
   .bubble {

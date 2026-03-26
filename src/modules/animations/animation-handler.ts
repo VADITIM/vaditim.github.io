@@ -22,9 +22,31 @@ gsap.defaults({ immediateRender: false });
 
 export function PageAnimations() 
 {
-	PerksAnimationDesktop();
-	ProfileAnimationDesktop();
-	ProjectAnimationDesktop();
+	if (breakpoints.mobile) {
+		// PerksAnimationMobile();
+		// ProfileAnimationMobile();
+		// ProjectAnimationMobile();
+	}
+	if (breakpoints.tablet) {
+		// PerksAnimationTablet();
+		// ProfileAnimationTablet();
+		// ProjectAnimationTablet();
+	}
+	if (breakpoints.smallDesktop) {
+		// PerksAnimationSmallDesktop();
+		// ProfileAnimationSmallDesktop();
+		// ProjectAnimationSmallDesktop();
+	}
+	if (breakpoints.midDesktop) {
+		// PerksAnimationMid();
+		// ProfileAnimationMid();
+		// ProjectAnimationMid();
+	}
+	if (breakpoints.desktop) {
+		PerksAnimationDesktop();
+		ProfileAnimationDesktop();
+		ProjectAnimationDesktop();
+	}
 }
   
 

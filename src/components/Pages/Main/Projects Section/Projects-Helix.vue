@@ -1,5 +1,5 @@
 <template>
-<div class="container">
+<div class="helix-container" :class="{ active: activeProjectIndex !== null }">
 			<div class="helix">
 				<div
 					v-for="strang in 17"
@@ -15,10 +15,86 @@
 
 <script setup lang="ts">
 	import { gsap } from 'gsap';
-	import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+	import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+	import { onSectionEnterLeaveAnimation, SECTION_INDEX, type SectionTransitionStates } from '@modules/animations/section-state-machine';
+	import { activeProjectIndex } from '@modules/Projects Section/projects';
 
 	const strangRefs = ref<HTMLElement[]>([]);
 	let helixIntro: gsap.core.Timeline | null = null;
+	let strandRefsData: HTMLElement[] = [];
+	let activeStateTimeline: gsap.core.Timeline | null = null;
+
+	const LEAVE_TIMESCALE = 20; 
+	const ENTER_TIMESCALE = 10;
+	
+	const DELAY_AFTER_LEAVE = 0; 
+	const DELAY_BEFORE_ENTER = 0; 
+
+	const isProjectsEnter = (states: SectionTransitionStates) =>
+		states.enterProjectsFromProfile || states.enterProjectsFromNone;
+
+	const isProjectsLeave = (states: SectionTransitionStates) =>
+		states.leaveProjectsToProfile;
+
+	const startHelixAnimation = () => {
+		if (!strandRefsData.length) return;
+
+		if (!helixIntro) {
+			const strands = strandRefsData;
+			const strandBodies = strands
+				.map((strand) => strand.querySelector('.strang-body') as HTMLElement | null)
+				.filter((body): body is HTMLElement => !!body);
+
+			const sampleStyles = window.getComputedStyle(strands[0]);
+			const marginY = parseFloat(sampleStyles.marginTop) + parseFloat(sampleStyles.marginBottom);
+			const finalHeight = parseFloat(sampleStyles.height) || 75;
+			const extraSpacing = 14;
+			const strandSpacing = marginY + finalHeight + extraSpacing;
+			const centerIndex = (strands.length - 1) / 2;
+
+			const strandTargets = strands.map((_, index) => ({
+				y: (index - centerIndex) * strandSpacing,
+				xStart: index % 2 === 0 ? -26 : 26,
+			}));
+
+			const timeline = gsap.timeline({ paused: true });
+			helixIntro = timeline;
+
+			strandTargets.forEach((target, index) => {
+				const startAt = index * 0.08;
+				const finalTop = `calc(50% + ${target.y}px)`;
+				const startLeft = `calc(50% + ${index === 0 ? 0 : target.xStart}px)`;
+
+				timeline.fromTo(
+					strands[index],
+					{ left: startLeft, top: '50%' },
+					{
+						left: '50%',
+						top: finalTop,
+						duration: 2,
+						ease: 'power2.out',
+					},
+					startAt
+				);
+
+				timeline.to(
+					strandBodies[index],
+					{
+						scaleX: 1,
+						duration: 2.22,
+						ease: 'power2.out',
+					},
+					startAt + 2
+				);
+			});
+		}
+
+		helixIntro?.timeScale(2).play();
+	};
+
+	const leaveHelixAnimation = () => {
+		helixIntro?.timeScale(LEAVE_TIMESCALE).reverse();
+	};
 
 	onMounted(async () => {
 		await nextTick();
@@ -27,62 +103,63 @@
 		const strands = strangRefs.value.filter(Boolean);
 		if (!strands.length) return;
 
+		strandRefsData = strands;
+
 		const strandBodies = strands
 			.map((strand) => strand.querySelector('.strang-body') as HTMLElement | null)
 			.filter((body): body is HTMLElement => !!body);
 
-		const sampleStyles = window.getComputedStyle(strands[0]);
-		const marginY = parseFloat(sampleStyles.marginTop) + parseFloat(sampleStyles.marginBottom);
-		const finalHeight = parseFloat(sampleStyles.height) || 75;
-		const extraSpacing = 14;
-		const strandSpacing = marginY + finalHeight + extraSpacing;
-		const centerIndex = (strands.length - 1) / 2;
+		gsap.set(strands, { left: '50%', top: '50%', transformOrigin: 'center center', });
 
-		const strandTargets = strands.map((_, index) => ({
-			y: (index - centerIndex) * strandSpacing,
-			xStart: index % 2 === 0 ? -26 : 26,
-		}));
+		gsap.set(strandBodies, { scaleX: 0, transformOrigin: 'center center', });
 
-		gsap.set(strands, {
-			left: '50%',
-			top: '50%',
-			transformOrigin: 'center center',
-		});
+		onSectionEnterLeaveAnimation({ isEnter: isProjectsEnter, isLeave: isProjectsLeave, onEnter: startHelixAnimation, onLeave: leaveHelixAnimation, initialSection: SECTION_INDEX.PROJECTS, });
 
-		gsap.set(strandBodies, {
-			scaleX: 0,
-			transformOrigin: 'center center',
-		});
+		watch(activeProjectIndex, (newIndex) => {
+			
+			if (newIndex !== null) {
+				if (activeStateTimeline) activeStateTimeline.kill();
+				activeStateTimeline = gsap.timeline();
 
-		const timeline = gsap.timeline();
-		helixIntro = timeline;
+				activeStateTimeline.call(() => {
+					leaveHelixAnimation();
+				}, [], 0);
 
-		strandTargets.forEach((target, index) => {
-			const startAt = index * 0.08;
-			const finalTop = `calc(50% + ${target.y}px)`;
-			const startLeft = `calc(50% + ${index === 0 ? 0 : target.xStart}px)`;
+				activeStateTimeline.to({}, {}, `+=${DELAY_AFTER_LEAVE}`);
 
-			timeline.fromTo(
-				strands[index],
-				{ left: startLeft, top: '50%' },
-				{
-					left: '50%',
-					top: finalTop,
-					duration: 2,
-					ease: 'power2.out',
-				},
-				startAt
-			);
+				activeStateTimeline.call(() => {
+					gsap.set('.helix-container', { right: '-10%' });
+				}, [], '+=0');
 
-			timeline.to(
-				strandBodies[index],
-				{
-					scaleX: 1,
-					duration: 2.22,
-					ease: 'power2.out',
-				},
-				startAt + 2
-			);
+				activeStateTimeline.to({}, {}, `+=${DELAY_BEFORE_ENTER}`);
+
+				activeStateTimeline.call(() => {
+					if (helixIntro) {
+						helixIntro.reversed(false).seek(0).timeScale(ENTER_TIMESCALE).play();
+					}
+				}, [], '+=0');
+			} else {
+				if (activeStateTimeline) activeStateTimeline.kill();
+				activeStateTimeline = gsap.timeline();
+
+				activeStateTimeline.call(() => {
+					leaveHelixAnimation();
+				}, [], 0);
+
+				activeStateTimeline.to({}, {}, `+=${DELAY_AFTER_LEAVE}`);
+
+				activeStateTimeline.call(() => {
+					gsap.set('.helix-container', { right: '0%' });
+				}, [], '+=0');
+
+				activeStateTimeline.to({}, {}, `+=${DELAY_BEFORE_ENTER}`);
+
+				activeStateTimeline.call(() => {
+					if (helixIntro) {
+						helixIntro.reversed(false).seek(0).timeScale(ENTER_TIMESCALE).play();
+					}
+				}, [], '+=0');
+			}
 		});
 	});
 
@@ -91,11 +168,15 @@
 			helixIntro.kill();
 			helixIntro = null;
 		}
+		if (activeStateTimeline) {
+			activeStateTimeline.kill();
+			activeStateTimeline = null;
+		}
 	});
 </script>
 
 <style lang="scss" scoped>
-  @use "@styleVariables" as *;
+@use "@styleVariables" as *;
 
 @mixin helix-delays($count, $step) {
 	@for $i from 1 through $count {
@@ -107,44 +188,38 @@
 
 @include helix-delays(17, 0.35s);
 
-  .container {
-		position: absolute;
-		top: 0;
-		left: 0;
-    display: flex;
-    perspective: 1000px;
-    width: 100%;
-    height: 100%;
-    opacity: .6;
-    z-index: -1;
-		overflow: hidden;
-  }
-
 @keyframes rotate {
 	from {
-		transform: rotateY(0deg);
+		transform: rotateY(0deg) ;
 	}
 	to {
-		transform: rotateY(360deg);
+		transform: rotateY(360deg) ;
 	}
 }
 
-.helix {
-	position: relative;
-	transform-style: preserve-3d;
-	top: 0%;
-  right: -79.75%;
+.helix-container {
+	position: absolute;
 	display: flex;
-	justify-content: center;
+	right: 0;
 	align-items: center;
-  scale: 2.5;
+	width: 100%;
+	height: 100%;
+	opacity: .6;
+	perspective: 1000px;
+	overflow: hidden;
+	z-index: -1;
+}
+
+.helix {
+	position: absolute;
+	transform-style: preserve-3d;
+	scale: 2.5;
+	right: 30.4%;
 }
 
 .strang {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+	width: 5rem;
 	margin: 6px 0;
 	animation: rotate 10s linear infinite;
 }
@@ -188,5 +263,4 @@
 	z-index: -1;
 	@include boxShadow(0 0 15px $red, true);
 }
-
 </style>

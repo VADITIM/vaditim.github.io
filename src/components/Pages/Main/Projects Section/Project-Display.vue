@@ -58,7 +58,7 @@
 
   &.active {
     top: 10%;
-    left: 15%;
+    left: 20%;
     width: 70%;
     height: 85%;
     transform: translate(-10%, 0%);

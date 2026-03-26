@@ -13,10 +13,6 @@
   @include mobile {
     overflow: hidden;
   }
-
-  @include allTablets {
-    overflow: visible;
-  }
 }
 
 .cards-container {
@@ -31,20 +27,9 @@
     touch-action: pan-y;
     overscroll-behavior: auto;
   }
-
-  @include allTablets {
-    touch-action: pan-y;
-    overscroll-behavior: auto;
-  }
 }
 
-// POSITIONING GROUPS
 .card1, .card3, .back-card1, .back-card3 {
-  left: -100%;
-
-  @include tabletLandscape {
-    left: 17.7%;
-  }
 
   @include tablet {
     left: 25%;
@@ -60,10 +45,6 @@
   right: 18%;
   right: -100%;
   
-  @include tabletLandscape {
-    right: 17.7%;
-  }
-  
   @include tablet {
     right: 25%;
   }
@@ -76,10 +57,6 @@
 .card1, .card2 {
   bottom: 39%;
   bottom: 100%;
-
-  @include tabletLandscape {
-    bottom: 34.5%;
-  }
 
   @include tablet {
     bottom: 36%;
@@ -94,10 +71,6 @@
 .card3, .card4 {
   bottom: 5%;
   bottom: -100%;
-
-  @include tabletLandscape {
-    bottom: 0;
-  }
   
   @include tablet {
     bottom: 9%;
@@ -112,10 +85,6 @@
   bottom: 53.5%;
   bottom: 100%;
 
-  @include tabletLandscape {
-    bottom: 49.2%;
-  }  
-
   @include tablet {
     bottom: 47.5%;
   }
@@ -128,10 +97,6 @@
 .back-card3, .back-card4 {
   bottom: 19.5%;
   bottom: 100%;
-  
-  @include tabletLandscape {
-    bottom: 14.7%;
-  }
 
   @include tablet {
     bottom: 20.5%;
@@ -224,18 +189,6 @@
   } @else {
     right: 31% !important;
     bottom: 23% !important;
-  }
-
-  @include tabletLandscape {
-    scale: 1.8;
-
-    @if $side == left {
-      left: 31% !important;
-      bottom: 17% !important;
-    } @else {
-      right: 31% !important;
-      bottom: 17% !important;
-    }
   }
 
   @include tablet {
