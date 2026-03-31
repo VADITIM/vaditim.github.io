@@ -9,16 +9,10 @@
   color: black;
 	overflow: visible;
 	z-index: 3;
-
-	@include mobile {
-		height: 100vh;
-		width: 100vw;
-	}
 }
 
 .skills-container {
 	position: absolute;
-	left: -255%;
 	display: flex;
 	width: 100%;
 	perspective: 1000px;
@@ -30,23 +24,25 @@
 		padding-bottom: 5rem;
 	}
 
-	@include mobile {
-		position: absolute;
-		height: 60%;
-		top: 30%;
-		width: 100%;
-	}
-	
-	@include tablet {
-		top: 10%;
+	@include allMobile {
+		bottom: 25%;
+		right: 80%;
 	}
 
+	@include mobile {
+		scale: .55;
+		bottom: 10%;
+	}
 }
 
 .skills-line-container {
 	position: relative;
 	perspective: 1000px;
 	z-index: 100;
+
+	@include allMobile {
+		left: -200%;
+	}
 }
 
 .skills-line {
@@ -57,33 +53,22 @@
 	margin: 0 2rem;
 	background-color: $blacktrans;
 	border: solid 4px $purple;
-
-	@include mobile {
-		display: flex;
-		transform: translateY(50%) rotateY(-40deg);
-		left: 0;
-		height: 50%;
-		transform-origin: center center;
-		margin: 0 .5rem;
-
-		transition:
-			height .4s ease-in-out,
-			transform .4s ease-in-out .1s,
-			border .4s ease-in-out;
+	
+	@include allMobile {
+		width: 2.5rem;
 	}
 }
 
+// .skills-container:has(.skill.open) .skills-line {
+//   @include mobile {
+//     transform: translateY(50%) rotateY(40deg) scaleY(2);
+// 		border-top: solid 2px $purple;
+// 		border-bottom: solid 2px $purple;
 
-.skills-container:has(.skill.open) .skills-line {
-  @include mobile {
-    transform: translateY(50%) rotateY(40deg) scaleY(2);
-		border-top: solid 2px $purple;
-		border-bottom: solid 2px $purple;
-
-    transition:
-      transform .4s ease-in-out;
-  }
-}
+//     transition:
+//       transform .4s ease-in-out;
+//   }
+// }
 
 .options-container {
 	display: inherit;
@@ -94,13 +79,13 @@
 	height: 95%;
 	perspective: 1000px;
 
-	@include mobile {
-		position: relative;
-		right: -10%;
-		display: flex;
-		justify-content: center;
-		flex-direction: column;
-	}
+	// @include mobile {
+	// 	position: relative;
+	// 	right: -10%;
+	// 	display: flex;
+	// 	justify-content: center;
+	// 	flex-direction: column;
+	// }
 }
 
 .skill {
@@ -131,6 +116,15 @@
 		border-color .4s ease-in-out,
 		filter .4s ease-in-out;
 
+	@include allMobile {
+		left: -200%;
+	}
+
+	@include mobile {
+		@include rotate(0, 25, -2);
+
+	}
+
 	@for $index from 1 through 10 {
 		&:nth-last-child(#{$index}) {
 			z-index: #{120 + ($index)};
@@ -138,7 +132,6 @@
 	}
 
 	@include desktop {
-
 		font-size: 2.4rem;
 		
 		&:hover {
@@ -173,40 +166,40 @@
 		}
 	}
 
-	@include mobile {
-		position: relative;
-		margin: 1rem 1rem;
-		font-size: 1rem;
-		width: 65%;
-		height: 1.8rem;
-		padding-right: .5rem;
+	// @include mobile {
+	// 	position: relative;
+	// 	margin: 1rem 1rem;
+	// 	font-size: 1rem;
+	// 	width: 65%;
+	// 	height: 1.8rem;
+	// 	padding-right: .5rem;
 
-		&.open  {
-			width: 85%;
-			height: 9.5rem;
-			border-color: $yellow;
-			filter: drop-shadow(5px 5px 10px #f5e67580);
-	  }
+	// 	&.open  {
+	// 		width: 85%;
+	// 		height: 9.5rem;
+	// 		border-color: $yellow;
+	// 		filter: drop-shadow(5px 5px 10px #f5e67580);
+	//   }
 
-		&.open .skill-option {
-			left: -3%;
+	// 	&.open .skill-option {
+	// 		left: -3%;
 
-			@for $delay from 1 through 10 {
-				&:nth-child(#{$delay}) {
-					transition: 
-						left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
-				}
-			}
-		}
+	// 		@for $delay from 1 through 10 {
+	// 			&:nth-child(#{$delay}) {
+	// 				transition: 
+	// 					left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+	// 			}
+	// 		}
+	// 	}
 		
-		&.open .skill-options-container {
-			left: 0;
+	// 	&.open .skill-options-container {
+	// 		left: 0;
 
-			transition:
-				left 0s ease 0s,
-				right 0s ease 0s;
-		}
-	}
+	// 		transition:
+	// 			left 0s ease 0s,
+	// 			right 0s ease 0s;
+	// 	}
+	// }
 }
 
 .skill-options-container {
@@ -227,12 +220,12 @@
 		left 0s ease 2s,
 		right 0s ease 2s;
 
-	@include mobile {
-		top: 2.2rem;
-		height: 30%;
-		left: -100%;
-		font-size: 1.1rem;
-	}
+	// @include mobile {
+	// 	top: 2.2rem;
+	// 	height: 30%;
+	// 	left: -100%;
+	// 	font-size: 1.1rem;
+	// }
 }
 
 .skill-option {

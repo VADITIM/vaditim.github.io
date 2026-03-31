@@ -1,7 +1,6 @@
 <template>
   <Name />
   <Roles />
-  <div class="perks-section-trigger"></div>
   <div class="wip">WIP</div>
 </template>
 
@@ -12,7 +11,6 @@
 
 <style lang="scss" scoped>
   @use "@styleVariables" as *;
-
 
   .wip {
     position: fixed;

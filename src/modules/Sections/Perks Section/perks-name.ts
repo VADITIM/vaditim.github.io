@@ -1,6 +1,6 @@
 import { ref, onMounted } from 'vue';
-import { createFloatingAnimation } from '@modules/animations/General/floating-elements';
-import { SECTION_INDEX } from '@modules/animations/section-state-machine';
+import { createFloatingAnimation } from '@modules/animations/floating-elements';
+import { SECTION_INDEX } from '@modules/Sections/section-state-machine';
 
 export const firstNameRef = ref<HTMLElement>();
 export const lastNameRef = ref<HTMLElement>();

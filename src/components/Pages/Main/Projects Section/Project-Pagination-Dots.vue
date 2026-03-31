@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-  import { projects, currentProjectIndex, activeProjectIndex } from '@modules/Projects Section/projects';
+  import { projects, currentProjectIndex, activeProjectIndex } from '@modules/Sections/Projects Section/projects';
 
   const selectProject = (index: number) => {
     currentProjectIndex.value = index;

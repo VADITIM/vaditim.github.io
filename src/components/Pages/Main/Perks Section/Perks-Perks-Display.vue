@@ -23,8 +23,8 @@
 
 <script setup lang="ts">
 	import { onMounted, onBeforeUnmount } from 'vue';
-	import { skills, GetOptionName } from '@modules/Perks Section/perks-perks';
-	import { toggle, isOpen, closeAll } from '@modules/mobile-hover';
+	import { skills, GetOptionName } from '@modules/Sections/Perks Section/perks-perks';
+	import { toggle, isOpen, closeAll } from '@modules/Misc/mobile-hover';
 
 	function onPointerDownOutside(e: PointerEvent) {
 		const target = e.target as HTMLElement | null

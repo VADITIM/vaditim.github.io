@@ -16,8 +16,8 @@
 <script setup lang="ts">
 	import { gsap } from 'gsap';
 	import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-	import { onSectionEnterLeaveAnimation, SECTION_INDEX, type SectionTransitionStates } from '@modules/animations/section-state-machine';
-	import { activeProjectIndex } from '@modules/Projects Section/projects';
+	import { onSectionEnterLeaveAnimation, SECTION_INDEX, type SectionTransitionStates } from '@modules/Sections/section-state-machine';
+	import { activeProjectIndex } from '@modules/Sections/Projects Section/projects';
 
 	const strangRefs = ref<HTMLElement[]>([]);
 	let helixIntro: gsap.core.Timeline | null = null;
@@ -31,10 +31,10 @@
 	const DELAY_BEFORE_ENTER = 0; 
 
 	const isProjectsEnter = (states: SectionTransitionStates) =>
-		states.enterProjectsFromProfile || states.enterProjectsFromNone;
+		states.enterProjectsFromProfile || states.enterProjectsFromPerks || states.enterProjectsFromNone;
 
 	const isProjectsLeave = (states: SectionTransitionStates) =>
-		states.leaveProjectsToProfile;
+		states.leaveProjectsToProfile || states.leaveProjectsToPerks;
 
 	const startHelixAnimation = () => {
 		if (!strandRefsData.length) return;

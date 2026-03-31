@@ -18,10 +18,12 @@
 
 <script setup lang="ts">
 	import { gsap } from 'gsap';
-	import { onMounted, ref } from 'vue';
-	import { finished } from '@modules/animations/section-state-machine';
-	import { SECTION_INDEX } from '@modules/animations/section-state-machine';
-	import { triggerSectionChange } from '@modules/sections';
+	import { onMounted, ref, computed } from 'vue';
+	import { finished } from '@modules/Sections/section-state-machine';
+	import { SECTION_INDEX } from '@modules/Sections/section-state-machine';
+	import { ChangeSection } from '@modules/Sections/sections';
+	import { breakpoints } from '@modules/animations/animation-handler';
+	import { isMobile } from '@modules/Misc/is-mobile';
 	const loadingContainer = ref<HTMLElement | null>(null);
 	let resizeHandler: (() => void) | null = null;
 
@@ -33,13 +35,19 @@
 
 	function Finished() {
 		if (!finished.value) {
-			gsap.set(".name-container", { right: "-100%"});
-			gsap.set(".skills-line-container", { x: "-1000"});
-			gsap.set(".skill", { x: "-210%"});
+			if (isMobile.value) {
+				
+			}
+			else 
+			{
+				gsap.set(".name-container", { right: "-100%"});
+				gsap.set(".skills-line-container", { x: "-1000"});
+				gsap.set(".skill", { x: "-210%"});
+			}
 		}
 		else {
 			setTimeout(() => {
-			triggerSectionChange(SECTION_INDEX.PERKS, SECTION_INDEX.NONE, 'none');
+			ChangeSection(SECTION_INDEX.PERKS, SECTION_INDEX.NONE, 'none');
 			}, 10);
 		}
 	}
@@ -140,7 +148,6 @@
 			}
 		});
 
-
 		timeline.to('.loading-container', {
 			yPercent: -110,
 			duration: 0.5,
@@ -152,7 +159,29 @@
 		}, 2.3);
 	});
 
-	const texts: TextItem[] = [
+	const tabletTexts: TextItem[] = [
+		{ content: "Creating digital experiences", top: "15%", left: "70%" },
+		{ content: "Bringing ideas to life", top: "35%", left: "20%" },
+		{ content: "Innovating through design", top: "60%", left: "75%" },
+		{ content: "Crafting seamless interfaces", top: "10%", left: "50%" },
+		{ content: "Transforming visions into reality", top: "20%", left: "25%" },
+		{ content: "Transforming visions into reality", top: "30%", left: "60%" },
+		{ content: "Innovating through design", top: "70%", left: "40%" },
+		{ content: "Innovating through design", top: "90%", left: "75%" },
+	];
+
+	const mobileTexts: TextItem[] = [
+		{ content: "Creating digital experiences", top: "10%", left: "50%" },
+		{ content: "Bringing ideas to life", top: "25%", left: "50%" },
+		{ content: "Innovating through design", top: "35%", left: "50%" },
+		{ content: "Innovating through design", top: "45%", left: "50%" },
+		{ content: "Crafting seamless interfaces", top: "60%", left: "50%" },
+		{ content: "Transforming visions into reality", top: "70%", left: "50%" },
+		{ content: "Innovating through design", top: "82%", left: "50%" },
+		{ content: "Transforming visions into reality", top: "93%", left: "50%" },
+	];
+
+	const desktopTexts: TextItem[] = [
 		{ content: "Creating digital experiences", top: "20%", left: "45%" },
 		{ content: "Bringing ideas to life", top: "40%", left: "85%" },
 		{ content: "Innovating through design", top: "55%", left: "10%" },
@@ -162,6 +191,13 @@
 		{ content: "Innovating through design", top: "70%", left: "70%" },
 		{ content: "Innovating through design", top: "90%", left: "50%" },
 	];
+
+	const texts = computed(() => {
+		const width = window.innerWidth;
+		if (width <= breakpoints.mobile) return mobileTexts;
+		if (width <= breakpoints.tabletLandscape) return tabletTexts;
+		return desktopTexts;
+	});
 </script>
 
 <style scoped lang="scss">
@@ -172,8 +208,8 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		min-width: 100%;
-		min-height: 100%;
+		min-width: 100svw;
+		min-height: 100svh;
 		background-color: #181818;
 		z-index: 300;
 	}
@@ -193,6 +229,9 @@
 		font-family: Wosker;
 		z-index: inherit;
 
+		@include mobile {
+			font-size: 4.5rem;
+		}
 	}
 
 	.portfolio-text-top {
@@ -216,15 +255,16 @@
 		background-color: #242424;
 		background-color: rgb(91, 253, 91);
 		z-index: 301;
-
 	}
 
 	.top-background {
 		bottom: 50%;
+		border-radius: 2rem 2rem 0 0;
 	}
 
 	.bottom-background {
 		top: 50%;
+		border-radius: 0 0 2rem 2rem;
 	}
 
 	.text {
@@ -238,6 +278,10 @@
 		white-space: nowrap;
 		z-index: 304;
 		opacity: 1;
+
+		@include allMobile {
+			font-size: 1.2rem;
+		}
 
 	}
 

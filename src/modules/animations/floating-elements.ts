@@ -1,6 +1,6 @@
 import { gsap } from 'gsap'
-import { currentSection } from '@modules/sections'
-import { onSectionStatesChange, type SectionIndex } from '../section-state-machine'
+import { currentSection } from '@modules/Sections/sections'
+import { onSectionStatesChange, type SectionIndex } from '../Sections/section-state-machine'
 
 gsap.defaults({ immediateRender: false })
 

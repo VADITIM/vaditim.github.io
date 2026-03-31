@@ -5,9 +5,14 @@ let smoothScrollRaf = 0;
 let wheelIntent = 0;
 let targetScrollY = 0;
 
+let touchStartY: number | null = null;
+let touchStartX: number | null = null;
+let activeTouchId: number | null = null;
+
 const STROKE_DISTANCE_VH = 100;
 const SECTION_SCROLL_COOLDOWN_MS = 1000;
 const WHEEL_STROKE_THRESHOLD = 100;
+const TOUCH_SWIPE_THRESHOLD_PX = 50;
 const SMOOTH_FACTOR = 0.2;
 const MIN_SCROLL_DELTA = 0.5;
 
@@ -168,6 +173,55 @@ const handleWheel = (event: WheelEvent) => {
   startSmoothScroll();
 };
 
+const handleTouchStart = (event: TouchEvent) => {
+  if (event.touches.length !== 1) return;
+  const touch = event.touches[0];
+  activeTouchId = touch.identifier;
+  touchStartY = touch.clientY;
+  touchStartX = touch.clientX;
+};
+
+const handleTouchEnd = (event: TouchEvent) => {
+  if (touchStartY === null || touchStartX === null || activeTouchId === null) return;
+
+  const changed = Array.from(event.changedTouches).find(
+    (t) => t.identifier === activeTouchId
+  );
+  if (!changed) return;
+
+  if (scrollLockedUntilMs > 0) {
+    touchStartY = null;
+    touchStartX = null;
+    activeTouchId = null;
+    return;
+  }
+
+  const deltaY = changed.clientY - touchStartY;
+  const deltaX = changed.clientX - touchStartX;
+
+  touchStartY = null;
+  touchStartX = null;
+  activeTouchId = null;
+
+  if (Math.abs(deltaY) < TOUCH_SWIPE_THRESHOLD_PX) return;
+  if (Math.abs(deltaY) < Math.abs(deltaX)) return;
+
+  // Swipe up (deltaY < 0) => move forward (down the page)
+  const step = deltaY < 0 ? 1 : -1;
+  const sectionHeight = getVirtualSectionHeightPx();
+  const baseIndex = getSectionIndexFromScroll(window.scrollY);
+  const newSectionIndex = clamp(baseIndex + step, 0, Math.max(0, totalSections - 1));
+
+  targetScrollY = newSectionIndex * sectionHeight;
+
+  if (newSectionIndex !== lastReachedSectionIndex) {
+    lastReachedSectionIndex = newSectionIndex;
+    beginSectionCooldown();
+  }
+
+  startSmoothScroll();
+};
+
 export function InitializeVirtualScroll(sectionCount = 3, sectionVh = 100) {
   totalSections = sectionCount;
   sectionHeightVh = Math.max(1, sectionVh);
@@ -179,6 +233,10 @@ export function InitializeVirtualScroll(sectionCount = 3, sectionVh = 100) {
   lastReachedSectionIndex = getSectionIndexFromScroll(window.scrollY);
   window.addEventListener("resize", handleResize);
   window.addEventListener("wheel", handleWheel, { passive: false });
+
+  // Touch devices (mobile/tablet) don't emit wheel events reliably.
+  window.addEventListener("touchstart", handleTouchStart, { passive: true });
+  window.addEventListener("touchend", handleTouchEnd, { passive: true });
 }
 
 export function setVirtualSectionHeightVh(sectionVh: number) {

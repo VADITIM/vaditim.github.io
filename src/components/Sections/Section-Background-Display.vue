@@ -1,31 +1,86 @@
 <template>
-  <div class="section-background-layer">
-    <div class="perks-section-background"></div>
-    <div class="profile-section-background-back"></div>
-    <div class="profile-section-background-front"></div>
-    <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null}"></div>
-    <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null}"></div>
-  </div>
+    <div class="section-background-layer">
+      <div class="perks-section-background" :style="GetBackgroundStyle('perks')"></div>
+      <div class="profile-section-background-back" :style="GetBackgroundStyle('profile-back')"></div>
+      <div class="profile-section-background-front" :style="GetBackgroundStyle('profile-front')"></div>
+      <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null}" :style="GetBackgroundStyle('projects-back')"></div>
+      <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null}" :style="GetBackgroundStyle('projects-front')"></div>
+    </div>
 </template>
 
 <script setup lang="ts" >
-  import { onBeforeUnmount, watch } from 'vue';
-  import { ScrollBackgroundSections } from '@modules/animations/General/section-backgrounds';
-  import { activeProjectIndex } from '@modules/Projects Section/projects';
-  import { finished } from '@modules/animations/section-state-machine';
+  import { onBeforeUnmount, watch, ref } from 'vue';
+  import { ScrollBackgroundSections } from '@modules/Sections/section-backgrounds';
+  import { activeProjectIndex } from '@modules/Sections/Projects Section/projects';
+  import { finished } from '@modules/Sections/section-state-machine';
+  import { dragOffset, dragDirection, isDragging, thresholdReached, consumeLastDragOffsetY } from '@modules/Misc/mobile-drag-navigation';
+  import { isMobile } from '@modules/Misc/is-mobile';
+  import { currentSection, previousSection, isTransitioning } from '@modules/Sections/sections';
 
-  let cleanupBackgroundAnimations: (() => void) | null = null;
+  let CleanupBackgroundAnimations: (() => void) | null = null;
+  const isReturning = ref(false);
+  const returnTransform = ref('');
+
+  const GetBackgroundStyle = (type: string) => {
+    const activeSectionIndex = isTransitioning.value ? previousSection.value : currentSection.value;
+    
+    const isInteractiveSection = 
+      (type === 'perks' && activeSectionIndex === 0) ||
+      ((type === 'profile-back' || type === 'profile-front') && activeSectionIndex === 1) ||
+      ((type === 'projects-back' || type === 'projects-front') && activeSectionIndex === 2)
+
+    if (!isInteractiveSection) return {}
+
+    if (isReturning.value) {
+      return {
+        transform: returnTransform.value,
+        transition: 'transform 0.3s ease-out'
+      }
+    }
+
+    if (isMobile.value && dragDirection.value) {
+      const offsetAmount = dragDirection.value === 'down' ? dragOffset.value * -0.5 : dragOffset.value * 0.5
+      const scaleAmount = thresholdReached.value ? 1.05 : 1
+      const popYTransform = thresholdReached.value ? -10 : 0
+
+      return {
+        transform: `translateY(${offsetAmount + popYTransform}px) scale(${scaleAmount})`,
+        transition: thresholdReached.value ? '0.15s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+      }
+    }
+
+    return {}
+  }
+
+  watch(isDragging, (newVal) => {
+    if (!newVal) {
+      isReturning.value = true
+      
+      const lastOffset = consumeLastDragOffsetY()
+      const popscale = thresholdReached.value ? 1.05 : 1
+      returnTransform.value = lastOffset ? `translateY(${lastOffset}px) scale(${popscale})` : `translateY(0) scale(${popscale})`
+
+      requestAnimationFrame(() => {
+        returnTransform.value = 'translateY(0) scale(1)'
+      })
+
+      setTimeout(() => {
+        isReturning.value = false
+        returnTransform.value = ''
+      }, 300)
+    }
+  })
 
   watch(finished, (isFinished) => {
-    if (isFinished && !cleanupBackgroundAnimations) {
-      cleanupBackgroundAnimations = ScrollBackgroundSections();
+    if (isFinished && !CleanupBackgroundAnimations) {
+      CleanupBackgroundAnimations = ScrollBackgroundSections();
     }
   });
 
   onBeforeUnmount(() => {
-    if (cleanupBackgroundAnimations) {
-      cleanupBackgroundAnimations();
-      cleanupBackgroundAnimations = null;
+    if (CleanupBackgroundAnimations) {
+      CleanupBackgroundAnimations();
+      CleanupBackgroundAnimations = null;
     }
   });
 </script>
@@ -52,14 +107,14 @@
     clip-path: polygon(0 0, 100% 0, 10% 100%, 0% 100%);
     z-index: 1;
 
-    @include tablet {
-      top: 0;
-      width: 30%;
-    }
-
-    @include mobile {
-      top: 0;
-      width: 40%;
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100svw;
+      height: 150svh;
+      background: linear-gradient(360deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 94%, 0 78%);
+      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -68,8 +123,7 @@
     left: -30%;
     width: 30%;
     height: 100vh;
-    background-color: blue;
-    background: linear-gradient(180deg,rgba(0, 64, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
+    background: linear-gradient(180deg,rgba(17, 56, 89, 1) 15%, rgba(0, 64, 255, 1) 85%);
     clip-path: polygon(0 0, 100% 0, 0 100%, 0% 100%);
     z-index: 2;
 
@@ -77,9 +131,14 @@
       width: 20%;
     }
 
-    @include mobile {
-      width: 30%;
-      left: -100%;
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100svw;
+      height: 150svh;
+      background: linear-gradient(180deg,rgba(17, 56, 89, 1) 15%, rgba(0, 64, 255, 1) 85%);
+      clip-path: polygon(0 0, 100% 0, 100% 62%, 0 80%);
+      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -89,7 +148,7 @@
     width: 30%;
     height: 100vh;
     background-color: rgb(24, 24, 177);
-    background: linear-gradient(180deg,rgba(0, 30, 255, 1) 15%, rgba(17, 56, 89, 1) 85%);
+    background: linear-gradient(180deg,#001eff 15%, rgba(17, 56, 89, 1) 85%);
     clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
     z-index: 2;
 
@@ -97,8 +156,14 @@
       width: 30%;
     }
 
-    @include mobile {
-      width: 30%;
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100svw;
+      height: 150svh;
+      background: linear-gradient(180deg,rgb(13, 40, 62) 15%, rgba(0, 64, 255, 1) 85%);
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 54%);
+      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -112,14 +177,6 @@
     clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
     z-index: 4;
     
-    transition: 
-      $backgroundTransitionTime all ease-out;
-
-    &.gsap--no-transition {
-      transition:
-        none !important;
-    }
-    
     &.active {
       width: 40%;
 
@@ -127,13 +184,15 @@
         .4s all;
     }
 
-    @include mobile {
-      width: 30%;
-    }
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100svw;
+      height: 150svh;
+      background: linear-gradient(180deg,rgb(93, 26, 40) 15%, rgba(163, 9, 38, 1) 85%);
+      border-radius: 30px 30px 0 0;
+      clip-path: polygon(0 0, 100% 0, 100% 33%, 0 80%);
 
-    @include tablet {
-      width: 30%;
-      right: -30%;
     }
   }
 
@@ -147,9 +206,6 @@
     clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
     z-index: 4;
     
-    transition: 
-      $backgroundTransitionTime all ease-out;
-
     &.active {
       width: 35%;
       
@@ -157,19 +213,15 @@
         .5s all .2s;
     }
 
-    &.gsap--no-transition {
-      transition: 
-        none !important;
-    }
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100svw;
+      height: 150svh;
+      background: linear-gradient(180deg,rgba(105, 17, 34, 1) 15%, rgba(163, 9, 38, 1) 85%);
+      border-radius: 30px 30px 0 0;
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
 
-    @include mobile {
-      width: 19.5%;
-      right: -40%;
-    }
-
-    @include tablet {
-      width: 19.5%;
-      right: -30%;
     }
   }
 </style>

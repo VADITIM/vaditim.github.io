@@ -20,8 +20,8 @@
 
 <script setup lang="ts">
   import { computed } from 'vue';
-  import { activeProjectIndex, closeActiveProject, currentProjectIndex, projects } from '@modules/Projects Section/projects';
-  import { clicked } from '@modules/Projects Section/projects-technology';
+  import { activeProjectIndex, closeActiveProject, currentProjectIndex, projects } from '@modules/Sections/Projects Section/projects';
+  import { clicked } from '@modules/Sections/Projects Section/projects-technology';
   const currentProject = computed(() => projects[currentProjectIndex.value]);
 </script>
 

@@ -1,6 +1,11 @@
 import { gsap } from "gsap";
-import { breakpoints } from "../animation-config";
-import { onSectionStatesChange } from "../section-state-machine";
+import { breakpoints } from "@modules/animations/animation-handler";
+import {
+  onSectionEnterLeaveAnimation,
+  onSectionStatesChange,
+  SECTION_INDEX,
+  type SectionTransitionStates,
+} from "../section-state-machine";
 
 gsap.defaults({ immediateRender: false });
 
@@ -26,6 +31,14 @@ const BACK_SELECTORS: Record<CardKey, string> = {
 
 const CARD_KEYS: CardKey[] = ["card1", "card2", "card3", "card4"];
 
+const isProfileEnter = (states: SectionTransitionStates) =>
+  states.enterProfileFromPerks ||
+  states.enterProfileFromProjects ||
+  states.enterProfileFromNone;
+
+const isProfileLeave = (states: SectionTransitionStates) =>
+  states.leaveProfileToPerks || states.leaveProfileToProjects;
+
 function killTimeline(timeline: gsap.core.Timeline | null) {
   if (timeline) timeline.kill();
 }
@@ -48,9 +61,58 @@ function createTimeline(build: (timeline: gsap.core.Timeline) => void) {
 
 
 export function ProfileAnimationDesktop() {
+  ProfileMobile();
   ContactDesktop();
   FrontCardsDesktop();
   BackCardsDesktop();
+}
+
+function ProfileMobile() {
+  gsap.matchMedia().add(`(max-width: ${breakpoints.tabletLandscape}px)`, () => {
+    const PROFILE_MOBILE_SELECTOR = `.contact-container, ${FRONT_CARD_SELECTOR}, ${BACK_CARD_SELECTOR}`;
+    if (!document.querySelector(PROFILE_MOBILE_SELECTOR)) return;
+
+    let tween: gsap.core.Tween | null = null;
+
+    const playEnter = () => {
+      if (tween) tween.kill();
+      tween = gsap.to(PROFILE_MOBILE_SELECTOR, {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
+        stagger: 0.03,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    };
+
+    const playLeave = () => {
+      if (tween) tween.kill();
+      tween = gsap.to(PROFILE_MOBILE_SELECTOR, {
+        opacity: 0,
+        y: -20,
+        duration: 0.25,
+        stagger: 0.02,
+        ease: "power2.in",
+        overwrite: "auto",
+      });
+    };
+
+    gsap.set(PROFILE_MOBILE_SELECTOR, { opacity: 0, y: 20 });
+
+    const cleanup = onSectionEnterLeaveAnimation({
+      isEnter: isProfileEnter,
+      isLeave: isProfileLeave,
+      onEnter: playEnter,
+      onLeave: playLeave,
+      initialSection: SECTION_INDEX.PROFILE,
+    });
+
+    return () => {
+      cleanup();
+      if (tween) tween.kill();
+    };
+  });
 }
 
 function ContactDesktop() {

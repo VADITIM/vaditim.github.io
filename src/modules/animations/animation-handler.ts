@@ -1,52 +1,37 @@
 import { gsap } from "gsap";
-import { PerksAnimationDesktop } from "./Desktop/Perks-Animation-Handler";
-import { ProfileAnimationDesktop } from "./Desktop/Profile-Animation-Handler";
-import { ProjectAnimationDesktop } from "./Desktop/Projects-Animation-Handler";
-import { breakpoints } from "./animation-config";
+import { PerksAnimationDesktop as PerksAnimation } from "@modules/Sections/Perks Section/Perks-Animation-Handler";
+import { ProfileAnimationDesktop } from "@modules/Sections/Profile Section/Profile-Animation-Handler";
+import { ProjectAnimationDesktop } from "@modules/Sections/Projects Section/Projects-Animation-Handler";
 
-export { breakpoints } from "./animation-config";
 export {
 	SECTION_INDEX,
 	getSectionTransitionStates,
 	onSectionStatesChange,
 	onSectionEnter,
 	onSectionLeave,
-} from "./section-state-machine";
+} from "../Sections/section-state-machine";
 export type {
 	SectionIndex,
 	SectionTransitionMeta,
 	SectionTransitionStates,
-} from "./section-state-machine";
+} from "../Sections/section-state-machine";
 
 gsap.defaults({ immediateRender: false });
 
 export function PageAnimations() 
 {
-	if (breakpoints.mobile) {
-		// PerksAnimationMobile();
-		// ProfileAnimationMobile();
-		// ProjectAnimationMobile();
-	}
-	if (breakpoints.tablet) {
-		// PerksAnimationTablet();
-		// ProfileAnimationTablet();
-		// ProjectAnimationTablet();
-	}
-	if (breakpoints.smallDesktop) {
-		// PerksAnimationSmallDesktop();
-		// ProfileAnimationSmallDesktop();
-		// ProjectAnimationSmallDesktop();
-	}
-	if (breakpoints.midDesktop) {
-		// PerksAnimationMid();
-		// ProfileAnimationMid();
-		// ProjectAnimationMid();
-	}
-	if (breakpoints.desktop) {
-		PerksAnimationDesktop();
+		PerksAnimation();
 		ProfileAnimationDesktop();
 		ProjectAnimationDesktop();
-	}
 }
+
+export const breakpoints = {
+	mobile: 360,
+	tablet: 768,
+	tabletLandscape: 1024,
+	smallDesktop: 1200,
+	midDesktop: 1550,
+	desktop: 1825,
+} as const;
   
 

@@ -27,9 +27,9 @@
 </template>
 
 <script setup lang="ts">
-  import { downloadRef, tilts, devItems} from '@modules/Projects Section/projects-technology';
-  import { activeProjectIndex, currentProjectIndex, projects } from '@modules/Projects Section/projects';
-  import { InitializeTilt } from '@modules/vanilla-tilt';
+  import { downloadRef, tilts, devItems} from '@modules/Sections/Projects Section/projects-technology';
+  import { activeProjectIndex, currentProjectIndex, projects } from '@modules/Sections/Projects Section/projects';
+  import { InitializeTilt } from '@modules/Misc/vanilla-tilt';
   import { watch, ref } from 'vue';
   import { gsap } from 'gsap';
 

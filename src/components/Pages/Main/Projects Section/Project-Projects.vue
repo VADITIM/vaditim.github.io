@@ -3,26 +3,26 @@
   <ProjectsHelix/>
     <div class="projects-container">
       <GooeyFilter />
-      <div class="bubble-container">
-        <div 
-          v-for="(project, index) in projects" 
-          :key="index"
-          :ref="el => { if (el) bubbleRefs[index] = el as HTMLElement; }"
-          class="bubble"
-          :class="{ 
-            helper: getPositionForProject(index) === 0,
-            current: getPositionForProject(index) === 2,
-            active: activeProjectIndex !== null,
-            'no-opacity-transition':
-              skipOpacityTransition && getPositionForProject(index) === 2
-          }"
-          :style="{ 
-            top: allPositions[getPositionForProject(index)].top, 
-            left: allPositions[getPositionForProject(index)].left,
-            backgroundImage: `url(${project.img})`
-          }"
-          @click="handleBubbleClick(getPositionForProject(index))",
-        ></div>
+      <div ref="bubbleContainerRef" class="bubble-container">
+        <template v-if="renderBubbles">
+          <div
+            v-for="bubble in visibleBubbles"
+            :key="bubble.projectIndex"
+            class="bubble"
+            :class="{ 
+              current: bubble.positionIndex === 2,
+              active: activeProjectIndex !== null,
+              'no-opacity-transition':
+                skipOpacityTransition && bubble.positionIndex === 2
+            }"
+            :style="{ 
+              top: allPositions[bubble.positionIndex].top, 
+              left: allPositions[bubble.positionIndex].left,
+              backgroundImage: `url(${bubble.project.img})`
+            }"
+            @click="handleBubbleClick(bubble.positionIndex)"
+          ></div>
+        </template>
       </div>
       <ProjectProjectDisplay />
       <ProjectPaginationDots />
@@ -31,16 +31,18 @@
 
 <script setup lang="ts">
   
-  import { ref, onMounted, watch } from 'vue';
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
   import gsap from 'gsap';
 
   import ProjectProjectDisplay from '@projects/Project-Display.vue';
   
-  import { activeProjectIndex, ActiveProject, closeActiveProject, currentProjectIndex, projects } from '@modules/Projects Section/projects';
+  import { activeProjectIndex, ActiveProject, currentProjectIndex, projects } from '@modules/Sections/Projects Section/projects';
   import ProjectPaginationDots from '@projects/Project-Pagination-Dots.vue';
   import GooeyFilter from '@components/Misc/Gooey-Filter.vue';
   import ProjectsHelix from './Projects-Helix.vue';
   import ProjectsTech from '@projects/Project-Technology-Detail.vue';
+
+  import { currentSection } from '@modules/Sections/sections';
 
 
   const allPositions = [
@@ -50,24 +52,66 @@
     { top: '130%', left: '140%' },   
   ];
   const visibleProjectIndices = ref([projects.length - 1, 0, 1]);
-  const bubbleRefs = ref<HTMLElement[]>([]);
   const skipOpacityTransition = ref(false);
 
-  onMounted(() => {
-    bubbleRefs.value.forEach((bubble) => {
-      if (bubble) {
-        const randomRadius = () => {
-          const r1 = 40 + Math.random() * 20; 
-          const r2 = 40 + Math.random() * 20;
-          const r3 = 40 + Math.random() * 20;
-          const r4 = 40 + Math.random() * 20;
-          const r5 = 40 + Math.random() * 20;
-          const r6 = 40 + Math.random() * 20;
-          const r7 = 40 + Math.random() * 20;
-          const r8 = 40 + Math.random() * 20;
-          return `${r1.toFixed(0)}% ${r2.toFixed(0)}% ${r3.toFixed(0)}% ${r4.toFixed(0)}% / ${r5.toFixed(0)}% ${r6.toFixed(0)}% ${r7.toFixed(0)}% ${r8.toFixed(0)}%`;
-        };
+  const bubbleContainerRef = ref<HTMLElement | null>(null);
+  const renderBubbles = ref(false);
+  let hideBubblesTimer: number | null = null;
 
+  type VisibleBubble = {
+    projectIndex: number;
+    positionIndex: 1 | 2 | 3;
+    project: (typeof projects)[number];
+  };
+
+  const visibleBubbles = computed<VisibleBubble[]>(() => {
+    return visibleProjectIndices.value
+      .map((projectIndex, idx) => {
+        const project = projects[projectIndex];
+        if (!project) return null;
+        return {
+          projectIndex,
+          positionIndex: (idx + 1) as 1 | 2 | 3,
+          project,
+        };
+      })
+      .filter((b): b is VisibleBubble => b !== null);
+  });
+
+  const randomRadius = () => {
+    const r1 = 40 + Math.random() * 20;
+    const r2 = 40 + Math.random() * 20;
+    const r3 = 40 + Math.random() * 20;
+    const r4 = 40 + Math.random() * 20;
+    const r5 = 40 + Math.random() * 20;
+    const r6 = 40 + Math.random() * 20;
+    const r7 = 40 + Math.random() * 20;
+    const r8 = 40 + Math.random() * 20;
+    return `${r1.toFixed(0)}% ${r2.toFixed(0)}% ${r3.toFixed(0)}% ${r4.toFixed(0)}% / ${r5.toFixed(0)}% ${r6.toFixed(0)}% ${r7.toFixed(0)}% ${r8.toFixed(0)}%`;
+  };
+
+  let bubbleGsapContext: gsap.Context | null = null;
+  const initializeBubbles = async () => {
+    if (!renderBubbles.value) {
+      bubbleGsapContext?.revert();
+      bubbleGsapContext = null;
+      return;
+    }
+
+    await nextTick();
+
+    const container = bubbleContainerRef.value;
+    if (!container) return;
+
+    // Only animate currently rendered (visible) bubbles.
+    const bubbles = Array.from(container.querySelectorAll<HTMLElement>('.bubble'));
+    if (bubbles.length === 0) return;
+
+    // Clean up previous animations to prevent accumulation/crashes on iOS/Samsung browsers.
+    bubbleGsapContext?.revert();
+    bubbleGsapContext = gsap.context(() => {
+      bubbles.forEach((bubble) => {
+        gsap.killTweensOf(bubble);
         gsap.to(bubble, {
           keyframes: [
             { borderRadius: randomRadius(), duration: 2 },
@@ -79,10 +123,49 @@
           repeat: -1,
           yoyo: true,
           ease: 'sine.inOut',
-          delay:  1.0 + Math.random() * 4.0,
+          delay: 1.0 + Math.random() * 4.0,
         });
-      }
-    });
+      });
+    }, container);
+  };
+
+  onMounted(() => {
+    renderBubbles.value = currentSection.value === 2;
+    if (renderBubbles.value) initializeBubbles();
+  });
+
+  watch(visibleProjectIndices, async () => {
+    if (!renderBubbles.value) return;
+    await initializeBubbles();
+  }, { deep: true, flush: 'post' });
+
+  watch(currentSection, (newSection, oldSection) => {
+    if (newSection === 2) {
+      if (hideBubblesTimer !== null) window.clearTimeout(hideBubblesTimer);
+      hideBubblesTimer = null;
+      renderBubbles.value = true;
+      initializeBubbles();
+      return;
+    }
+
+    if (oldSection === 2 && newSection !== 2) {
+      if (hideBubblesTimer !== null) window.clearTimeout(hideBubblesTimer);
+      hideBubblesTimer = window.setTimeout(() => {
+        renderBubbles.value = false;
+        bubbleGsapContext?.revert();
+        bubbleGsapContext = null;
+        hideBubblesTimer = null;
+      }, 1500);
+    }
+  }, { flush: 'post' });
+
+  onBeforeUnmount(() => {
+    if (hideBubblesTimer !== null) {
+      window.clearTimeout(hideBubblesTimer);
+      hideBubblesTimer = null;
+    }
+    bubbleGsapContext?.revert();
+    bubbleGsapContext = null;
   });
 
   watch(activeProjectIndex, (newValue, oldValue) => {
@@ -99,12 +182,6 @@
     const nextIndex = newIndex + 1 >= projects.length ? 0 : newIndex + 1;
     visibleProjectIndices.value = [prevIndex, newIndex, nextIndex];
   });
-
-  const getPositionForProject = (projectIndex: number): number => {
-    const visibleIndex = visibleProjectIndices.value.indexOf(projectIndex);
-    if (visibleIndex === -1) return 0; 
-    return visibleIndex + 1; 
-  };
 
   const handleBubbleClick = (positionIndex: number) => {
     if (positionIndex === 0) return; 
@@ -148,7 +225,8 @@
 		align-items: center;
     width: 100%;
     height: 100%;
-    perspective: 1000px;;  }
+    perspective: 1000px;;  
+  }
 
   .bubble-container {
     width: 100%;

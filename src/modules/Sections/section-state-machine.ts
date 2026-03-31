@@ -30,6 +30,8 @@ export function getSectionTransitionStates(current: number, previous: number) {
 
 	const enterProjectsFromProfile = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PROFILE;
 	const leaveProjectsToProfile = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.PROJECTS;
+	const enterProjectsFromPerks = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PERKS;
+	const leaveProjectsToPerks = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROJECTS;
 
 	const skipProfile =
 		(current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROJECTS) ||
@@ -49,6 +51,8 @@ export function getSectionTransitionStates(current: number, previous: number) {
 		enterProfileFromProjects,
 		enterProjectsFromProfile,
 		leaveProjectsToProfile,
+		enterProjectsFromPerks,
+		leaveProjectsToPerks,
 		skipProfile,
 	};
 }
@@ -134,6 +138,11 @@ export type SectionLayerStyleController = {
 	cleanup: () => void;
 };
 
+/**
+ * Centralized section visibility styling.
+ * - Current section: visible immediately
+ * - Previous section: stays visible for `lingerMs`, then fades out over `fadeMs`
+ */
 export function CreateSectionLayerStyleController(
 	options: SectionLayerStyleControllerOptions = {}
 ): SectionLayerStyleController {

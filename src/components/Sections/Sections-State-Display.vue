@@ -1,51 +1,122 @@
 <template>
-  <div class="content-list-container" :class="{active: activeProjectIndex !== null}">
-		<div class="line">
-			<!-- <div class="dot" :style="dotStyle"></div> -->
-		</div>
-    <p class="intro-header-list" :class="{active: currentSection === 0}" @click="scrollToSection(0)">PERKS</p>
-    <p class="info-header-list" :class="{active: currentSection === 1}" @click="scrollToSection(1)">DEV PROFILE</p>
-    <p class="work-header-list" :class="{active: currentSection === 2}" @click="scrollToSection(2)">PROJECTS</p>
-  </div>
+	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isMobile ? 'is-mobile' : 'is-desktop', { 'dragging': isDragging && isMobile }]" :style="dragStyle">
+			<div class="line"></div>
+			<div v-if="isMobile" class="rect-container">
+				<div class="rect" :class="[{ active: currentSection === 0 }, { 'locked': navigationLockRef && currentSection !== 0 }]" @click="onEntryClick(0)"></div>
+				<div class="rect" :class="[{ active: currentSection === 1 }, { 'locked': navigationLockRef && currentSection !== 1 }]" @click="onEntryClick(1)"></div>
+				<div class="rect" :class="[{ active: currentSection === 2 }, { 'locked': navigationLockRef && currentSection !== 2 }]" @click="onEntryClick(2)"></div>
+			</div>
+	    <div class="perks-header-list" :class="[{ active: currentSection === 0 }, { 'locked': navigationLockRef && currentSection !== 0 }]" @click="onEntryClick(0)">PERK</div>
+	    <div class="profile-header-list" :class="[{ active: currentSection === 1 }, { 'locked': navigationLockRef && currentSection !== 1 }]" @click="onEntryClick(1)">PROFILE</div>
+	    <div class="projects-header-list" :class="[{ active: currentSection === 2 }, { 'locked': navigationLockRef && currentSection !== 2 }]" @click="onEntryClick(2)">PROJECT</div>
+	  </div>
+
 </template>
 
 <script setup lang="ts">
-	import { computed, onMounted, onUnmounted, ref } from 'vue'
-	import { currentSection, initSectionTracking, cleanupSectionTracking, scrollToSection } from '@modules/sections'
-	import { activeProjectIndex } from '@modules/Projects Section/projects'
+	import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
+	import { currentSection, InitializeSectionTracking, cleanupSectionTracking, ChangeToSectionID } from '@modules/Sections/sections'
+	import { activeProjectIndex } from '@modules/Sections/Projects Section/projects'
+	import { isMobile } from '@modules/Misc/is-mobile'
+	import { navigationLockRef } from '@modules/Misc/navigation-lock'
+	import { InitializeMobileDragNavigation, CleanupMobileDragNavigation, dragOffset, isDragging, dragDirection, dragOffsetX, thresholdReached } from '@modules/Misc/mobile-drag-navigation'
 
-	const dotProgress = ref(0)
+	const thresholdAnimating = ref(false)
 
-	const updateDotProgress = () => {
-		const maxScroll = Math.max(
-			0,
-			document.documentElement.scrollHeight - window.innerHeight
-		)
+	watch(thresholdReached, () => {
+		thresholdAnimating.value = true
+		setTimeout(() => {
+			thresholdAnimating.value = false
+		}, 180)
+	})
 
-		if (maxScroll === 0) {
-			dotProgress.value = 0
-			return
+	const dragStyle = computed(() => {
+		if (!isDragging.value || !isMobile.value) return {}
+		
+		const scale = Math.min(1 + dragOffset.value / 200, 1.1)
+		const translateY = dragDirection.value === 'up' ? dragOffset.value * 0.3 : -dragOffset.value * 0.3
+		const translateX = dragOffsetX.value * 0.2
+		
+		const popScale = thresholdReached.value ? 1.08 : 1
+		const popTranslateY = thresholdReached.value ? -15 : 0
+		const useTransition = thresholdReached.value || thresholdAnimating.value
+		
+		return {
+			transform: `translateX(calc(-50% + ${translateX}px)) scale(${scale * popScale}) translateY(${translateY + popTranslateY}px)`,
+			opacity: 0.8 + dragOffset.value / 500,
+			transition: useTransition ? '0.15s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
 		}
+	})
 
-		dotProgress.value = Math.min(1, Math.max(0, window.scrollY / maxScroll))
-	}
+	const vibrateClick = () => {
+		if (navigationLockRef.value) return;
+		if (typeof navigator === 'undefined') return;
+		if (!('vibrate' in navigator)) return;
+		navigator.vibrate(10);
+	};
+
+	const onEntryClick = (sectionIndex: number) => {
+		vibrateClick();
+		ChangeToSectionID(sectionIndex);
+	};
 
 	onMounted(() => {
-		initSectionTracking()
-		updateDotProgress()
-		window.addEventListener('scroll', updateDotProgress)
-		window.addEventListener('resize', updateDotProgress)
+		InitializeSectionTracking()
+		if (isMobile.value) {
+			InitializeMobileDragNavigation()
+		}
 	})
 
 	onUnmounted(() => {
 		cleanupSectionTracking()
-		window.removeEventListener('scroll', updateDotProgress)
-		window.removeEventListener('resize', updateDotProgress)
+		if (isMobile.value) {
+			CleanupMobileDragNavigation()
+		}
 	})
 </script>
 
 <style scoped lang="scss">
 	@use "@styleVariables" as *;
+
+	.rect-container {
+		position: absolute;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		justify-items: center;
+		align-items: center;
+		top: -3.2rem;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+
+	.rect {
+		display: flex;
+		flex-direction: row;
+		border: 4px solid white;
+		border-radius: 10px;
+		width: 3rem;
+		height: 3rem;
+		pointer-events: auto;
+		width: 2rem;
+		height: 2rem;
+		scale: 0.8;
+
+		transition:
+			.2s all .1s;
+
+		&.active {
+			border-color: $red;
+			transform: translateY(-30%)
+			scale(1.1)
+			rotate(135deg);
+		}
+
+		&.locked {
+			transform: translateY(10px) scale(.95);
+			border: 4px solid rgb(179, 179, 179);
+		}
+	}
 
 	.content-list-container {
 		@extend .disable-selection;
@@ -66,24 +137,29 @@
 		&.active {
 			left: -20%
 		}
+
+		&.dragging {
+			transition: none;
+		}
 	}
 
-	.dot {
-		position: absolute;
-		top: 0;
+	.content-list-container.is-mobile {
+		flex-direction: row;
+		justify-content: space-between;
 		left: 50%;
-		transform: translate(-50%, -50%);
-		width: .8rem;
-		height: .8rem;
-		background-color: $red;
-		border-radius: 50%;
-		border: solid 3px $red;
-		transition: top .15s linear;
+		bottom: 1.5%;
+		width: min(92vw, 23rem);
+		transform: translateX(-50%);
+		perspective: none;
+
+		@include mobile {
+			width: min(94vw, 13rem);
+		}
 	}
 
-	.intro-header-list,
-	.info-header-list,
-	.work-header-list {
+	.perks-header-list,
+	.profile-header-list,
+	.projects-header-list {
 		@include rotate(0, 40, 0);
 		@include outline(black);
 		position: relative;
@@ -109,6 +185,12 @@
 			line-height: 1rem;
 			margin: 2rem 1rem;
 		}
+
+		&.locked {
+			color: rgb(179, 179, 179);
+			scale: .8;
+		}
+
 	}
 
 	.line {
@@ -122,5 +204,42 @@
 		border-radius: 5px;
 		top: -2%;
 		left: 0;
+
+		@include allMobile {
+			visibility: hidden;
+		}	
+
+	}
+
+
+	.content-list-container.is-mobile .perks-header-list,
+	.content-list-container.is-mobile .profile-header-list,
+	.content-list-container.is-mobile .projects-header-list {
+
+
+		@include mobile {
+			@include rotate(0, 0, 0);
+			flex: 1;
+			width: auto;
+			justify-content: center;
+			text-align: center;
+			margin: 0;
+			padding: 0.4rem 0.25rem;
+			line-height: 1.1rem;
+			transform: translateY(0);
+			font-size: .8rem;
+			padding: 0.35rem 0rem;
+
+			&.active {
+				font-size: 1.1rem;
+				padding: 0.35rem 0rem;
+			}
+		}
+	}
+
+	.content-list-container.is-mobile .perks-header-list.active,
+	.content-list-container.is-mobile .profile-header-list.active,
+	.content-list-container.is-mobile .projects-header-list.active {
+		transform: translateY(-0.6rem);
 	}
 </style>

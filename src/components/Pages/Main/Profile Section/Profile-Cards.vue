@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-  import { cards } from '@profileModules/profile-cards';
+  import { cards } from '@modules/Sections/Profile Section/profile-cards';
 </script>
 
 <style lang="scss" scoped>

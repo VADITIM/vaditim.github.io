@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 	import { computed, ref, watch } from 'vue';
-	import { activeProjectIndex, currentProjectIndex, projects } from '@modules/Projects Section/projects'
+	import { activeProjectIndex, currentProjectIndex, projects } from '@modules/Sections/Projects Section/projects'
 
 	const totalProjects = projects.length;
 	const itemSpacingRem = 3.8;

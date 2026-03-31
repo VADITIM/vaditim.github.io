@@ -1,14 +1,14 @@
 <template>
 	<div v-if="isVisible" class="hardware-acceleration-notice">
 		<div class="header">Hardware Acceleration Required</div>
-		<div class="extra">For the best experience, please enable hardware acceleration in your browser settings. <br><br> If nothing's visible try resizing your viewport to FullHD+</div>
+		<div class="extra">For the best experience, please enable hardware acceleration in your browser settings.</div>
 		<button class="button" @click="dismissNotice">OK</button>
 	</div>
 </template>
 
 <script setup lang="ts">
 	import { onMounted } from 'vue';
-	import { hardwareNoticeActive as isVisible } from '@modules/hardware-notice';
+	import { hardwareNoticeActive as isVisible } from '@modules/Misc/hardware-notice';
 
 	const NOTICE_STORAGE_KEY = 'hardware-acceleration-notice-dismissed';
 
@@ -53,24 +53,12 @@
 		font-size: 5rem;
 		text-wrap: nowrap;
 		color: $red;
-		
-		@include allMobile {
-			width: 80%;
-			text-wrap: wrap;
-			font-size: 1.6rem;
-		}
 	}
 
 	.extra {
 		@include absoluteCenter(50%, 50%);
 		font-size: 1.8rem;
 		text-wrap: nowrap;
-
-		@include allMobile {
-			width: 95%;
-			text-wrap: wrap;
-			font-size: .9rem;
-		}
 	}
 
 	.button {
@@ -86,5 +74,4 @@
 		color: white;
 		cursor: pointer;
 	}
-
 </style>

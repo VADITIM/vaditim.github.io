@@ -15,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
-  import { clicked, toggleClick } from '@modules/Projects Section/projects-technology';
-  import { currentProjectIndex, projects, activeProjectIndex } from '@modules/Projects Section/projects';
+  import { clicked, toggleClick } from '@modules/Sections/Projects Section/projects-technology';
+  import { currentProjectIndex, projects, activeProjectIndex } from '@modules/Sections/Projects Section/projects';
 </script>
 
 <style lang="scss" scoped>

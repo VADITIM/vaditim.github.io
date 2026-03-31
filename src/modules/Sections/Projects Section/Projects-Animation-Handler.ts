@@ -1,7 +1,7 @@
 import { gsap } from "gsap";
-import { activeProjectIndex, closeActiveProject, currentProjectIndex } from "@modules/Projects Section/projects";
+import { activeProjectIndex, closeActiveProject, currentProjectIndex } from "@modules/Sections/Projects Section/projects";
 import { watch } from "vue";
-import { breakpoints } from "../animation-config";
+import { breakpoints } from "@modules/animations/animation-handler";
 import {
   onSectionEnterLeaveAnimation,
   type SectionTransitionStates,
@@ -10,14 +10,70 @@ import {
 
 gsap.defaults({ immediateRender: false });
 
-const isProjectsEnter = (states: SectionTransitionStates) => states.enterProjectsFromProfile;
-const isProjectsLeave = (states: SectionTransitionStates) => states.leaveProjectsToProfile;
+const isProjectsEnter = (states: SectionTransitionStates) =>
+  states.enterProjectsFromProfile || states.enterProjectsFromPerks;
+const isProjectsLeave = (states: SectionTransitionStates) =>
+  states.leaveProjectsToProfile || states.leaveProjectsToPerks;
     
 export function ProjectAnimationDesktop() {
+  ProjectsMobile();
 	ProjectsDesktop();
 	ProjectListDesktop();
 	PaginationDotsDesktop();
 	InteractiveDotsDesktop();
+}
+
+function ProjectsMobile() {
+  gsap.matchMedia().add(`(max-width: ${breakpoints.tabletLandscape}px)`, () => {
+    const MOBILE_SELECTOR =
+      ".projects-container, .project-list, .pagination-dots, .magnetic-dots-container";
+
+    if (!document.querySelector(MOBILE_SELECTOR)) return;
+
+    let tween: gsap.core.Tween | null = null;
+
+    const playEnter = () => {
+      if (tween) tween.kill();
+      tween = gsap.to(MOBILE_SELECTOR, {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
+        stagger: 0.04,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    };
+
+    const playLeave = () => {
+      closeActiveProject();
+      currentProjectIndex.value = 0;
+
+      if (tween) tween.kill();
+      tween = gsap.to(MOBILE_SELECTOR, {
+        opacity: 0,
+        y: -20,
+        duration: 0.25,
+        stagger: 0.02,
+        ease: "power2.in",
+        overwrite: "auto",
+      });
+    };
+
+    gsap.set(MOBILE_SELECTOR, { opacity: 0, y: 20 });
+
+    const cleanupStates = onSectionEnterLeaveAnimation({
+      isEnter: isProjectsEnter,
+      isLeave: isProjectsLeave,
+      onEnter: playEnter,
+      onLeave: playLeave,
+      initialSection: SECTION_INDEX.PROJECTS,
+    });
+
+    return () => {
+      cleanupStates();
+      if (tween) tween.kill();
+    };
+  });
 }
 
 function ProjectsDesktop() {
