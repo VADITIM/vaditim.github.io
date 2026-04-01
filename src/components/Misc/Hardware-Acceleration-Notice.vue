@@ -33,8 +33,8 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		width: 100svw;
-		height: 100svh;
+		width: 100vw;
+		height: 100dvh;
 		background-color: rgba(20, 20, 20, 0.97);
 		color: white;
 		text-align: center;

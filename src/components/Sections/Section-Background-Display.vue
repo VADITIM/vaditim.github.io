@@ -110,10 +110,10 @@
     @include allMobile {
       left: 0;
       top: 100%;
-      width: 100svw;
-      height: 150svh;
+      width: 100vw;
+      height: 150dvh;
       background: linear-gradient(360deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
-      clip-path: polygon(0 0, 100% 0, 100% 94%, 0 78%);
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 68%);
       border-radius: 30px 30px 0 0;
     }
   }
@@ -122,9 +122,9 @@
     position: absolute;
     left: -30%;
     width: 30%;
-    height: 100vh;
+    height: 110vh;
     background: linear-gradient(180deg,rgba(17, 56, 89, 1) 15%, rgba(0, 64, 255, 1) 85%);
-    clip-path: polygon(0 0, 100% 0, 0 100%, 0% 100%);
+    clip-path: polygon(0 0, 100% 0, 10% 100%, 0% 100%);
     z-index: 2;
 
     @include tablet {
@@ -134,8 +134,8 @@
     @include allMobile {
       left: 0;
       top: 100%;
-      width: 100svw;
-      height: 150svh;
+      width: 100vw;
+      height: 150dvh;
       background: linear-gradient(180deg,rgba(17, 56, 89, 1) 15%, rgba(0, 64, 255, 1) 85%);
       clip-path: polygon(0 0, 100% 0, 100% 62%, 0 80%);
       border-radius: 30px 30px 0 0;
@@ -146,7 +146,7 @@
     position: absolute;
     left: -30%;
     width: 30%;
-    height: 100vh;
+    height: 110vh;
     background-color: rgb(24, 24, 177);
     background: linear-gradient(180deg,#001eff 15%, rgba(17, 56, 89, 1) 85%);
     clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
@@ -159,8 +159,8 @@
     @include allMobile {
       left: 0;
       top: 100%;
-      width: 100svw;
-      height: 150svh;
+      width: 100vw;
+      height: 150dvh;
       background: linear-gradient(180deg,rgb(13, 40, 62) 15%, rgba(0, 64, 255, 1) 85%);
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 54%);
       border-radius: 30px 30px 0 0;
@@ -187,8 +187,8 @@
     @include allMobile {
       left: 0;
       top: 100%;
-      width: 100svw;
-      height: 150svh;
+      width: 100vw;
+      height: 150dvh;
       background: linear-gradient(180deg,rgb(93, 26, 40) 15%, rgba(163, 9, 38, 1) 85%);
       border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 33%, 0 80%);
@@ -216,8 +216,8 @@
     @include allMobile {
       left: 0;
       top: 100%;
-      width: 100svw;
-      height: 150svh;
+      width: 100vw;
+      height: 150dvh;
       background: linear-gradient(180deg,rgba(105, 17, 34, 1) 15%, rgba(163, 9, 38, 1) 85%);
       border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);

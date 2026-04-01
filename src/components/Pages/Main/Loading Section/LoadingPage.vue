@@ -1,5 +1,5 @@
 <template>
-	<div ref="loadingContainer" class="loading-container">
+	<div ref="loadingContainer" class="loading-container" data-loading-page>
 		<div class="top-background"></div>
 		<div class="bottom-background"></div>
 
@@ -52,24 +52,12 @@
 		}
 	}
 
-	onMounted(() => {
+	function PlayLoadingAnimation() {
 		if (!loadingContainer.value) return;
 
 		const textElements = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.text'));
 		const hiderElements = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.hidder'));
 
-		const syncHiderSizeToText = () => {
-			hiderElements.forEach((hidder, index) => {
-				const textElement = textElements[index];
-				if (!textElement) return;
-
-				hidder.style.height = `${textElement.offsetHeight}px`;
-			});
-		};
-
-		syncHiderSizeToText();
-		resizeHandler = syncHiderSizeToText;
-		window.addEventListener('resize', resizeHandler);
 		const randomDelays = hiderElements.map(() => Math.random() * 0.5);
 		const backgroundDelay = 1.50;
 
@@ -85,8 +73,6 @@
 			width: 0,
 			padding: 0,
 		});
-
-		Finished();
 
 		backgroundTimeline
 			.to(".top-background", {
@@ -157,6 +143,34 @@
 				Finished();
 			},
 		}, 2.3);
+	}
+
+	onMounted(() => {
+		if (!loadingContainer.value) return;
+
+		const textElements = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.text'));
+		const hiderElements = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.hidder'));
+
+		const syncHiderSizeToText = () => {
+			hiderElements.forEach((hidder, index) => {
+				const textElement = textElements[index];
+				if (!textElement) return;
+
+				hidder.style.height = `${textElement.offsetHeight}px`;
+			});
+		};
+
+		syncHiderSizeToText();
+		resizeHandler = syncHiderSizeToText;
+		window.addEventListener('resize', resizeHandler);
+
+		// Listen for play-animation event from App.vue
+		loadingContainer.value.addEventListener('play-animation', () => {
+			PlayLoadingAnimation();
+		});
+
+		// Initialize without playing animations
+		Finished();
 	});
 
 	const tabletTexts: TextItem[] = [
@@ -173,12 +187,9 @@
 	const mobileTexts: TextItem[] = [
 		{ content: "Creating digital experiences", top: "10%", left: "50%" },
 		{ content: "Bringing ideas to life", top: "25%", left: "50%" },
-		{ content: "Innovating through design", top: "35%", left: "50%" },
-		{ content: "Innovating through design", top: "45%", left: "50%" },
-		{ content: "Crafting seamless interfaces", top: "60%", left: "50%" },
-		{ content: "Transforming visions into reality", top: "70%", left: "50%" },
-		{ content: "Innovating through design", top: "82%", left: "50%" },
-		{ content: "Transforming visions into reality", top: "93%", left: "50%" },
+		{ content: "Innovating through design", top: "40%", left: "50%" },
+		{ content: "Innovating through design", top: "77%", left: "50%" },
+		{ content: "Crafting seamless interfaces", top: "90%", left: "50%" },
 	];
 
 	const desktopTexts: TextItem[] = [
@@ -208,8 +219,8 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		min-width: 100svw;
-		min-height: 100svh;
+		min-width: 100vw;
+		min-height: 100dvh;
 		background-color: #181818;
 		z-index: 300;
 	}

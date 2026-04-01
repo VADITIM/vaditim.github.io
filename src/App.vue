@@ -22,6 +22,8 @@
       <!-- <div :style="GetSection(2)"><ProjectsPage /></div> -->
     </template>
 
+    <ExploreFullscreenToggle :show-loading-page="showLoadingPage" :container-element="container" :is-mobile="isMobile" />
+
   </main>
 </template>
 
@@ -40,12 +42,13 @@
 
   import SectionBackgrounds from '@sections/Section-Background-Display.vue';
   import SectionsDisplay from '@sections/Sections-State-Display.vue';
-
+  import ExploreFullscreenToggle from '@components/Misc/Explore-Fullscreen-Toggle.vue';
 
   import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
   import { hardwareNoticeActive } from '@modules/Misc/hardware-notice';
   import { isMobile } from '@modules/Misc/is-mobile';
 
+  const container = ref<HTMLElement | null>(null);
   const showLoadingPage = ref(true);
   const hasInitialized = ref(false);
   const sectionHeightVh = 100;
@@ -101,6 +104,8 @@
     height: 100vh;
     overflow: hidden;
     overscroll-behavior: none;
+    background-color: #181818;
+    user-select: none
   }
 
   .app-container>* {
