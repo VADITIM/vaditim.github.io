@@ -3,7 +3,7 @@ import { getVirtualSectionHeightPx } from '../Misc/virtual-scroll'
 import { isMobile } from '../Misc/is-mobile'
 import { setNavigationLock } from '../Misc/navigation-lock'
 
-const SECTION_TRANSITION_LOCK_MS = 1700
+const SECTION_TRANSITION_LOCK_MS = 1000
 let transitionLockTimer: number | null = null
 
 const LockTransition = () => {

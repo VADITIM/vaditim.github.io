@@ -2,13 +2,13 @@
 	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isMobile ? 'is-mobile' : 'is-desktop', { 'dragging': isDragging && isMobile }]" :style="dragStyle">
 			<div class="line"></div>
 			<div v-if="isMobile" class="rect-container">
-				<div class="rect" :class="[{ active: currentSection === 0 }, { 'locked': navigationLockRef && currentSection !== 0 }]" @click="onEntryClick(0)"></div>
-				<div class="rect" :class="[{ active: currentSection === 1 }, { 'locked': navigationLockRef && currentSection !== 1 }]" @click="onEntryClick(1)"></div>
-				<div class="rect" :class="[{ active: currentSection === 2 }, { 'locked': navigationLockRef && currentSection !== 2 }]" @click="onEntryClick(2)"></div>
+				<div class="rect" :class="getEntryClasses(0)" :style="getEntryDragStyle(0, 'rect')" @click="onEntryClick(0)"></div>
+				<div class="rect" :class="getEntryClasses(1)" :style="getEntryDragStyle(1, 'rect')" @click="onEntryClick(1)"></div>
+				<div class="rect" :class="getEntryClasses(2)" :style="getEntryDragStyle(2, 'rect')" @click="onEntryClick(2)"></div>
 			</div>
-	    <div class="perks-header-list" :class="[{ active: currentSection === 0 }, { 'locked': navigationLockRef && currentSection !== 0 }]" @click="onEntryClick(0)">PERK</div>
-	    <div class="profile-header-list" :class="[{ active: currentSection === 1 }, { 'locked': navigationLockRef && currentSection !== 1 }]" @click="onEntryClick(1)">PROFILE</div>
-	    <div class="projects-header-list" :class="[{ active: currentSection === 2 }, { 'locked': navigationLockRef && currentSection !== 2 }]" @click="onEntryClick(2)">PROJECT</div>
+	    <div class="perks-header-list" :class="getEntryClasses(0)" :style="getEntryDragStyle(0, 'text')" @click="onEntryClick(0)">PERK</div>
+	    <div class="profile-header-list" :class="getEntryClasses(1)" :style="getEntryDragStyle(1, 'text')" @click="onEntryClick(1)">PROFILE</div>
+	    <div class="projects-header-list" :class="getEntryClasses(2)" :style="getEntryDragStyle(2, 'text')" @click="onEntryClick(2)">PROJECT</div>
 	  </div>
 
 </template>
@@ -19,34 +19,161 @@
 	import { activeProjectIndex } from '@modules/Sections/Projects Section/projects'
 	import { isMobile } from '@modules/Misc/is-mobile'
 	import { navigationLockRef } from '@modules/Misc/navigation-lock'
-	import { InitializeMobileDragNavigation, CleanupMobileDragNavigation, dragOffset, isDragging, dragDirection, dragOffsetX, thresholdReached } from '@modules/Misc/mobile-drag-navigation'
+	import { InitializeMobileDragNavigation, CleanupMobileDragNavigation, dragOffset, isDragging, dragDirection, thresholdReached } from '@modules/Misc/mobile-drag-navigation'
 
 	const thresholdAnimating = ref(false)
+	let thresholdAnimTimeout: ReturnType<typeof setTimeout> | null = null
+	const isReturning = ref(false)
+	type EntryType = 'rect' | 'text'
+	const returnEntryTransforms = ref<Record<string, string>>({})
+	const currentEntryTransforms = ref<Record<string, string>>({})
+
+	const ACTIVE_BASE_OFFSET_PX = -9.6
+	const INACTIVE_RECT_SCALE = 0.8
+	const INACTIVE_TEXT_SCALE = 1
+
+	const getEntryKey = (sectionIndex: number, entryType: EntryType) => `${entryType}-${sectionIndex}`
+
+	const getEntryDefaultTransform = (sectionIndex: number, entryType: EntryType) => {
+		const isCurrent = sectionIndex === currentSection.value
+
+		if (entryType === 'rect') {
+			const baseY = isCurrent ? ACTIVE_BASE_OFFSET_PX : 0
+			const baseScale = isCurrent ? 1.1 : INACTIVE_RECT_SCALE
+			const baseRotate = isCurrent ? ' rotate(135deg)' : ''
+			return `translateY(${baseY}px) scale(${baseScale})${baseRotate}`
+		}
+
+		const textY = isCurrent ? ACTIVE_BASE_OFFSET_PX : 0
+		return `translateY(${textY}px) scale(${INACTIVE_TEXT_SCALE})`
+	}
 
 	watch(thresholdReached, () => {
 		thresholdAnimating.value = true
-		setTimeout(() => {
+		if (thresholdAnimTimeout) {
+			clearTimeout(thresholdAnimTimeout)
+		}
+		thresholdAnimTimeout = setTimeout(() => {
 			thresholdAnimating.value = false
+			thresholdAnimTimeout = null
 		}, 180)
 	})
+
+	watch(isDragging, (newVal) => {
+		if (newVal || !isMobile.value) {
+			isReturning.value = false
+			return
+		}
+
+		isReturning.value = true
+		const seededTransforms: Record<string, string> = {}
+		for (let sectionIndex = 0; sectionIndex <= 2; sectionIndex++) {
+			const rectKey = getEntryKey(sectionIndex, 'rect')
+			const textKey = getEntryKey(sectionIndex, 'text')
+			seededTransforms[rectKey] = currentEntryTransforms.value[rectKey] ?? getEntryDefaultTransform(sectionIndex, 'rect')
+			seededTransforms[textKey] = currentEntryTransforms.value[textKey] ?? getEntryDefaultTransform(sectionIndex, 'text')
+		}
+		returnEntryTransforms.value = seededTransforms
+
+		requestAnimationFrame(() => {
+			const nextTransforms: Record<string, string> = {}
+			for (let sectionIndex = 0; sectionIndex <= 2; sectionIndex++) {
+				nextTransforms[getEntryKey(sectionIndex, 'rect')] = getEntryDefaultTransform(sectionIndex, 'rect')
+				nextTransforms[getEntryKey(sectionIndex, 'text')] = getEntryDefaultTransform(sectionIndex, 'text')
+			}
+			returnEntryTransforms.value = nextTransforms
+		})
+
+		setTimeout(() => {
+			isReturning.value = false
+			returnEntryTransforms.value = {}
+			currentEntryTransforms.value = {}
+		}, 240)
+	}, { flush: 'sync' })
 
 	const dragStyle = computed(() => {
 		if (!isDragging.value || !isMobile.value) return {}
 		
-		const scale = Math.min(1 + dragOffset.value / 200, 1.1)
-		const translateY = dragDirection.value === 'up' ? dragOffset.value * 0.3 : -dragOffset.value * 0.3
-		const translateX = dragOffsetX.value * 0.2
-		
-		const popScale = thresholdReached.value ? 1.08 : 1
-		const popTranslateY = thresholdReached.value ? -15 : 0
-		const useTransition = thresholdReached.value || thresholdAnimating.value
-		
 		return {
-			transform: `translateX(calc(-50% + ${translateX}px)) scale(${scale * popScale}) translateY(${translateY + popTranslateY}px)`,
 			opacity: 0.8 + dragOffset.value / 500,
-			transition: useTransition ? '0.15s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none'
+			transition: (thresholdReached.value || thresholdAnimating.value) ? "opacity 0.15s ease-out" : "none"
 		}
 	})
+
+	const getEntryClasses = (sectionIndex: number) => {
+		const isActive = currentSection.value === sectionIndex
+		const isLocked = navigationLockRef.value && !isActive
+		return {
+			active: isActive,
+			locked: isLocked,
+		}
+	}
+
+	function getTargetSectionIndex() {
+		if (!dragDirection.value) return null
+		const delta = dragDirection.value === 'down' ? 1 : -1
+		const nextSection = currentSection.value + delta
+		if (nextSection < 0 || nextSection > 2) return null
+		return nextSection
+	}
+
+	const getEntryDragStyle = (sectionIndex: number, entryType: 'rect' | 'text') => {
+		const entryKey = getEntryKey(sectionIndex, entryType)
+
+		if (isReturning.value && isMobile.value) {
+			const returnTransform = returnEntryTransforms.value[entryKey]
+			if (!returnTransform) return {}
+
+			return {
+				transform: returnTransform,
+				transition: 'transform 0.22s ease-out',
+			}
+		}
+
+		if (!isMobile.value || !isDragging.value || !dragDirection.value) return {}
+		const targetSection = getTargetSectionIndex()
+		if (targetSection === null) return {}
+
+		const dragProgressPx = Math.min(dragOffset.value, window.innerHeight * .2)
+		const downMovement = 6 + Math.min(dragProgressPx * 0.05, 22)
+		const upMovement = 6 + Math.min(dragProgressPx * 0.05, 24)
+		const isTarget = sectionIndex === targetSection
+		const sectionMoveY = isTarget ? -upMovement : downMovement
+		const popAmount = (thresholdReached.value || thresholdAnimating.value) ? 8 : 0
+		const targetY = isTarget ? sectionMoveY - popAmount : sectionMoveY
+
+		if (entryType === 'rect') {
+			const isCurrent = sectionIndex === currentSection.value
+			const baseOffsetY = 0
+			const targetScale = isTarget
+				? (INACTIVE_RECT_SCALE + Math.min(dragProgressPx / 1000, 0.12) + (thresholdReached.value ? 0.06 : 0))
+				: INACTIVE_RECT_SCALE
+			const rotate = isCurrent ? ' rotate(135deg)' : ''
+			const useTransition = true
+			const isActiveScalingDown = isCurrent && !isTarget
+			const transitionDuration = isActiveScalingDown ? '0.24s' : '0.14s'
+			const transform = `translateY(${baseOffsetY + targetY}px) scale(${targetScale})${rotate}`
+			currentEntryTransforms.value[entryKey] = transform
+
+			return {
+				transform,
+				transition: useTransition ? `transform ${transitionDuration} cubic-bezier(0.22, 1, 0.36, 1)` : 'none',
+			}
+		}
+
+		const baseTextOffset = 0
+		const textScale = isTarget
+			? (INACTIVE_TEXT_SCALE + Math.min(dragProgressPx / 1400, .08) + (thresholdReached.value ? .04 : .0))
+			: INACTIVE_TEXT_SCALE
+		const useTransition = true
+		const textTransform = `translateY(${baseTextOffset + targetY}px) scale(${textScale})`
+		currentEntryTransforms.value[entryKey] = textTransform
+
+		return {
+			transform: textTransform,
+			transition: useTransition ? 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
+		}
+	}
 
 	const vibrateClick = () => {
 		if (navigationLockRef.value) return;
@@ -68,6 +195,10 @@
 	})
 
 	onUnmounted(() => {
+		if (thresholdAnimTimeout) {
+			clearTimeout(thresholdAnimTimeout)
+			thresholdAnimTimeout = null
+		}
 		cleanupSectionTracking()
 		if (isMobile.value) {
 			CleanupMobileDragNavigation()
@@ -100,21 +231,39 @@
 		pointer-events: auto;
 		width: 2rem;
 		height: 2rem;
-		scale: 0.8;
+		transform: translateY(0) scale(0.8) rotate(0deg);
 
 		transition:
-			.2s all .1s;
+			.6s all .1s;
 
 		&.active {
 			border-color: $red;
 			transform: translateY(-30%)
 			scale(1.1)
 			rotate(135deg);
+
+			transition:
+				.2s all .1s;
 		}
 
 		&.locked {
-			transform: translateY(10px) scale(.95);
+			transform: translateY(20px) scale(.95) rotate(0deg);
 			border: 4px solid rgb(179, 179, 179);
+
+			transition:
+				.6s all .1s;
+		}
+
+		@include tablet {
+			width: 2.5rem;
+			height: 2.5rem;
+			
+			&.active {
+				border-color: $red;
+				transform: translateY(-60%)
+				scale(1.3)
+				rotate(135deg);
+		}
 		}
 	}
 
@@ -147,7 +296,7 @@
 		flex-direction: row;
 		justify-content: space-between;
 		left: 50%;
-		bottom: 1.5%;
+		bottom: -2%;
 		width: min(92vw, 23rem);
 		transform: translateX(-50%);
 		perspective: none;
@@ -188,9 +337,8 @@
 
 		&.locked {
 			color: rgb(179, 179, 179);
-			scale: .8;
+			transform: scale(.8);
 		}
-
 	}
 
 	.line {
@@ -215,18 +363,22 @@
 	.content-list-container.is-mobile .perks-header-list,
 	.content-list-container.is-mobile .profile-header-list,
 	.content-list-container.is-mobile .projects-header-list {
+		@include rotate(0, 0, 0);
+		flex: 1;
+		width: auto;
+		justify-content: center;
+		text-align: center;
+		height: 3rem;
+		transform: translateY(0);
 
+		&.locked {
+			transform: translateY(0) scale(.8);
+		}
 
 		@include mobile {
-			@include rotate(0, 0, 0);
-			flex: 1;
-			width: auto;
-			justify-content: center;
-			text-align: center;
 			margin: 0;
 			padding: 0.4rem 0.25rem;
 			line-height: 1.1rem;
-			transform: translateY(0);
 			font-size: .8rem;
 			padding: 0.35rem 0rem;
 
@@ -235,11 +387,24 @@
 				padding: 0.35rem 0rem;
 			}
 		}
+
+		@include tablet {
+			margin: 0;
+			padding: 0.4rem 0.25rem;
+			line-height: 1.1rem;
+			font-size: .8rem;
+			padding: 0.35rem 0rem;
+
+			&.active {
+				font-size: 2rem;
+				padding: 0.35rem 0rem;
+			}
+		}
 	}
 
 	.content-list-container.is-mobile .perks-header-list.active,
 	.content-list-container.is-mobile .profile-header-list.active,
 	.content-list-container.is-mobile .projects-header-list.active {
-		transform: translateY(-0.6rem);
+		transform: translateY(-0.6rem) scale(1);
 	}
 </style>

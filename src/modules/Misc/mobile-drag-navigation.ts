@@ -21,8 +21,6 @@ let thresholdReached = ref(false)
 let lastDragOffsetY = ref(0)
 
 export function InitializeMobileDragNavigation() {
-  // Calculate threshold as 30% of viewport height
-  
   window.addEventListener('touchstart', HandleTouchStart, { passive: true })
   window.addEventListener('touchmove', HandleTouchMove, { passive: false })
   window.addEventListener('touchend', HandleTouchEnd, { passive: true })
