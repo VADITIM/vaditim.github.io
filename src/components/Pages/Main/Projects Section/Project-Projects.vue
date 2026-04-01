@@ -277,6 +277,8 @@
       &.active {
         opacity: 0;
 
+        pointer-events: none;
+
         transition:
           opacity 0s 0s;
       }

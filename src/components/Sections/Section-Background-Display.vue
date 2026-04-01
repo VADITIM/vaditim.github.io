@@ -3,13 +3,13 @@
       <div class="perks-section-background" :style="GetBackgroundStyle('perks')"></div>
       <div class="profile-section-background-back" :style="GetBackgroundStyle('profile-back')"></div>
       <div class="profile-section-background-front" :style="GetBackgroundStyle('profile-front')"></div>
-      <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null}" :style="GetBackgroundStyle('projects-back')"></div>
-      <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null}" :style="GetBackgroundStyle('projects-front')"></div>
+      <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
+      <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
     </div>
 </template>
 
 <script setup lang="ts" >
-  import { onBeforeUnmount, watch, ref } from 'vue';
+  import { onBeforeUnmount, watch, ref, computed } from 'vue';
   import { ScrollBackgroundSections } from '@modules/Sections/section-backgrounds';
   import { activeProjectIndex } from '@modules/Sections/Projects Section/projects';
   import { finished } from '@modules/Sections/section-state-machine';
@@ -20,6 +20,10 @@
   let CleanupBackgroundAnimations: (() => void) | null = null;
   const isReturning = ref(false);
   const returnTransform = ref('');
+
+  const isProjectsTransitioning = computed(() => {
+    return isTransitioning.value && (currentSection.value === 2 || previousSection.value === 2);
+  });
 
   const GetBackgroundStyle = (type: string) => {
     const activeSectionIndex = isTransitioning.value ? previousSection.value : currentSection.value;
@@ -176,12 +180,19 @@
     background: linear-gradient(180deg,rgba(51, 8, 8, 1) 21%, rgba(102, 14, 14, 1) 80%, rgba(134, 12, 12, 1) 100%);
     clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
     z-index: 4;
+
+    transition: 
+      $backgroundTransitionTime all ease-out;
     
     &.active {
       width: 40%;
 
       transition: 
         .4s all;
+    }
+
+    &.no-transition {
+      transition: none !important;
     }
 
     @include allMobile {
@@ -205,12 +216,19 @@
     background: linear-gradient(180deg,rgba(105, 17, 34, 1) 21%, rgba(153, 9, 38, 1) 55%, rgba(220, 20, 60, 1) 100%);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
     z-index: 4;
+
+    transition: 
+      $backgroundTransitionTime all ease-out;
     
     &.active {
       width: 35%;
       
       transition: 
         .5s all .2s;
+    }
+
+    &.no-transition {
+      transition: none !important;
     }
 
     @include allMobile {

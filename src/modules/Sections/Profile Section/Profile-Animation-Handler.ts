@@ -39,11 +39,11 @@ const isProfileEnter = (states: SectionTransitionStates) =>
 const isProfileLeave = (states: SectionTransitionStates) =>
   states.leaveProfileToPerks || states.leaveProfileToProjects;
 
-function killTimeline(timeline: gsap.core.Timeline | null) {
+function KillTimeline(timeline: gsap.core.Timeline | null) {
   if (timeline) timeline.kill();
 }
 
-function setCardStates(
+function SetCardStates(
   selectors: Record<CardKey, string>,
   states: Record<CardKey, gsap.TweenVars>
 ) {
@@ -52,31 +52,57 @@ function setCardStates(
   });
 }
 
-function createTimeline(build: (timeline: gsap.core.Timeline) => void) {
+function CreateTimeline(build: (timeline: gsap.core.Timeline) => void) {
   const timeline = gsap.timeline();
   build(timeline);
   return timeline;
 }
 
+type ProfileMobileVariant = {
+  mediaQuery: string;
+  selector: string;
+};
 
+type ContactMobileVariant = {
+  mediaQuery: string;
+};
 
-export function ProfileAnimationDesktop() {
+type ContactDesktopVariant = {
+  mediaQuery: string;
+};
+
+type FrontCardsMobileVariant = {
+  mediaQuery: string;
+};
+
+type FrontCardsDesktopVariant = {
+  mediaQuery: string;
+};
+
+type BackCardsMobileVariant = {
+  mediaQuery: string;
+};
+
+type BackCardsDesktopVariant = {
+  mediaQuery: string;
+};
+
+export function ProfileAnimations() {
   ProfileMobile();
   ContactDesktop();
   FrontCardsDesktop();
   BackCardsDesktop();
 }
 
-function ProfileMobile() {
-  gsap.matchMedia().add(`(max-width: ${breakpoints.tabletLandscape}px)`, () => {
-    const PROFILE_MOBILE_SELECTOR = `.contact-container, ${FRONT_CARD_SELECTOR}, ${BACK_CARD_SELECTOR}`;
-    if (!document.querySelector(PROFILE_MOBILE_SELECTOR)) return;
+function RegisterProfileM(config: ProfileMobileVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
+    if (!document.querySelector(config.selector)) return;
 
     let tween: gsap.core.Tween | null = null;
 
     const playEnter = () => {
       if (tween) tween.kill();
-      tween = gsap.to(PROFILE_MOBILE_SELECTOR, {
+      tween = gsap.to(config.selector, {
         opacity: 1,
         y: 0,
         duration: 0.45,
@@ -88,7 +114,7 @@ function ProfileMobile() {
 
     const playLeave = () => {
       if (tween) tween.kill();
-      tween = gsap.to(PROFILE_MOBILE_SELECTOR, {
+      tween = gsap.to(config.selector, {
         opacity: 0,
         y: -20,
         duration: 0.25,
@@ -98,7 +124,7 @@ function ProfileMobile() {
       });
     };
 
-    gsap.set(PROFILE_MOBILE_SELECTOR, { opacity: 0, y: 20 });
+    gsap.set(config.selector, { opacity: 0, y: 20 });
 
     const cleanup = onSectionEnterLeaveAnimation({
       isEnter: isProfileEnter,
@@ -115,8 +141,19 @@ function ProfileMobile() {
   });
 }
 
-function ContactDesktop() {
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+function ProfileMobile() {
+  const mobileVariants: ProfileMobileVariant[] = [
+    {
+      mediaQuery: `(max-width: ${breakpoints.tabletLandscape}px)`,
+      selector: `.contact-container, ${FRONT_CARD_SELECTOR}, ${BACK_CARD_SELECTOR}`,
+    },
+  ];
+
+  mobileVariants.forEach(RegisterProfileM);
+}
+
+function RegisterContactD(config: ContactDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".contact-container")) return;
 
     let contactAnimation: gsap.core.Tween | null = null;
@@ -183,9 +220,19 @@ function ContactDesktop() {
   });
 }
 
+function ContactDesktop() {
+  const mobileVariants: ContactMobileVariant[] = [];
+  const desktopVariants: ContactDesktopVariant[] = [
+    { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
+  ];
 
-function FrontCardsDesktop() {
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+  mobileVariants.forEach(() => undefined);
+  desktopVariants.forEach(RegisterContactD);
+}
+
+
+function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".card1")) return;
 
     let frontCardsTimeline: gsap.core.Timeline | null = null;
@@ -212,7 +259,7 @@ function FrontCardsDesktop() {
       card4: { bottom: "200%" },
     };
 
-    setCardStates(FRONT_SELECTORS, {
+    SetCardStates(FRONT_SELECTORS, {
       card1: { ...startPosition.card1, opacity: 1 },
       card2: { ...startPosition.card2, opacity: 1 },
       card3: { ...startPosition.card3, opacity: 1 },
@@ -239,17 +286,17 @@ function FrontCardsDesktop() {
         performance.now() - lastProfileEnterAt <= RAPID_PROFILE_PASS_WINDOW_MS;
 
       if (rapidPassThrough) {
-        killTimeline(frontCardsTimeline);
+        KillTimeline(frontCardsTimeline);
 
         if (LeaveToPerksSection) {
-          setCardStates(FRONT_SELECTORS, {
+          SetCardStates(FRONT_SELECTORS, {
             card1: { ...startPosition.card1, opacity: 1 },
             card2: { ...startPosition.card2, opacity: 1 },
             card3: { ...startPosition.card3, opacity: 1 },
             card4: { ...startPosition.card4, opacity: 1 },
           });
         } else {
-          setCardStates(FRONT_SELECTORS, {
+          SetCardStates(FRONT_SELECTORS, {
             card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
             card2: { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 },
             card3: { ...finalPosition.card3, ...hideUpPosition.card3, opacity: 1 },
@@ -262,19 +309,19 @@ function FrontCardsDesktop() {
       }
       
       if (skipped) {
-        killTimeline(frontCardsTimeline);
+        KillTimeline(frontCardsTimeline);
         gsap.set(FRONT_CARD_SELECTOR, { opacity: 0 });
         lastProfileEnterAt = null;
         
       } else if (EnterFromPerksSection)  {
-        killTimeline(frontCardsTimeline);
-        setCardStates(FRONT_SELECTORS, {
+        KillTimeline(frontCardsTimeline);
+        SetCardStates(FRONT_SELECTORS, {
           card1: { ...startPosition.card1, opacity: 1 },
           card2: { ...startPosition.card2, opacity: 1 },
           card3: { ...startPosition.card3, opacity: 1 },
           card4: { ...startPosition.card4, opacity: 1 },
         });
-        frontCardsTimeline = createTimeline((timeline) => {
+        frontCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".card1", startPosition.card1, { ...finalPosition.card1, opacity: 1, duration: 0.48, ease: "power2.out" }, 0.55);
           timeline.fromTo(".card2", startPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.55);
           timeline.fromTo(".card3", startPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.60);
@@ -282,8 +329,8 @@ function FrontCardsDesktop() {
         });
         // ---------------------------------------------------------------------------------------------------------------------------------------
       } else if (LeaveToPerksSection) {
-        killTimeline(frontCardsTimeline);
-        frontCardsTimeline = createTimeline((timeline) => {
+        KillTimeline(frontCardsTimeline);
+        frontCardsTimeline = CreateTimeline((timeline) => {
           timeline.to(".card1", { ...startPosition.card1, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.21);
           timeline.to(".card2", { ...startPosition.card2, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.20);
           timeline.to(".card3", { ...startPosition.card3, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.12);
@@ -292,14 +339,14 @@ function FrontCardsDesktop() {
         lastProfileEnterAt = null;
 
       } else if (EnterFromProjectsSection) {
-        killTimeline(frontCardsTimeline);
-        setCardStates(FRONT_SELECTORS, {
+        KillTimeline(frontCardsTimeline);
+        SetCardStates(FRONT_SELECTORS, {
           card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
           card2: { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 },
           card3: { ...finalPosition.card3, ...hideUpPosition.card3, opacity: 1 },
           card4: { ...finalPosition.card4, ...hideUpPosition.card4, opacity: 1 },
         });
-        frontCardsTimeline = createTimeline((timeline) => {
+        frontCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".card1", { ...finalPosition.card1, ...hideUpPosition.card1 }, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.70);
           timeline.fromTo(".card2", { ...finalPosition.card2, ...hideUpPosition.card2 }, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.70);
           timeline.fromTo(".card3", { ...finalPosition.card3, ...hideUpPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.61);
@@ -308,8 +355,8 @@ function FrontCardsDesktop() {
         // ---------------------------------------------------------------------------------------------------------------------------------------
        
       } else if (LeaveToProjectsSection) {
-        killTimeline(frontCardsTimeline);
-        frontCardsTimeline = createTimeline((timeline) => {
+        KillTimeline(frontCardsTimeline);
+        frontCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.48, ease: "power2.out" }, 0.1);
           timeline.fromTo(".card2", finalPosition.card2, { ...hideUpPosition.card2, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.13);
           timeline.fromTo(".card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.19);
@@ -321,14 +368,24 @@ function FrontCardsDesktop() {
 
     return () => {
       cleanupStates();
-      killTimeline(frontCardsTimeline);
+      KillTimeline(frontCardsTimeline);
     };
   });
 }
 
+function FrontCardsDesktop() {
+  const mobileVariants: FrontCardsMobileVariant[] = [];
+  const desktopVariants: FrontCardsDesktopVariant[] = [
+    { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
+  ];
 
-function BackCardsDesktop() {
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+  mobileVariants.forEach(() => undefined);
+  desktopVariants.forEach(RegisterFrontCardsD);
+}
+
+
+function RegisterBackCardsD(config: BackCardsDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".back-card1")) return;
 
     let backCardsTimeline: gsap.core.Timeline | null = null;
@@ -362,7 +419,7 @@ function BackCardsDesktop() {
       card4: { bottom: "-200%" },
     };
 
-    setCardStates(BACK_SELECTORS, {
+    SetCardStates(BACK_SELECTORS, {
       card1: { ...startPosition.card1, opacity: 1 },
       card2: { ...startPosition.card2, opacity: 1 },
       card3: { ...startPosition.card3, opacity: 1 },
@@ -389,17 +446,17 @@ function BackCardsDesktop() {
         performance.now() - lastProfileEnterAt <= RAPID_PROFILE_PASS_WINDOW_MS;
 
       if (rapidPassThrough) {
-        killTimeline(backCardsTimeline);
+        KillTimeline(backCardsTimeline);
 
         if (LeaveToPerksSection) {
-          setCardStates(BACK_SELECTORS, {
+          SetCardStates(BACK_SELECTORS, {
             card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
             card2: { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 },
             card3: { ...finalPosition.card3, ...hideUpPosition.card3, opacity: 1 },
             card4: { ...finalPosition.card4, ...hideUpPosition.card4, opacity: 1 },
           });
         } else {
-          setCardStates(BACK_SELECTORS, {
+          SetCardStates(BACK_SELECTORS, {
             card1: { ...finalPosition.card1, ...hideDownPosition.card1, opacity: 1 },
             card2: { ...finalPosition.card2, ...hideDownPosition.card2, opacity: 1 },
             card3: { ...finalPosition.card3, ...hideDownPosition.card3, opacity: 1 },
@@ -412,19 +469,19 @@ function BackCardsDesktop() {
       }
       
       if (skipped) {
-        killTimeline(backCardsTimeline);
+        KillTimeline(backCardsTimeline);
         gsap.set(BACK_CARD_SELECTOR, { opacity: 0 });
         lastProfileEnterAt = null;
         
       } else if (EnterFromPerksSection) {
-        killTimeline(backCardsTimeline);
-        setCardStates(BACK_SELECTORS, {
+        KillTimeline(backCardsTimeline);
+        SetCardStates(BACK_SELECTORS, {
           card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
           card2: { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 },
           card3: { ...finalPosition.card3, ...hideUpPosition.card3, opacity: 1 },
           card4: { ...finalPosition.card4, ...hideUpPosition.card4, opacity: 1 },
         });
-        backCardsTimeline = createTimeline((timeline) => {
+        backCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".back-card1", { ...finalPosition.card1, ...hideUpPosition.card1 }, { ...finalPosition.card1, opacity: 1, duration: 0.48, ease: "power2.out" }, 0.84);
           timeline.fromTo(".back-card4", { ...finalPosition.card4, ...hideUpPosition.card4 }, { ...finalPosition.card4, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.8);
           timeline.fromTo(".back-card3", { ...finalPosition.card3, ...hideUpPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.73);
@@ -432,8 +489,8 @@ function BackCardsDesktop() {
         });
         // ---------------------------------------------------------------------------------------------------------------------------------------
       } else if (LeaveToPerksSection) {
-        killTimeline(backCardsTimeline);
-        backCardsTimeline = createTimeline((timeline) => {
+        KillTimeline(backCardsTimeline);
+        backCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".back-card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.12);
           timeline.fromTo(".back-card4", finalPosition.card2, { ...hideUpPosition.card4, opacity: 1, duration: 0.43, ease: "power2.out" }, 0.10);
           timeline.fromTo(".back-card3", finalPosition.card3, { ...hideUpPosition.card3, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.15);
@@ -442,14 +499,14 @@ function BackCardsDesktop() {
         lastProfileEnterAt = null;
 
       } else if (EnterFromProjectsSection) {
-        killTimeline(backCardsTimeline);
-        setCardStates(BACK_SELECTORS, {
+        KillTimeline(backCardsTimeline);
+        SetCardStates(BACK_SELECTORS, {
           card1: { ...finalPosition.card1, ...hideDownPosition.card1, opacity: 1 },
           card2: { ...finalPosition.card2, ...hideDownPosition.card2, opacity: 1 },
           card3: { ...finalPosition.card3, ...hideDownPosition.card3, opacity: 1 },
           card4: { ...finalPosition.card4, ...hideDownPosition.card4, opacity: 1 },
         });
-        backCardsTimeline = createTimeline((timeline) => {
+        backCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".back-card1", { ...finalPosition.card1, ...hideDownPosition.card1 }, { ...finalPosition.card1, opacity: 1, duration: 0.3 }, 0.60);
           timeline.fromTo(".back-card2", { ...finalPosition.card2, ...hideDownPosition.card2 }, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.55);
           timeline.fromTo(".back-card3", { ...finalPosition.card3, ...hideDownPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.42);
@@ -458,8 +515,8 @@ function BackCardsDesktop() {
         // ---------------------------------------------------------------------------------------------------------------------------------------
 
       } else if (LeaveToProjectsSection) {
-        killTimeline(backCardsTimeline);
-        backCardsTimeline = createTimeline((timeline) => {
+        KillTimeline(backCardsTimeline);
+        backCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".back-card1", finalPosition.card1, { ...hideDownPosition.card1, opacity: 1, duration: 0.48 }, 0.20);
           timeline.fromTo(".back-card2", finalPosition.card2, { ...hideDownPosition.card2, opacity: 1, duration: 0.46 }, 0.18);
           timeline.fromTo(".back-card3", finalPosition.card3, { ...hideDownPosition.card3, opacity: 1, duration: 0.44 }, 0.11);
@@ -471,7 +528,17 @@ function BackCardsDesktop() {
 
     return () => {
       cleanupStates();
-      killTimeline(backCardsTimeline);
+      KillTimeline(backCardsTimeline);
     };
   });
+}
+
+function BackCardsDesktop() {
+  const mobileVariants: BackCardsMobileVariant[] = [];
+  const desktopVariants: BackCardsDesktopVariant[] = [
+    { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
+  ];
+
+  mobileVariants.forEach(() => undefined);
+  desktopVariants.forEach(RegisterBackCardsD);
 }

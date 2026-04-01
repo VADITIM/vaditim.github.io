@@ -16,15 +16,14 @@
 	display: flex;
 	width: 100%;
 	perspective: 1000px;
-	scale: .85;
 
-	@include desktop {
+	@include allDesktop {
 		left: -245%;
-		scale: 1;
 		padding-bottom: 5rem;
 	}
 
 	@include allMobile {
+		scale: .85;
 		bottom: 25%;
 		right: 80%;
 	}
@@ -106,7 +105,7 @@
 	border-right: 3px solid $purple;
 	padding-inline-start: 1rem;
 	padding-block-start: .5rem;
-	font-size: 2rem;
+	font-size: 2.4rem;
 	font-family: "Mono";
 	filter: drop-shadow(5px 5px 10px #9b75f580);
 
@@ -115,54 +114,50 @@
 		width 0.2s ease-in-out 0.22s,
 		border-color .4s ease-in-out,
 		filter .4s ease-in-out;
+				
+	&:hover {
+		width: 140%;
+		height: 10.5rem;
+		border-color: $yellow;
+		filter: drop-shadow(5px 5px 10px #f5e67580);
+
+		transition:
+			width 0.2s ease-in-out 0s,      
+			height 0.2s ease-in-out 0.22s,   
+			border-color .4s ease-in-out,
+			filter .4s ease-in-out;
+	}
+
+	&:hover .skill-option {
+		left: -3%;
+
+		@for $delay from 1 through 10 {
+			&:nth-child(#{$delay}) {
+				transition: 
+					left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
+			}
+		}
+	}
+
+	&:hover .skill-options-container {
+		left: 0%;
+
+		transition:
+			left 0s ease 0s;
+	}
 
 	@include allMobile {
+	font-size: 2rem;
 		left: -200%;
 	}
 
 	@include mobile {
 		@include rotate(0, 25, -2);
-
 	}
 
 	@for $index from 1 through 10 {
 		&:nth-last-child(#{$index}) {
 			z-index: #{120 + ($index)};
-		}
-	}
-
-	@include desktop {
-		font-size: 2.4rem;
-		
-		&:hover {
-			width: 140%;
-			height: 10.5rem;
-			border-color: $yellow;
-			filter: drop-shadow(5px 5px 10px #f5e67580);
-
-			transition:
-				width 0.2s ease-in-out 0s,      
-				height 0.2s ease-in-out 0.22s,   
-				border-color .4s ease-in-out,
-				filter .4s ease-in-out;
-		}
-
-		&:hover .skill-option {
-			left: -3%;
-
-			@for $delay from 1 through 10 {
-				&:nth-child(#{$delay}) {
-					transition: 
-						left .4s ease-in-out #{0.05s + ($delay * 0.07s)};
-				}
-			}
-		}
-
-		&:hover .skill-options-container {
-			left: 0%;
-
-			transition:
-				left 0s ease 0s;
 		}
 	}
 

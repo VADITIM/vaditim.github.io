@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { getVirtualSectionHeightPx } from '../Misc/virtual-scroll'
 import { isMobile } from '../Misc/is-mobile'
-import { setNavigationLock } from '../Misc/navigation-lock'
+import { navigationLockRef, setNavigationLock } from '../Misc/navigation-lock'
 
 const SECTION_TRANSITION_LOCK_MS = 1000
 let transitionLockTimer: number | null = null
@@ -10,10 +10,10 @@ const LockTransition = () => {
   if (transitionLockTimer !== null) return
 
   isTransitioning.value = true
-  setNavigationLock(true)
+  setNavigationLock(true, 'section-transition')
   transitionLockTimer = window.setTimeout(() => {
     isTransitioning.value = false
-    setNavigationLock(false)
+    setNavigationLock(false, 'section-transition')
     transitionLockTimer = null
   }, SECTION_TRANSITION_LOCK_MS)
 }
@@ -31,7 +31,7 @@ export function resetSectionStateToPerks() {
   previousSection.value = 0
   sectionDirection.value = 'none'
   isTransitioning.value = false
-  setNavigationLock(false)
+  setNavigationLock(false, 'section-transition')
 
   if (transitionLockTimer !== null) {
     window.clearTimeout(transitionLockTimer)
@@ -60,7 +60,7 @@ function NotifyChange(current: number, previous: number, direction: 'forward' | 
   sectionChangeCallbacks.forEach(callback => callback(current, previous, direction))
 }
 function UpdateSection() {
-  if (isTransitioning.value) return
+  if (isTransitioning.value || navigationLockRef.value) return
 
   const scrollY = window.scrollY
   const sectionHeight = getVirtualSectionHeightPx()
@@ -89,6 +89,7 @@ function UpdateSection() {
 export function ChangeToSectionID(sectionIndex: number) {
   if (sectionIndex === currentSection.value) return
   if (sectionIndex < 0 || sectionIndex > 2) return
+  if (navigationLockRef.value) return
 
   // Keep the current transition; ignore new ones.
   if (isTransitioning.value) return

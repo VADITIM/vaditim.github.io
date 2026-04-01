@@ -14,27 +14,38 @@ const isProjectsEnter = (states: SectionTransitionStates) =>
   states.enterProjectsFromProfile || states.enterProjectsFromPerks;
 const isProjectsLeave = (states: SectionTransitionStates) =>
   states.leaveProjectsToProfile || states.leaveProjectsToPerks;
-    
+
 export function ProjectAnimationDesktop() {
   ProjectsMobile();
-	ProjectsDesktop();
-	ProjectListDesktop();
-	PaginationDotsDesktop();
-	InteractiveDotsDesktop();
+
+  ProjectsDesktop();
+  ProjectListDesktop();
+  PaginationDotsDesktop();
+  InteractiveDotsDesktop();
 }
 
-function ProjectsMobile() {
-  gsap.matchMedia().add(`(max-width: ${breakpoints.tabletLandscape}px)`, () => {
-    const MOBILE_SELECTOR =
-      ".projects-container, .project-list, .pagination-dots, .magnetic-dots-container";
+type ProjectsMobileVariant = {
+  mediaQuery: string;
+  selector: string;
+};
 
-    if (!document.querySelector(MOBILE_SELECTOR)) return;
+type ProjectsDesktopVariant = {
+  mediaQuery: string;
+  enterRight: string;
+  enterTop: string;
+  leaveRight: string;
+  leaveTop: string;
+};
+
+function RegisterProjectsM(config: ProjectsMobileVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
+    if (!document.querySelector(config.selector)) return;
 
     let tween: gsap.core.Tween | null = null;
 
     const playEnter = () => {
       if (tween) tween.kill();
-      tween = gsap.to(MOBILE_SELECTOR, {
+      tween = gsap.to(config.selector, {
         opacity: 1,
         y: 0,
         duration: 0.45,
@@ -49,7 +60,7 @@ function ProjectsMobile() {
       currentProjectIndex.value = 0;
 
       if (tween) tween.kill();
-      tween = gsap.to(MOBILE_SELECTOR, {
+      tween = gsap.to(config.selector, {
         opacity: 0,
         y: -20,
         duration: 0.25,
@@ -59,7 +70,7 @@ function ProjectsMobile() {
       });
     };
 
-    gsap.set(MOBILE_SELECTOR, { opacity: 0, y: 20 });
+    gsap.set(config.selector, { opacity: 0, y: 20 });
 
     const cleanupStates = onSectionEnterLeaveAnimation({
       isEnter: isProjectsEnter,
@@ -76,8 +87,8 @@ function ProjectsMobile() {
   });
 }
 
-function ProjectsDesktop() {
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+function RegisterProjectsD(config: ProjectsDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".projects-container")) return;
 
     let projectsAnimation: gsap.core.Tween | null = null;
@@ -89,8 +100,8 @@ function ProjectsDesktop() {
 
       if (projectsAnimation) projectsAnimation.kill();
       projectsAnimation = gsap.to(".projects-container", {
-        right: "10%",
-        top: "0%",
+        right: config.enterRight,
+        top: config.enterTop,
         duration: 1.6,
         ease: "power4.inOut",
         overwrite: "auto",
@@ -104,8 +115,8 @@ function ProjectsDesktop() {
       gsap.set(".projects-container", { transition: "none" });
       if (projectsAnimation) projectsAnimation.kill();
       projectsAnimation = gsap.to(".projects-container", {
-        right: "-50%",
-        top: "-90%",
+        right: config.leaveRight,
+        top: config.leaveTop,
         duration: 0.6,
         delay: 0,
         ease: "power4.inOut",
@@ -113,7 +124,7 @@ function ProjectsDesktop() {
         onComplete: () => { gsap.set(".projects-container", { clearProps: "transition" }); },
       });
     };
-    
+
     const cleanupStates = onSectionEnterLeaveAnimation({
       isEnter: isProjectsEnter,
       isLeave: isProjectsLeave,
@@ -129,15 +140,48 @@ function ProjectsDesktop() {
   });
 }
 
-function ProjectListDesktop() {
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+function ProjectsMobile() {
+  const mobileVariants: ProjectsMobileVariant[] = [
+    {
+      mediaQuery: `(max-width: ${breakpoints.tabletLandscape}px)`,
+      selector: ".projects-container, .project-list, .pagination-dots, .magnetic-dots-container",
+    },
+  ];
 
+  mobileVariants.forEach(RegisterProjectsM);
+}
+
+function ProjectsDesktop() {
+  const desktopVariants: ProjectsDesktopVariant[] = [
+    {
+      mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)`,
+      enterRight: "10%",
+      enterTop: "0%",
+      leaveRight: "-50%",
+      leaveTop: "-90%",
+    },
+  ];
+
+  desktopVariants.forEach(RegisterProjectsD);
+}
+
+type ProjectListMobileVariant = {
+  mediaQuery: string;
+};
+
+type ProjectListDesktopVariant = {
+  mediaQuery: string;
+};
+
+function RegisterProjectListD(config: ProjectListDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".project-list")) return;
 
     let listAnimation: gsap.core.Timeline | null = null;
 
     const playEnter = () => {
       gsap.set(".project-list", { transition: "none", left: "55%", opacity: 0 });
+      gsap.set(".project-list", { clearProps: "transition" });
       gsap.set(
         ".project-list-item.position--2, .project-list-item.position--1, .project-list-item.position-0, .project-list-item.position-1, .project-list-item.position-2",
         { x: 120, opacity: 0 }
@@ -150,7 +194,7 @@ function ProjectListDesktop() {
         { opacity: 1, duration: 0.22, ease: "power2.out", overwrite: "auto" },
         1.35
       );
-      
+
       listAnimation.fromTo(
         ".project-list-item.position-0",
         { x: 120, opacity: 0 },
@@ -177,7 +221,6 @@ function ProjectListDesktop() {
           ".project-list-item.position--2, .project-list-item.position--1, .project-list-item.position-0, .project-list-item.position-1, .project-list-item.position-2",
           { clearProps: "x,opacity" }
         );
-        gsap.set(".project-list", { clearProps: "transition" });
       });
     };
 
@@ -217,8 +260,26 @@ function ProjectListDesktop() {
   });
 }
 
-function InteractiveDotsDesktop() {
-    gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+function ProjectListDesktop() {
+  const mobileVariants: ProjectListMobileVariant[] = [];
+  const desktopVariants: ProjectListDesktopVariant[] = [
+    { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
+  ];
+
+  mobileVariants.forEach(() => undefined);
+  desktopVariants.forEach(RegisterProjectListD);
+}
+
+type InteractiveDotsMobileVariant = {
+  mediaQuery: string;
+};
+
+type InteractiveDotsDesktopVariant = {
+  mediaQuery: string;
+};
+
+function RegisterInteractiveDotsD(config: InteractiveDotsDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".magnetic-dots-container")) return;
 
     let dotsAnimation: gsap.core.Tween | null = null;
@@ -264,10 +325,28 @@ function InteractiveDotsDesktop() {
   });
 }
 
+function InteractiveDotsDesktop() {
+  const mobileVariants: InteractiveDotsMobileVariant[] = [];
+  const desktopVariants: InteractiveDotsDesktopVariant[] = [
+    { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
+  ];
 
-function PaginationDotsDesktop() {
-  gsap.matchMedia().add(`(min-width: ${breakpoints.desktop}px)`, () => {
+  mobileVariants.forEach(() => undefined);
+  desktopVariants.forEach(RegisterInteractiveDotsD);
+}
 
+type PaginationDotsMobileVariant = {
+  mediaQuery: string;
+};
+
+type PaginationDotsDesktopVariant = {
+  mediaQuery: string;
+  enterLeft: string;
+  leaveLeft: string;
+};
+
+function RegisterPaginationDotsD(config: PaginationDotsDesktopVariant) {
+  gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".pagination-dots")) return;
 
     let dotsAnimation: gsap.core.Tween | null = null;
@@ -277,7 +356,7 @@ function PaginationDotsDesktop() {
       if (dotsAnimation) dotsAnimation.kill();
       dotsAnimation = gsap.to(".pagination-dots", {
         opacity: 1,
-        left: "95.5%",
+        left: config.enterLeft,
         duration: 1.6,
         delay: 0.5,
         overwrite: "auto",
@@ -290,7 +369,7 @@ function PaginationDotsDesktop() {
       if (dotsAnimation) dotsAnimation.kill();
       dotsAnimation = gsap.to(".pagination-dots", {
         opacity: 0,
-        left: "110%",
+        left: config.leaveLeft,
         duration: 1.6,
         delay: 0,
         overwrite: "auto",
@@ -298,7 +377,7 @@ function PaginationDotsDesktop() {
       });
     };
 
-    gsap.set(".pagination-dots", { opacity: 0, left: "110%" });
+    gsap.set(".pagination-dots", { opacity: 0, left: config.leaveLeft });
 
     const cleanupStates = onSectionEnterLeaveAnimation({
       isEnter: isProjectsEnter,
@@ -313,4 +392,18 @@ function PaginationDotsDesktop() {
       if (dotsAnimation) dotsAnimation.kill();
     };
   });
+}
+
+function PaginationDotsDesktop() {
+  const mobileVariants: PaginationDotsMobileVariant[] = [];
+  const desktopVariants: PaginationDotsDesktopVariant[] = [
+    {
+      mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)`,
+      enterLeft: "95.5%",
+      leaveLeft: "110%",
+    },
+  ];
+
+  mobileVariants.forEach(() => undefined);
+  desktopVariants.forEach(RegisterPaginationDotsD);
 }

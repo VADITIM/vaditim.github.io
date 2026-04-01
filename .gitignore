@@ -42,3 +42,7 @@ vite.config.timestamp*
 
 # Generated files
 types/generated/
+
+# Local assistant/config folders
+/.github/
+/.claude/

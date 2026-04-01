@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 
-const MOBILE_MAX_WIDTH = 1300;
+const SMALL_DESKTOP_BREAKPOINT = 1200;
+const MOBILE_MAX_WIDTH = SMALL_DESKTOP_BREAKPOINT - 1;
 
 export const IsMobileDevice = (): boolean => {
   if (typeof window === 'undefined') return false;

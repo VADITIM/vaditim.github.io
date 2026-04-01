@@ -1,3 +1,4 @@
+import { navigationLockRef } from './navigation-lock';
 let totalSections = 3;
 let sectionHeightVh = 100;
 let resizeRaf = 0;
@@ -110,6 +111,12 @@ const startSmoothScroll = () => {
   if (smoothScrollRaf) return;
 
   const animate = () => {
+    if (navigationLockRef.value) {
+      targetScrollY = window.scrollY;
+      smoothScrollRaf = 0;
+      return;
+    }
+
     const maxScroll = getMaxScroll();
     targetScrollY = clamp(targetScrollY, 0, maxScroll);
 
@@ -132,6 +139,11 @@ const startSmoothScroll = () => {
 
 const handleWheel = (event: WheelEvent) => {
   event.preventDefault();
+
+  if (navigationLockRef.value) {
+    wheelIntent = 0;
+    return;
+  }
 
   if (scrollLockedUntilMs > 0) {
     wheelIntent = 0;
@@ -183,6 +195,13 @@ const handleTouchStart = (event: TouchEvent) => {
 
 const handleTouchEnd = (event: TouchEvent) => {
   if (touchStartY === null || touchStartX === null || activeTouchId === null) return;
+
+  if (navigationLockRef.value) {
+    touchStartY = null;
+    touchStartX = null;
+    activeTouchId = null;
+    return;
+  }
 
   const changed = Array.from(event.changedTouches).find(
     (t) => t.identifier === activeTouchId

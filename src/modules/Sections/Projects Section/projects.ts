@@ -1,4 +1,5 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { setNavigationLock } from '@modules/Misc/navigation-lock'
 
 interface Project {
   name: string
@@ -30,6 +31,10 @@ export const clickStartX = ref(0)
 export const clickStartY = ref(0)
 export const scrollLeft = ref(0)
 export const transitioning = ref(false)
+
+watch(activeProjectIndex, (activeIndex) => {
+  setNavigationLock(activeIndex !== null, 'active-project')
+}, { immediate: true })
 
 export const anglePerItem = () => 360 / projects.length
 

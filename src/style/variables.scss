@@ -77,6 +77,12 @@ $backgroundTransitionTime: 0.3s;
   }
 }
 
+@mixin allDesktop {
+  @media screen and (min-width: #{$small-desktop}) {
+    @content;
+  }
+}
+
 
 // Extends -------------------------------------------------------------------------
 

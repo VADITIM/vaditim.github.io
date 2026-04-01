@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
 import { PerksAnimationDesktop as PerksAnimation } from "@modules/Sections/Perks Section/Perks-Animation-Handler";
-import { ProfileAnimationDesktop } from "@modules/Sections/Profile Section/Profile-Animation-Handler";
+import { ProfileAnimations } from "@modules/Sections/Profile Section/Profile-Animation-Handler";
 import { ProjectAnimationDesktop } from "@modules/Sections/Projects Section/Projects-Animation-Handler";
 
 export {
@@ -21,7 +21,7 @@ gsap.defaults({ immediateRender: false });
 export function PageAnimations() 
 {
 		PerksAnimation();
-		ProfileAnimationDesktop();
+		ProfileAnimations();
 		ProjectAnimationDesktop();
 }
 
