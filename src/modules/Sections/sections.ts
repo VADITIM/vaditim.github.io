@@ -3,6 +3,9 @@ import { getVirtualSectionHeightPx } from '../Misc/virtual-scroll'
 import { isMobile } from '../Misc/is-mobile'
 import { navigationLockRef, setNavigationLock } from '../Misc/navigation-lock'
 
+let totalSections = 3;
+export function setSectionCount(count: number) { totalSections = count; }
+
 const SECTION_TRANSITION_LOCK_MS = 1000
 let transitionLockTimer: number | null = null
 
@@ -69,7 +72,7 @@ function UpdateSection() {
   const progressInSection = (scrollY % sectionHeight) / sectionHeight
   
   let newSection = currentSectionIndex
-  if (progressInSection >= 0.6 && currentSectionIndex < 2) {
+  if (progressInSection >= 0.6 && currentSectionIndex < totalSections - 1) {
     newSection = currentSectionIndex + 1
   }
   
@@ -83,12 +86,11 @@ function UpdateSection() {
     ChangeSection(newSection, previous, direction)
   }
   
-  console.log(currentSection.value)
 }
 
 export function ChangeToSectionID(sectionIndex: number) {
   if (sectionIndex === currentSection.value) return
-  if (sectionIndex < 0 || sectionIndex > 2) return
+  if (sectionIndex < 0 || sectionIndex >= totalSections) return
   if (navigationLockRef.value) return
 
   // Keep the current transition; ignore new ones.

@@ -1,28 +1,22 @@
 import { gsap } from "gsap";
-import { PerksAnimationDesktop as PerksAnimation } from "@modules/Sections/Perks Section/Perks-Animation-Handler";
-import { ProfileAnimations } from "@modules/Sections/Profile Section/Profile-Animation-Handler";
-import { ProjectAnimationDesktop } from "@modules/Sections/Projects Section/Projects-Animation-Handler";
+import type { SectionDefinition } from "@modules/Sections/section-registry";
 
 export {
-	SECTION_INDEX,
-	getSectionTransitionStates,
 	onSectionStatesChange,
 	onSectionEnter,
 	onSectionLeave,
+	buildTransitionMeta,
+	SECTION_INDEX,
 } from "../Sections/section-state-machine";
 export type {
-	SectionIndex,
 	SectionTransitionMeta,
-	SectionTransitionStates,
+	SectionDirection,
 } from "../Sections/section-state-machine";
 
 gsap.defaults({ immediateRender: false });
 
-export function PageAnimations() 
-{
-		PerksAnimation();
-		ProfileAnimations();
-		ProjectAnimationDesktop();
+export function PageAnimations(sections: SectionDefinition[]) {
+	sections.forEach(s => s.registerAnimations());
 }
 
 export const breakpoints = {
@@ -33,5 +27,3 @@ export const breakpoints = {
 	midDesktop: 1550,
 	desktop: 1825,
 } as const;
-  
-

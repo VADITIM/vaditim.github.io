@@ -3,9 +3,9 @@ import { breakpoints } from "@modules/animations/animation-handler";
 import {
   onSectionEnterLeaveAnimation,
   onSectionStatesChange,
-  SECTION_INDEX,
-  type SectionTransitionStates,
+  type SectionTransitionMeta,
 } from "../section-state-machine";
+import { getSectionIndexById } from "../section-registry";
 
 gsap.defaults({ immediateRender: false });
 
@@ -31,14 +31,6 @@ const BACK_SELECTORS: Record<CardKey, string> = {
 
 const CARD_KEYS: CardKey[] = ["card1", "card2", "card3", "card4"];
 
-const isProfileEnter = (states: SectionTransitionStates) =>
-  states.enterProfileFromPerks ||
-  states.enterProfileFromProjects ||
-  states.enterProfileFromNone;
-
-const isProfileLeave = (states: SectionTransitionStates) =>
-  states.leaveProfileToPerks || states.leaveProfileToProjects;
-
 function KillTimeline(timeline: gsap.core.Timeline | null) {
   if (timeline) timeline.kill();
 }
@@ -58,43 +50,30 @@ function CreateTimeline(build: (timeline: gsap.core.Timeline) => void) {
   return timeline;
 }
 
-type ProfileMobileVariant = {
-  mediaQuery: string;
-  selector: string;
-};
+type ContactDesktopVariant = { mediaQuery: string };
+type FrontCardsDesktopVariant = { mediaQuery: string };
+type BackCardsDesktopVariant = { mediaQuery: string };
 
-type ContactMobileVariant = {
-  mediaQuery: string;
-};
+export function registerProfileAnimations() {
+  const profileIdx = getSectionIndexById('profile');
+  const perksIdx = getSectionIndexById('perks');
+  const projectsIdx = getSectionIndexById('projects');
 
-type ContactDesktopVariant = {
-  mediaQuery: string;
-};
+  const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(profileIdx);
+  const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(profileIdx);
 
-type FrontCardsMobileVariant = {
-  mediaQuery: string;
-};
-
-type FrontCardsDesktopVariant = {
-  mediaQuery: string;
-};
-
-type BackCardsMobileVariant = {
-  mediaQuery: string;
-};
-
-type BackCardsDesktopVariant = {
-  mediaQuery: string;
-};
-
-export function ProfileAnimations() {
-  ProfileMobile();
-  ContactDesktop();
-  FrontCardsDesktop();
-  BackCardsDesktop();
+  ProfileMobile(profileIdx, isEnter, isLeave);
+  ContactDesktop(profileIdx, perksIdx, projectsIdx);
+  FrontCardsDesktop(profileIdx, perksIdx, projectsIdx);
+  BackCardsDesktop(profileIdx, perksIdx, projectsIdx);
 }
 
-function RegisterProfileM(config: ProfileMobileVariant) {
+function RegisterProfileM(
+  config: { mediaQuery: string; selector: string },
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean,
+  initialSection: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(config.selector)) return;
 
@@ -127,11 +106,11 @@ function RegisterProfileM(config: ProfileMobileVariant) {
     gsap.set(config.selector, { opacity: 0, y: 20 });
 
     const cleanup = onSectionEnterLeaveAnimation({
-      isEnter: isProfileEnter,
-      isLeave: isProfileLeave,
+      isEnter,
+      isLeave,
       onEnter: playEnter,
       onLeave: playLeave,
-      initialSection: SECTION_INDEX.PROFILE,
+      initialSection,
     });
 
     return () => {
@@ -141,77 +120,81 @@ function RegisterProfileM(config: ProfileMobileVariant) {
   });
 }
 
-function ProfileMobile() {
-  const mobileVariants: ProfileMobileVariant[] = [
+function ProfileMobile(
+  profileIdx: number,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean
+) {
+  const mobileVariants = [
     {
       mediaQuery: `(max-width: ${breakpoints.tabletLandscape}px)`,
       selector: `.contact-container, ${FRONT_CARD_SELECTOR}, ${BACK_CARD_SELECTOR}`,
     },
   ];
 
-  mobileVariants.forEach(RegisterProfileM);
+  mobileVariants.forEach(v => RegisterProfileM(v, isEnter, isLeave, profileIdx));
 }
 
-function RegisterContactD(config: ContactDesktopVariant) {
+function RegisterContactD(
+  config: ContactDesktopVariant,
+  profileIdx: number,
+  perksIdx: number,
+  projectsIdx: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".contact-container")) return;
 
     let contactAnimation: gsap.core.Tween | null = null;
 
-    const cleanupStates = onSectionStatesChange(({ 
-        enterProfileFromPerks: EnterFromPerksSection,
-        leaveProfileToPerks: LeaveToPerksSection,
-        leaveProfileToProjects: LeaveToProjectsSection,
-        enterProfileFromProjects: EnterFromProjectsSection,
-        skipProfile: skipped,
-      }) => {
-        
-        if (skipped) {
-          if (contactAnimation) contactAnimation.kill();
-          gsap.set(".contact-container", { opacity: 0 });
-        } else if (EnterFromPerksSection) {
-          if (contactAnimation) contactAnimation.kill();
-          
-          contactAnimation = gsap.to(".contact-container", {
-            opacity: 1,
-            top: "50%",
-            left: "80%",
-            duration: 0.6,
-            delay: .3,
-            ease: "power2.out"
-          });
-        } else if (LeaveToPerksSection) {
-          if (contactAnimation) contactAnimation.kill();
-          
-          contactAnimation = gsap.to(".contact-container", {
-            opacity: 1,
-            top: "50%",
-            left: "180%",
-            duration: 0.6,
-            ease: "power2.in"
-          });
-        } else if (LeaveToProjectsSection) {
-          if (contactAnimation) contactAnimation.kill();
-          
-          contactAnimation = gsap.to(".contact-container", {
-            opacity: 1,
-            top: "-100%",
-            ease: "elastic.inOut(.3, 0.3)",
-            duration: 0.7
-          });
-        } else if (EnterFromProjectsSection) {
-          if (contactAnimation) contactAnimation.kill();
-          
-          contactAnimation = gsap.to(".contact-container", {
-            opacity: 1,
-            top: "50%",
-            left: "80%",
-            duration: 0.7,
-            delay: 0.3,
-            ease: "elastic.inOut(.3, 0.3)"
-          });
-        }
-      });
+    const cleanupStates = onSectionStatesChange((meta) => {
+      const EnterFromPerks = meta.isEnteringSection(profileIdx) && meta.isFromSection(perksIdx);
+      const LeaveToPerks   = meta.isLeavingSection(profileIdx) && meta.isToSection(perksIdx);
+      const LeaveToProjects = meta.isLeavingSection(profileIdx) && meta.isToSection(projectsIdx);
+      const EnterFromProjects = meta.isEnteringSection(profileIdx) && meta.isFromSection(projectsIdx);
+      const skipped = meta.isSkippingSection(profileIdx);
+
+      if (skipped) {
+        if (contactAnimation) contactAnimation.kill();
+        gsap.set(".contact-container", { opacity: 0 });
+      } else if (EnterFromPerks) {
+        if (contactAnimation) contactAnimation.kill();
+        contactAnimation = gsap.to(".contact-container", {
+          opacity: 1,
+          top: "50%",
+          left: "80%",
+          duration: 0.6,
+          delay: .3,
+          ease: "power2.out"
+        });
+      } else if (LeaveToPerks) {
+        if (contactAnimation) contactAnimation.kill();
+        contactAnimation = gsap.to(".contact-container", {
+          opacity: 1,
+          top: "50%",
+          left: "180%",
+          duration: 0.6,
+          ease: "power2.in"
+        });
+      } else if (LeaveToProjects) {
+        if (contactAnimation) contactAnimation.kill();
+        contactAnimation = gsap.to(".contact-container", {
+          opacity: 1,
+          top: "-100%",
+          ease: "elastic.inOut(.3, 0.3)",
+          duration: 0.7
+        });
+      } else if (EnterFromProjects) {
+        if (contactAnimation) contactAnimation.kill();
+        contactAnimation = gsap.to(".contact-container", {
+          opacity: 1,
+          top: "50%",
+          left: "80%",
+          duration: 0.7,
+          delay: 0.3,
+          ease: "elastic.inOut(.3, 0.3)"
+        });
+      }
+    });
 
     return () => {
       cleanupStates();
@@ -220,18 +203,21 @@ function RegisterContactD(config: ContactDesktopVariant) {
   });
 }
 
-function ContactDesktop() {
-  const mobileVariants: ContactMobileVariant[] = [];
+function ContactDesktop(profileIdx: number, perksIdx: number, projectsIdx: number) {
   const desktopVariants: ContactDesktopVariant[] = [
     { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
   ];
 
-  mobileVariants.forEach(() => undefined);
-  desktopVariants.forEach(RegisterContactD);
+  desktopVariants.forEach(v => RegisterContactD(v, profileIdx, perksIdx, projectsIdx));
 }
 
 
-function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
+function RegisterFrontCardsD(
+  config: FrontCardsDesktopVariant,
+  profileIdx: number,
+  perksIdx: number,
+  projectsIdx: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".card1")) return;
 
@@ -251,7 +237,7 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
       card3: { left: "18%", bottom: "5%" },
       card4: { right: "18%", bottom: "5%" },
     };
-    
+
     const hideUpPosition = {
       card1: { bottom: "200%" },
       card2: { bottom: "200%" },
@@ -266,20 +252,19 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
       card4: { ...startPosition.card4, opacity: 1 },
     });
 
-    const cleanupStates = onSectionStatesChange(({
-        enterProfileFromPerks: EnterFromPerksSection,
-        leaveProfileToPerks: LeaveToPerksSection,
-        leaveProfileToProjects: LeaveToProjectsSection,
-        enterProfileFromProjects: EnterFromProjectsSection,
-        skipProfile: skipped,
-      }) => {
+    const cleanupStates = onSectionStatesChange((meta) => {
+      const EnterFromPerks    = meta.isEnteringSection(profileIdx) && meta.isFromSection(perksIdx);
+      const LeaveToPerks      = meta.isLeavingSection(profileIdx) && meta.isToSection(perksIdx);
+      const LeaveToProjects   = meta.isLeavingSection(profileIdx) && meta.isToSection(projectsIdx);
+      const EnterFromProjects = meta.isEnteringSection(profileIdx) && meta.isFromSection(projectsIdx);
+      const skipped           = meta.isSkippingSection(profileIdx);
 
-      const enteringProfile = EnterFromPerksSection || EnterFromProjectsSection;
+      const enteringProfile = EnterFromPerks || EnterFromProjects;
       if (enteringProfile) {
         lastProfileEnterAt = performance.now();
       }
 
-      const leavingProfile = LeaveToPerksSection || LeaveToProjectsSection;
+      const leavingProfile = LeaveToPerks || LeaveToProjects;
       const rapidPassThrough =
         leavingProfile &&
         lastProfileEnterAt !== null &&
@@ -288,7 +273,7 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
       if (rapidPassThrough) {
         KillTimeline(frontCardsTimeline);
 
-        if (LeaveToPerksSection) {
+        if (LeaveToPerks) {
           SetCardStates(FRONT_SELECTORS, {
             card1: { ...startPosition.card1, opacity: 1 },
             card2: { ...startPosition.card2, opacity: 1 },
@@ -307,13 +292,13 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
         lastProfileEnterAt = null;
         return;
       }
-      
+
       if (skipped) {
         KillTimeline(frontCardsTimeline);
         gsap.set(FRONT_CARD_SELECTOR, { opacity: 0 });
         lastProfileEnterAt = null;
-        
-      } else if (EnterFromPerksSection)  {
+
+      } else if (EnterFromPerks)  {
         KillTimeline(frontCardsTimeline);
         SetCardStates(FRONT_SELECTORS, {
           card1: { ...startPosition.card1, opacity: 1 },
@@ -327,8 +312,8 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
           timeline.fromTo(".card3", startPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.60);
           timeline.fromTo(".card4", startPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.65);
         });
-        // ---------------------------------------------------------------------------------------------------------------------------------------
-      } else if (LeaveToPerksSection) {
+
+      } else if (LeaveToPerks) {
         KillTimeline(frontCardsTimeline);
         frontCardsTimeline = CreateTimeline((timeline) => {
           timeline.to(".card1", { ...startPosition.card1, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.21);
@@ -338,7 +323,7 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
         });
         lastProfileEnterAt = null;
 
-      } else if (EnterFromProjectsSection) {
+      } else if (EnterFromProjects) {
         KillTimeline(frontCardsTimeline);
         SetCardStates(FRONT_SELECTORS, {
           card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
@@ -352,9 +337,8 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
           timeline.fromTo(".card3", { ...finalPosition.card3, ...hideUpPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.61);
           timeline.fromTo(".card4", { ...finalPosition.card4, ...hideUpPosition.card4 }, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.61);
         });
-        // ---------------------------------------------------------------------------------------------------------------------------------------
-       
-      } else if (LeaveToProjectsSection) {
+
+      } else if (LeaveToProjects) {
         KillTimeline(frontCardsTimeline);
         frontCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.48, ease: "power2.out" }, 0.1);
@@ -373,24 +357,27 @@ function RegisterFrontCardsD(config: FrontCardsDesktopVariant) {
   });
 }
 
-function FrontCardsDesktop() {
-  const mobileVariants: FrontCardsMobileVariant[] = [];
+function FrontCardsDesktop(profileIdx: number, perksIdx: number, projectsIdx: number) {
   const desktopVariants: FrontCardsDesktopVariant[] = [
     { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
   ];
 
-  mobileVariants.forEach(() => undefined);
-  desktopVariants.forEach(RegisterFrontCardsD);
+  desktopVariants.forEach(v => RegisterFrontCardsD(v, profileIdx, perksIdx, projectsIdx));
 }
 
 
-function RegisterBackCardsD(config: BackCardsDesktopVariant) {
+function RegisterBackCardsD(
+  config: BackCardsDesktopVariant,
+  profileIdx: number,
+  perksIdx: number,
+  projectsIdx: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".back-card1")) return;
 
     let backCardsTimeline: gsap.core.Timeline | null = null;
     let lastProfileEnterAt: number | null = null;
-    
+
     const startPosition = {
       card1: { left: "18%", bottom: "200%" },
       card2: { right: "18%", bottom: "200%" },
@@ -404,14 +391,14 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
       card3: { left: "18%", bottom: "19.5%" },
       card4: { right: "18%", bottom: "19.5%" },
     };
-    
+
     const hideUpPosition = {
       card1: { bottom: "200%" },
       card2: { bottom: "200%" },
       card3: { bottom: "200%" },
       card4: { bottom: "200%" },
     };
-    
+
     const hideDownPosition = {
       card1: { bottom: "-200%" },
       card2: { bottom: "-200%" },
@@ -426,20 +413,19 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
       card4: { ...startPosition.card4, opacity: 1 },
     });
 
-    const cleanupStates = onSectionStatesChange(({
-        enterProfileFromPerks: EnterFromPerksSection,
-        leaveProfileToPerks: LeaveToPerksSection,
-        leaveProfileToProjects: LeaveToProjectsSection,
-        enterProfileFromProjects: EnterFromProjectsSection,
-        skipProfile: skipped,
-      }) => {
+    const cleanupStates = onSectionStatesChange((meta) => {
+      const EnterFromPerks    = meta.isEnteringSection(profileIdx) && meta.isFromSection(perksIdx);
+      const LeaveToPerks      = meta.isLeavingSection(profileIdx) && meta.isToSection(perksIdx);
+      const LeaveToProjects   = meta.isLeavingSection(profileIdx) && meta.isToSection(projectsIdx);
+      const EnterFromProjects = meta.isEnteringSection(profileIdx) && meta.isFromSection(projectsIdx);
+      const skipped           = meta.isSkippingSection(profileIdx);
 
-      const enteringProfile = EnterFromPerksSection || EnterFromProjectsSection;
+      const enteringProfile = EnterFromPerks || EnterFromProjects;
       if (enteringProfile) {
         lastProfileEnterAt = performance.now();
       }
 
-      const leavingProfile = LeaveToPerksSection || LeaveToProjectsSection;
+      const leavingProfile = LeaveToPerks || LeaveToProjects;
       const rapidPassThrough =
         leavingProfile &&
         lastProfileEnterAt !== null &&
@@ -448,7 +434,7 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
       if (rapidPassThrough) {
         KillTimeline(backCardsTimeline);
 
-        if (LeaveToPerksSection) {
+        if (LeaveToPerks) {
           SetCardStates(BACK_SELECTORS, {
             card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
             card2: { ...finalPosition.card2, ...hideUpPosition.card2, opacity: 1 },
@@ -467,13 +453,13 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
         lastProfileEnterAt = null;
         return;
       }
-      
+
       if (skipped) {
         KillTimeline(backCardsTimeline);
         gsap.set(BACK_CARD_SELECTOR, { opacity: 0 });
         lastProfileEnterAt = null;
-        
-      } else if (EnterFromPerksSection) {
+
+      } else if (EnterFromPerks) {
         KillTimeline(backCardsTimeline);
         SetCardStates(BACK_SELECTORS, {
           card1: { ...finalPosition.card1, ...hideUpPosition.card1, opacity: 1 },
@@ -487,8 +473,8 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
           timeline.fromTo(".back-card3", { ...finalPosition.card3, ...hideUpPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.73);
           timeline.fromTo(".back-card2", { ...finalPosition.card2, ...hideUpPosition.card2 }, { ...finalPosition.card2, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.76);
         });
-        // ---------------------------------------------------------------------------------------------------------------------------------------
-      } else if (LeaveToPerksSection) {
+
+      } else if (LeaveToPerks) {
         KillTimeline(backCardsTimeline);
         backCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".back-card1", finalPosition.card1, { ...hideUpPosition.card1, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.12);
@@ -498,7 +484,7 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
         });
         lastProfileEnterAt = null;
 
-      } else if (EnterFromProjectsSection) {
+      } else if (EnterFromProjects) {
         KillTimeline(backCardsTimeline);
         SetCardStates(BACK_SELECTORS, {
           card1: { ...finalPosition.card1, ...hideDownPosition.card1, opacity: 1 },
@@ -512,9 +498,8 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
           timeline.fromTo(".back-card3", { ...finalPosition.card3, ...hideDownPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.42);
           timeline.fromTo(".back-card4", { ...finalPosition.card4, ...hideDownPosition.card4 }, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.58);
         });
-        // ---------------------------------------------------------------------------------------------------------------------------------------
 
-      } else if (LeaveToProjectsSection) {
+      } else if (LeaveToProjects) {
         KillTimeline(backCardsTimeline);
         backCardsTimeline = CreateTimeline((timeline) => {
           timeline.fromTo(".back-card1", finalPosition.card1, { ...hideDownPosition.card1, opacity: 1, duration: 0.48 }, 0.20);
@@ -533,12 +518,10 @@ function RegisterBackCardsD(config: BackCardsDesktopVariant) {
   });
 }
 
-function BackCardsDesktop() {
-  const mobileVariants: BackCardsMobileVariant[] = [];
+function BackCardsDesktop(profileIdx: number, perksIdx: number, projectsIdx: number) {
   const desktopVariants: BackCardsDesktopVariant[] = [
     { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
   ];
 
-  mobileVariants.forEach(() => undefined);
-  desktopVariants.forEach(RegisterBackCardsD);
+  desktopVariants.forEach(v => RegisterBackCardsD(v, profileIdx, perksIdx, projectsIdx));
 }

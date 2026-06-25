@@ -3,8 +3,12 @@
 		<div class="top-background"></div>
 		<div class="bottom-background"></div>
 
-		<div class="portfolio-text-top">PORTFOLIO</div>
-		<div class="portfolio-text-bottom">PORTFOLIO</div>
+		<div class="portfolio-text-top">
+			<span v-for="(char, i) in 'PORTFOLIO'" :key="'t' + i" class="portfolio-char">{{ char }}</span>
+		</div>
+		<div class="portfolio-text-bottom">
+			<span v-for="(char, i) in 'PORTFOLIO'" :key="'b' + i" class="portfolio-char">{{ char }}</span>
+		</div>
 
 		<div v-for="(text, index) in texts" :key="index" class="text"
 			:style="{ top: text.top, left: text.left }">
@@ -18,14 +22,17 @@
 
 <script setup lang="ts">
 	import { gsap } from 'gsap';
-	import { onMounted, ref, computed } from 'vue';
+	import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
 	import { finished } from '@modules/Sections/section-state-machine';
-	import { SECTION_INDEX } from '@modules/Sections/section-state-machine';
 	import { ChangeSection } from '@modules/Sections/sections';
+	import { getSectionIndexById } from '@modules/Sections/section-registry';
+	import { playLoadingGlow } from '@modules/animations/loading-glow';
 	import { breakpoints } from '@modules/animations/animation-handler';
 	import { isMobile } from '@modules/Misc/is-mobile';
 	const loadingContainer = ref<HTMLElement | null>(null);
 	let resizeHandler: (() => void) | null = null;
+	import type { GlowHandle } from '@modules/animations/loading-glow';
+	let glowInstance: GlowHandle | null = null;
 
 	interface TextItem {
 		content: string;
@@ -35,24 +42,66 @@
 
 	function Finished() {
 		if (!finished.value) {
-			if (isMobile.value) {
-				
-			}
-			else 
-			{
+			if (!isMobile.value) {
 				gsap.set(".name-container", { right: "-100%"});
 				gsap.set(".skills-line-container", { x: "-1000"});
 				gsap.set(".skill", { x: "-210%"});
 			}
 		}
 		else {
+			// Transition to the first section (perks) after the loading exit animation completes
 			setTimeout(() => {
-			ChangeSection(SECTION_INDEX.PERKS, SECTION_INDEX.NONE, 'none');
+				const perksIndex = getSectionIndexById('perks');
+				ChangeSection(perksIndex, -1, 'none');
 			}, 10);
 		}
 	}
 
-	function PlayLoadingAnimation() {
+	function PlayEnterAnimation() {
+		if (!loadingContainer.value) return;
+
+		const textElements = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.text'));
+		const topChars = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.portfolio-text-top .portfolio-char'));
+		const bottomChars = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.portfolio-text-bottom .portfolio-char'));
+
+		const baseDelay = 1;
+
+		// Initial hidden states
+		gsap.set(topChars, { scaleY: 0, transformOrigin: 'center bottom' });
+		gsap.set(bottomChars, { scaleY: 0, transformOrigin: 'center top' });
+		gsap.set(textElements, { opacity: 0, scale: 0.85, y: 15 });
+		gsap.set('.explore-button', { scale: 0, opacity: 0 });
+
+		// 1. Portfolio chars grow from the split line outward
+		const charOpts = { scaleY: 1, duration: 0.48, stagger: 0.05, ease: 'back.out(3)', delay: baseDelay };
+		gsap.to(topChars, charOpts);
+		gsap.to(bottomChars, charOpts);
+
+		// 2. Notes drift up and fade in slowly
+		gsap.to(textElements, {
+			opacity: 1,
+			scale: 1,
+			y: 0,
+			duration: 1.4,
+			stagger: { each: 0.15, from: 'random' },
+			ease: 'power2.out',
+			delay: baseDelay + 0.2,
+		});
+
+		// 3. Explore button snaps in after the title finishes
+		gsap.fromTo('.explore-button',
+			{ scale: 0, opacity: 0, y: 12 },
+			{ scale: 1, opacity: 1, y: 0, duration: 0.3, delay: baseDelay + 0.65, ease: 'back.out(3.5)' }
+		);
+
+		// 4. Viewport-wide glow sweeps across the loading page
+		if (loadingContainer.value) {
+			glowInstance?.cleanup();
+			glowInstance = playLoadingGlow(loadingContainer.value, baseDelay);
+		}
+	}
+
+	function RunLoadingAnimation() {
 		if (!loadingContainer.value) return;
 
 		const textElements = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.text'));
@@ -61,39 +110,40 @@
 		const randomDelays = hiderElements.map(() => Math.random() * 0.5);
 		const backgroundDelay = 1.50;
 
-		const hiderStartPosition =  -300;
+		const hiderStartPosition = -300;
 		const timeline = gsap.timeline();
 		const backgroundTimeline = gsap.timeline();
 
 		gsap.set(textElements, { opacity: 1 });
+		const sectionColor = getComputedStyle(document.documentElement).getPropertyValue('--section-color').trim();
 		gsap.set(hiderElements, {
 			opacity: 1,
-			backgroundColor: 'rgb(91, 253, 91)',
-			xPercent:  hiderStartPosition,
+			backgroundColor: sectionColor,
+			xPercent: hiderStartPosition,
 			width: 0,
 			padding: 0,
 		});
 
 		backgroundTimeline
-			.to(".top-background", {
+			.to('.top-background', {
 				height: '51%',
 				top: '0%',
 				duration: 1.25,
 				ease: 'power4.inOut',
 			}, backgroundDelay)
-			.to(".bottom-background", {
+			.to('.bottom-background', {
 				height: '51%',
 				bottom: '0%',
 				duration: 1.25,
 				ease: 'power4.inOut',
 			}, backgroundDelay)
 			.to('.portfolio-text-top', {
-				top: "48%",
+				top: '48%',
 				duration: 0.55,
 				ease: 'back.inOut',
 			}, backgroundDelay + 0.05)
 			.to('.portfolio-text-bottom', {
-				top:"52%",
+				top: '52%',
 				duration: 0.55,
 				ease: 'back.inOut',
 			}, backgroundDelay + 0.05);
@@ -108,29 +158,20 @@
 			const overlapAt = itemStart + widthGrowDuration + firstLegDuration;
 
 			timeline.fromTo(hidder, {
-				xPercent:  hiderStartPosition,
+				xPercent: hiderStartPosition,
 				width: 0,
 				padding: 0,
 			}, {
 				width: targetWidth,
-				padding: "0 3rem",
+				padding: '0 3rem',
 				duration: widthGrowDuration,
 				ease: 'power4.in',
 			}, itemStart)
-			.to(hidder, {
-				xPercent: -50,
-				duration: firstLegDuration,
-			}, ">")
-			.to(hidder, {
-				xPercent: 600,
-				duration: secondLegDuration,
-				ease: 'power4.out',
-			},">")
+			.to(hidder, { xPercent: -50, duration: firstLegDuration }, '>')
+			.to(hidder, { xPercent: 600, duration: secondLegDuration, ease: 'power4.out' }, '>');
 
 			if (textElement) {
-				timeline.set(textElement, {
-					opacity: 0,
-				}, overlapAt);
+				timeline.set(textElement, { opacity: 0 }, overlapAt);
 			}
 		});
 
@@ -145,6 +186,12 @@
 		}, 2.3);
 	}
 
+	function PlayLoadingAnimation() {
+		glowInstance?.cleanup();
+		glowInstance = null;
+		RunLoadingAnimation();
+	}
+
 	onMounted(() => {
 		if (!loadingContainer.value) return;
 
@@ -155,7 +202,6 @@
 			hiderElements.forEach((hidder, index) => {
 				const textElement = textElements[index];
 				if (!textElement) return;
-
 				hidder.style.height = `${textElement.offsetHeight}px`;
 			});
 		};
@@ -164,13 +210,21 @@
 		resizeHandler = syncHiderSizeToText;
 		window.addEventListener('resize', resizeHandler);
 
-		// Listen for play-animation event from App.vue
 		loadingContainer.value.addEventListener('play-animation', () => {
 			PlayLoadingAnimation();
 		});
 
-		// Initialize without playing animations
+		// Set hidden states for first section elements (they're underneath the loading page)
 		Finished();
+
+		// Play the intro animation for the loading page texts
+		PlayEnterAnimation();
+	});
+
+	onBeforeUnmount(() => {
+		glowInstance?.cleanup();
+		glowInstance = null;
+		if (resizeHandler) window.removeEventListener('resize', resizeHandler);
 	});
 
 	const tabletTexts: TextItem[] = [
@@ -247,14 +301,12 @@
 
 	.portfolio-text-top {
 		top: 50.2%;
-		clip-path: polygon(0 50%, 100% 50%, 100% 0, 0 0);
-
+		clip-path: inset(-300% 0 50% 0);
 	}
 
 	.portfolio-text-bottom {
 		top: 49.8%;
-		clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0% 100%);
-
+		clip-path: inset(50% 0 -300% 0);
 	}
 
 	.top-background,
@@ -262,20 +314,18 @@
 		position: absolute;
 		width: 100%;
 		height: 0%;
-		height: 0%;
-		background-color: #242424;
 		background-color: rgb(91, 253, 91);
 		z-index: 301;
 	}
 
 	.top-background {
 		bottom: 50%;
-		border-radius: 2rem 2rem 0 0;
+		border-radius: 0;
 	}
 
 	.bottom-background {
 		top: 50%;
-		border-radius: 0 0 2rem 2rem;
+		border-radius: 0;
 	}
 
 	.text {
@@ -287,13 +337,12 @@
 		font-size: 2rem;
 		font-family: Wosker;
 		white-space: nowrap;
-		z-index: 304;
+		z-index: 306;
 		opacity: 1;
 
 		@include allMobile {
 			font-size: 1.2rem;
 		}
-
 	}
 
 	.hidder {
@@ -302,8 +351,13 @@
 		width: 0;
 		height: 0;
 		transform: translate(50%, -50%);
-		background-color: rgb(91, 253, 91);
-		z-index: 305;
+		background-color: var(--section-color);
+		border-radius: 0;
+		z-index: 304;
 		padding: 0;
+	}
+
+	.portfolio-char {
+		display: inline-block;
 	}
 </style>

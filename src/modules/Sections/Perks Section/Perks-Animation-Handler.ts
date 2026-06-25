@@ -2,24 +2,22 @@ import { gsap } from "gsap";
 import { breakpoints } from "@modules/animations/animation-handler";
 import {
 	onSectionEnterLeaveAnimation,
-	SECTION_INDEX,
-	type SectionTransitionStates,
+	type SectionTransitionMeta,
 } from "../section-state-machine";
+import { getSectionIndexById } from "../section-registry";
 
 gsap.defaults({ immediateRender: false });
 
-const isPerksEnter = (states: SectionTransitionStates) =>
-	states.enterPerksFromProfile || states.enterPerksFromProjects || states.enterPerksFromNone;
+export function registerPerksAnimations() {
+	const myIndex = getSectionIndexById('perks');
 
-const isPerksLeave = (states: SectionTransitionStates) =>
-	states.leavePerksToProfile || states.leavePerksToProjects;
+	const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(myIndex);
+	const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(myIndex);
 
-export function PerksAnimationDesktop() {
-	SkillsMobile();
-	SkillsDesktop();
-
-	NameMobile();
-	NameDesktop();
+	SkillsMobile(myIndex, isEnter, isLeave);
+	SkillsDesktop(myIndex, isEnter, isLeave);
+	NameMobile(myIndex, isEnter, isLeave);
+	NameDesktop(myIndex, isEnter, isLeave);
 }
 
 type SkillsMobileVariant = {
@@ -36,7 +34,12 @@ type SkillsDesktopVariant = {
 	lineEnterX: number;
 };
 
-function RegisterSkillsM(config: SkillsMobileVariant) {
+function RegisterSkillsM(
+	config: SkillsMobileVariant,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean,
+	initialSection: number
+) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
 		if (!document.querySelector(".skill")) return;
 
@@ -97,11 +100,11 @@ function RegisterSkillsM(config: SkillsMobileVariant) {
 		};
 
 		const cleanupStates = onSectionEnterLeaveAnimation({
-			isEnter: isPerksEnter,
-			isLeave: isPerksLeave,
+			isEnter,
+			isLeave,
 			onEnter: playEnter,
 			onLeave: playLeave,
-			initialSection: SECTION_INDEX.PERKS,
+			initialSection,
 		});
 
 		return () => {
@@ -112,7 +115,12 @@ function RegisterSkillsM(config: SkillsMobileVariant) {
 	});
 }
 
-function RegisterSkillsD(config: SkillsDesktopVariant) {
+function RegisterSkillsD(
+	config: SkillsDesktopVariant,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean,
+	initialSection: number
+) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
 		if (!document.querySelector(".skill")) return;
 
@@ -175,11 +183,11 @@ function RegisterSkillsD(config: SkillsDesktopVariant) {
 		}
 
 		const cleanupStates = onSectionEnterLeaveAnimation({
-			isEnter: isPerksEnter,
-			isLeave: isPerksLeave,
+			isEnter,
+			isLeave,
 			onEnter: playEnter,
 			onLeave: playLeave,
-			initialSection: SECTION_INDEX.PERKS,
+			initialSection,
 		});
 
 		return () => {
@@ -190,7 +198,11 @@ function RegisterSkillsD(config: SkillsDesktopVariant) {
 	});
 }
 
-function SkillsMobile() {
+function SkillsMobile(
+	initialSection: number,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean
+) {
 	const mobileVariants: SkillsMobileVariant[] = [
 		{
 			mediaQuery: `(max-width: ${breakpoints.tablet - 1}px)`,
@@ -208,10 +220,14 @@ function SkillsMobile() {
 		},
 	];
 
-	mobileVariants.forEach(RegisterSkillsM);
+	mobileVariants.forEach(v => RegisterSkillsM(v, isEnter, isLeave, initialSection));
 }
 
-function SkillsDesktop() {
+function SkillsDesktop(
+	initialSection: number,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean
+) {
 	const desktopVariants: SkillsDesktopVariant[] = [
 		{
 			mediaQuery: `(min-width: ${breakpoints.desktop}px)`,
@@ -230,7 +246,7 @@ function SkillsDesktop() {
 		},
 	];
 
-	desktopVariants.forEach(RegisterSkillsD);
+	desktopVariants.forEach(v => RegisterSkillsD(v, isEnter, isLeave, initialSection));
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -249,7 +265,12 @@ type NameDesktopVariant = {
 	enterRight: string;
 };
 
-function RegisterNameM(config: NameMobileVariant) {
+function RegisterNameM(
+	config: NameMobileVariant,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean,
+	initialSection: number
+) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
 		if (!document.querySelector(".name-container")) return;
 
@@ -281,11 +302,11 @@ function RegisterNameM(config: NameMobileVariant) {
 		gsap.set(".name-container", { top: "-100%" });
 
 		const cleanupStates = onSectionEnterLeaveAnimation({
-			isEnter: isPerksEnter,
-			isLeave: isPerksLeave,
+			isEnter,
+			isLeave,
 			onEnter: playEnter,
 			onLeave: playLeave,
-			initialSection: SECTION_INDEX.PERKS,
+			initialSection,
 		});
 
 		return () => {
@@ -295,7 +316,12 @@ function RegisterNameM(config: NameMobileVariant) {
 	});
 }
 
-function RegisterNameD(config: NameDesktopVariant) {
+function RegisterNameD(
+	config: NameDesktopVariant,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean,
+	initialSection: number
+) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
 		if (!document.querySelector(".name-container")) return;
 
@@ -325,11 +351,11 @@ function RegisterNameD(config: NameDesktopVariant) {
 		gsap.set(".name-container", { right: "-100%" });
 
 		const cleanupStates = onSectionEnterLeaveAnimation({
-			isEnter: isPerksEnter,
-			isLeave: isPerksLeave,
+			isEnter,
+			isLeave,
 			onEnter: playEnter,
 			onLeave: playLeave,
-			initialSection: SECTION_INDEX.PERKS,
+			initialSection,
 		});
 
 		return () => {
@@ -339,7 +365,11 @@ function RegisterNameD(config: NameDesktopVariant) {
 	});
 }
 
-function NameMobile() {
+function NameMobile(
+	initialSection: number,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean
+) {
 	const mobileVariants: NameMobileVariant[] = [
 		{
 			mediaQuery: `(max-width: ${breakpoints.tablet}px)`,
@@ -359,10 +389,14 @@ function NameMobile() {
 		},
 	];
 
-	mobileVariants.forEach(RegisterNameM);
+	mobileVariants.forEach(v => RegisterNameM(v, isEnter, isLeave, initialSection));
 }
 
-function NameDesktop() {
+function NameDesktop(
+	initialSection: number,
+	isEnter: (m: SectionTransitionMeta) => boolean,
+	isLeave: (m: SectionTransitionMeta) => boolean
+) {
 	const desktopVariants: NameDesktopVariant[] = [
 		{
 			mediaQuery: `(min-width: ${breakpoints.desktop}px)`,
@@ -378,5 +412,5 @@ function NameDesktop() {
 		},
 	];
 
-	desktopVariants.forEach(RegisterNameD);
+	desktopVariants.forEach(v => RegisterNameD(v, isEnter, isLeave, initialSection));
 }

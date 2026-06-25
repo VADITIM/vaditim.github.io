@@ -1,25 +1,27 @@
 <template>
   <main class="app-container" ref="container">
-    
+
     <template v-if="!isMobile" >
       <HardwareAccelerationNotice />
       <LoadingPage v-if="showLoadingPage && !hardwareNoticeActive" />
       <template v-if="!hardwareNoticeActive">
+        <MagneticDots :isDisabled="activeProjectIndex !== null" />
         <SectionBackgrounds />
-        <div :style="GetSection(0)"><PerksPage /></div>
-        <div :style="GetSection(2)"><ProjectsPage /></div>
-        <div :style="GetSection(1)"><ProfilePage /></div>
+        <div
+          v-for="(section, i) in SECTIONS"
+          :key="section.id"
+          :style="GetSection(i)"
+        >
+          <component :is="section.component" />
+        </div>
         <SectionsDisplay />
       </template>
     </template>
-    
+
     <template v-else>
       <LoadingPage v-if="showLoadingPage" />
       <SectionsDisplay />
       <SectionBackgrounds />
-      <!-- <div :style="GetSection(0)"><PerksPage /></div> -->
-      <!-- <div :style="GetSection(1)"><ProfilePage /></div> -->
-      <!-- <div :style="GetSection(2)"><ProjectsPage /></div> -->
     </template>
 
     <ExploreFullscreenToggle :show-loading-page="showLoadingPage" :container-element="container" :is-mobile="isMobile" />
@@ -31,22 +33,30 @@
 
   import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
+  import { SECTIONS, LOADING_COLOR } from '@modules/Sections/section-registry';
+  import { onSectionChange } from '@modules/Sections/sections';
   import { PageAnimations } from '@modules/animations/animation-handler';
   import { InitializeVirtualScroll, unlockScroll } from '@modules/Misc/virtual-scroll';
   import { finished, CreateSectionLayerStyleController } from '@modules/Sections/section-state-machine';
+  import { setSectionCount } from '@modules/Sections/sections';
 
   import LoadingPage from '@components/Pages/Main/Loading Section/LoadingPage.vue';
-  import PerksPage from '@perks/aPerks-Section.vue';
-  import ProfilePage from '@profile/aProfile-Section.vue';
-  import ProjectsPage from '@projects/aProjects-Section.vue';
-
   import SectionBackgrounds from '@sections/Section-Background-Display.vue';
   import SectionsDisplay from '@sections/Sections-State-Display.vue';
   import ExploreFullscreenToggle from '@components/Misc/Explore-Fullscreen-Toggle.vue';
-
   import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
+  import MagneticDots from '@components/Misc/Magnetic-Dots.vue';
+
   import { hardwareNoticeActive } from '@modules/Misc/hardware-notice';
   import { isMobile } from '@modules/Misc/is-mobile';
+  import { activeProjectIndex } from '@modules/Sections/Projects Section/projects';
+
+  setSectionCount(SECTIONS.length);
+
+  document.documentElement.style.setProperty('--section-color', LOADING_COLOR);
+  onSectionChange((current) => {
+    document.documentElement.style.setProperty('--section-color', SECTIONS[current]?.color ?? LOADING_COLOR);
+  });
 
   const container = ref<HTMLElement | null>(null);
   const showLoadingPage = ref(true);
@@ -64,12 +74,12 @@
 
   const tryInitializeApp = () => {
     if (hasInitialized.value || (!isMobile.value && hardwareNoticeActive.value) || !finished.value) return;
-    PageAnimations();
+    PageAnimations(SECTIONS);
     hasInitialized.value = true;
     showLoadingPage.value = false;
-    
+
     if (!isMobile.value) {
-      InitializeVirtualScroll(3, sectionHeightVh);
+      InitializeVirtualScroll(SECTIONS.length, sectionHeightVh);
     }
   };
 

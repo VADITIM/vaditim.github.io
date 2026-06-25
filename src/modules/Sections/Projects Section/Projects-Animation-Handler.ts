@@ -4,31 +4,25 @@ import { watch } from "vue";
 import { breakpoints } from "@modules/animations/animation-handler";
 import {
   onSectionEnterLeaveAnimation,
-  type SectionTransitionStates,
-  SECTION_INDEX,
+  type SectionTransitionMeta,
 } from "../section-state-machine";
+import { getSectionIndexById } from "../section-registry";
 
 gsap.defaults({ immediateRender: false });
 
-const isProjectsEnter = (states: SectionTransitionStates) =>
-  states.enterProjectsFromProfile || states.enterProjectsFromPerks;
-const isProjectsLeave = (states: SectionTransitionStates) =>
-  states.leaveProjectsToProfile || states.leaveProjectsToPerks;
+export function registerProjectsAnimations() {
+  const myIndex = getSectionIndexById('projects');
 
-export function ProjectAnimationDesktop() {
-  ProjectsMobile();
+  const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(myIndex);
+  const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(myIndex);
 
-  ProjectsDesktop();
-  ProjectListDesktop();
-  PaginationDotsDesktop();
-  InteractiveDotsDesktop();
+  ProjectsMobile(myIndex, isEnter, isLeave);
+  ProjectsDesktop(myIndex, isEnter, isLeave);
+  ProjectListDesktop(myIndex, isEnter, isLeave);
+  PaginationDotsDesktop(myIndex, isEnter, isLeave);
 }
 
-type ProjectsMobileVariant = {
-  mediaQuery: string;
-  selector: string;
-};
-
+type ProjectsMobileVariant = { mediaQuery: string; selector: string };
 type ProjectsDesktopVariant = {
   mediaQuery: string;
   enterRight: string;
@@ -37,7 +31,12 @@ type ProjectsDesktopVariant = {
   leaveTop: string;
 };
 
-function RegisterProjectsM(config: ProjectsMobileVariant) {
+function RegisterProjectsM(
+  config: ProjectsMobileVariant,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean,
+  initialSection: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(config.selector)) return;
 
@@ -73,11 +72,11 @@ function RegisterProjectsM(config: ProjectsMobileVariant) {
     gsap.set(config.selector, { opacity: 0, y: 20 });
 
     const cleanupStates = onSectionEnterLeaveAnimation({
-      isEnter: isProjectsEnter,
-      isLeave: isProjectsLeave,
+      isEnter,
+      isLeave,
       onEnter: playEnter,
       onLeave: playLeave,
-      initialSection: SECTION_INDEX.PROJECTS,
+      initialSection,
     });
 
     return () => {
@@ -87,7 +86,12 @@ function RegisterProjectsM(config: ProjectsMobileVariant) {
   });
 }
 
-function RegisterProjectsD(config: ProjectsDesktopVariant) {
+function RegisterProjectsD(
+  config: ProjectsDesktopVariant,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean,
+  initialSection: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".projects-container")) return;
 
@@ -126,11 +130,11 @@ function RegisterProjectsD(config: ProjectsDesktopVariant) {
     };
 
     const cleanupStates = onSectionEnterLeaveAnimation({
-      isEnter: isProjectsEnter,
-      isLeave: isProjectsLeave,
+      isEnter,
+      isLeave,
       onEnter: playEnter,
       onLeave: playLeave,
-      initialSection: SECTION_INDEX.PROJECTS,
+      initialSection,
     });
 
     return () => {
@@ -140,18 +144,26 @@ function RegisterProjectsD(config: ProjectsDesktopVariant) {
   });
 }
 
-function ProjectsMobile() {
+function ProjectsMobile(
+  initialSection: number,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean
+) {
   const mobileVariants: ProjectsMobileVariant[] = [
     {
       mediaQuery: `(max-width: ${breakpoints.tabletLandscape}px)`,
-      selector: ".projects-container, .project-list, .pagination-dots, .magnetic-dots-container",
+      selector: ".projects-container, .project-list, .pagination-dots",
     },
   ];
 
-  mobileVariants.forEach(RegisterProjectsM);
+  mobileVariants.forEach(v => RegisterProjectsM(v, isEnter, isLeave, initialSection));
 }
 
-function ProjectsDesktop() {
+function ProjectsDesktop(
+  initialSection: number,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean
+) {
   const desktopVariants: ProjectsDesktopVariant[] = [
     {
       mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)`,
@@ -162,18 +174,17 @@ function ProjectsDesktop() {
     },
   ];
 
-  desktopVariants.forEach(RegisterProjectsD);
+  desktopVariants.forEach(v => RegisterProjectsD(v, isEnter, isLeave, initialSection));
 }
 
-type ProjectListMobileVariant = {
-  mediaQuery: string;
-};
+type ProjectListDesktopVariant = { mediaQuery: string };
 
-type ProjectListDesktopVariant = {
-  mediaQuery: string;
-};
-
-function RegisterProjectListD(config: ProjectListDesktopVariant) {
+function RegisterProjectListD(
+  config: ProjectListDesktopVariant,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean,
+  initialSection: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".project-list")) return;
 
@@ -241,11 +252,11 @@ function RegisterProjectListD(config: ProjectListDesktopVariant) {
     gsap.set(".project-list-item.position--2, .project-list-item.position--1, .project-list-item.position-0, .project-list-item.position-1, .project-list-item.position-2", { x: 120, opacity: 0 });
 
     const cleanupStates = onSectionEnterLeaveAnimation({
-      isEnter: isProjectsEnter,
-      isLeave: isProjectsLeave,
+      isEnter,
+      isLeave,
       onEnter: playEnter,
       onLeave: playLeave,
-      initialSection: SECTION_INDEX.PROJECTS,
+      initialSection,
     });
 
     const stopWatch = watch(activeProjectIndex, () => {
@@ -260,84 +271,17 @@ function RegisterProjectListD(config: ProjectListDesktopVariant) {
   });
 }
 
-function ProjectListDesktop() {
-  const mobileVariants: ProjectListMobileVariant[] = [];
+function ProjectListDesktop(
+  initialSection: number,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean
+) {
   const desktopVariants: ProjectListDesktopVariant[] = [
     { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
   ];
 
-  mobileVariants.forEach(() => undefined);
-  desktopVariants.forEach(RegisterProjectListD);
+  desktopVariants.forEach(v => RegisterProjectListD(v, isEnter, isLeave, initialSection));
 }
-
-type InteractiveDotsMobileVariant = {
-  mediaQuery: string;
-};
-
-type InteractiveDotsDesktopVariant = {
-  mediaQuery: string;
-};
-
-function RegisterInteractiveDotsD(config: InteractiveDotsDesktopVariant) {
-  gsap.matchMedia().add(config.mediaQuery, () => {
-    if (!document.querySelector(".magnetic-dots-container")) return;
-
-    let dotsAnimation: gsap.core.Tween | null = null;
-
-    const playEnter = () => {
-      gsap.set(".magnetic-dots-container", { transition: "none" });
-      if (dotsAnimation) dotsAnimation.kill();
-      dotsAnimation = gsap.to(".magnetic-dots-container", {
-        opacity: 1,
-        duration: 0.5,
-        delay: 0,
-        overwrite: "auto",
-        onComplete: () => { gsap.set(".magnetic-dots-container", { clearProps: "transition" }); }
-      });
-    };
-
-    const playLeave = () => {
-      gsap.set(".magnetic-dots-container", { transition: "none" });
-      if (dotsAnimation) dotsAnimation.kill();
-      dotsAnimation = gsap.to(".magnetic-dots-container", {
-        opacity: 0,
-        duration: 1,
-        delay: 0,
-        overwrite: "auto",
-        onComplete: () => { gsap.set(".magnetic-dots-container", { clearProps: "transition" }); }
-      });
-    };
-
-    gsap.set(".magnetic-dots-container", { opacity: 0 });
-
-    const cleanupStates = onSectionEnterLeaveAnimation({
-      isEnter: isProjectsEnter,
-      isLeave: isProjectsLeave,
-      onEnter: playEnter,
-      onLeave: playLeave,
-      initialSection: SECTION_INDEX.PROJECTS,
-    });
-
-    return () => {
-      cleanupStates();
-      if (dotsAnimation) dotsAnimation.kill();
-    };
-  });
-}
-
-function InteractiveDotsDesktop() {
-  const mobileVariants: InteractiveDotsMobileVariant[] = [];
-  const desktopVariants: InteractiveDotsDesktopVariant[] = [
-    { mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)` },
-  ];
-
-  mobileVariants.forEach(() => undefined);
-  desktopVariants.forEach(RegisterInteractiveDotsD);
-}
-
-type PaginationDotsMobileVariant = {
-  mediaQuery: string;
-};
 
 type PaginationDotsDesktopVariant = {
   mediaQuery: string;
@@ -345,7 +289,12 @@ type PaginationDotsDesktopVariant = {
   leaveLeft: string;
 };
 
-function RegisterPaginationDotsD(config: PaginationDotsDesktopVariant) {
+function RegisterPaginationDotsD(
+  config: PaginationDotsDesktopVariant,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean,
+  initialSection: number
+) {
   gsap.matchMedia().add(config.mediaQuery, () => {
     if (!document.querySelector(".pagination-dots")) return;
 
@@ -380,11 +329,11 @@ function RegisterPaginationDotsD(config: PaginationDotsDesktopVariant) {
     gsap.set(".pagination-dots", { opacity: 0, left: config.leaveLeft });
 
     const cleanupStates = onSectionEnterLeaveAnimation({
-      isEnter: isProjectsEnter,
-      isLeave: isProjectsLeave,
+      isEnter,
+      isLeave,
       onEnter: playEnter,
       onLeave: playLeave,
-      initialSection: SECTION_INDEX.PROJECTS,
+      initialSection,
     });
 
     return () => {
@@ -394,8 +343,11 @@ function RegisterPaginationDotsD(config: PaginationDotsDesktopVariant) {
   });
 }
 
-function PaginationDotsDesktop() {
-  const mobileVariants: PaginationDotsMobileVariant[] = [];
+function PaginationDotsDesktop(
+  initialSection: number,
+  isEnter: (m: SectionTransitionMeta) => boolean,
+  isLeave: (m: SectionTransitionMeta) => boolean
+) {
   const desktopVariants: PaginationDotsDesktopVariant[] = [
     {
       mediaQuery: `(min-width: ${breakpoints.smallDesktop}px)`,
@@ -404,6 +356,5 @@ function PaginationDotsDesktop() {
     },
   ];
 
-  mobileVariants.forEach(() => undefined);
-  desktopVariants.forEach(RegisterPaginationDotsD);
+  desktopVariants.forEach(v => RegisterPaginationDotsD(v, isEnter, isLeave, initialSection));
 }

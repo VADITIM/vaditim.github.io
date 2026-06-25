@@ -2,13 +2,23 @@
 	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isMobile ? 'is-mobile' : 'is-desktop', { 'dragging': isDragging && isMobile }]" :style="dragStyle">
 			<div class="line"></div>
 			<div v-if="isMobile" class="rect-container">
-				<div class="rect" :class="getEntryClasses(0)" :style="getEntryDragStyle(0, 'rect')" @click="onEntryClick(0)"></div>
-				<div class="rect" :class="getEntryClasses(1)" :style="getEntryDragStyle(1, 'rect')" @click="onEntryClick(1)"></div>
-				<div class="rect" :class="getEntryClasses(2)" :style="getEntryDragStyle(2, 'rect')" @click="onEntryClick(2)"></div>
+				<div
+					v-for="(section, i) in SECTIONS"
+					:key="section.id + '-rect'"
+					class="rect"
+					:class="getEntryClasses(i)"
+					:style="getEntryDragStyle(i, 'rect')"
+					@click="onEntryClick(i)"
+				></div>
 			</div>
-	    <div class="perks-header-list" :class="getEntryClasses(0)" :style="getEntryDragStyle(0, 'text')" @click="onEntryClick(0)">PERK</div>
-	    <div class="profile-header-list" :class="getEntryClasses(1)" :style="getEntryDragStyle(1, 'text')" @click="onEntryClick(1)">PROFILE</div>
-	    <div class="projects-header-list" :class="getEntryClasses(2)" :style="getEntryDragStyle(2, 'text')" @click="onEntryClick(2)">PROJECT</div>
+			<div
+				v-for="(section, i) in SECTIONS"
+				:key="section.id"
+				class="section-header-list"
+				:class="[`${section.id}-header-list`, getEntryClasses(i)]"
+				:style="getEntryDragStyle(i, 'text')"
+				@click="onEntryClick(i)"
+			>{{ section.label }}</div>
 	  </div>
 
 </template>
@@ -16,6 +26,7 @@
 <script setup lang="ts">
 	import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 	import { currentSection, InitializeSectionTracking, cleanupSectionTracking, ChangeToSectionID } from '@modules/Sections/sections'
+	import { SECTIONS } from '@modules/Sections/section-registry'
 	import { activeProjectIndex } from '@modules/Sections/Projects Section/projects'
 	import { isMobile } from '@modules/Misc/is-mobile'
 	import { navigationLockRef } from '@modules/Misc/navigation-lock'
@@ -67,7 +78,7 @@
 
 		isReturning.value = true
 		const seededTransforms: Record<string, string> = {}
-		for (let sectionIndex = 0; sectionIndex <= 2; sectionIndex++) {
+		for (let sectionIndex = 0; sectionIndex < SECTIONS.length; sectionIndex++) {
 			const rectKey = getEntryKey(sectionIndex, 'rect')
 			const textKey = getEntryKey(sectionIndex, 'text')
 			seededTransforms[rectKey] = currentEntryTransforms.value[rectKey] ?? getEntryDefaultTransform(sectionIndex, 'rect')
@@ -77,7 +88,7 @@
 
 		requestAnimationFrame(() => {
 			const nextTransforms: Record<string, string> = {}
-			for (let sectionIndex = 0; sectionIndex <= 2; sectionIndex++) {
+			for (let sectionIndex = 0; sectionIndex < SECTIONS.length; sectionIndex++) {
 				nextTransforms[getEntryKey(sectionIndex, 'rect')] = getEntryDefaultTransform(sectionIndex, 'rect')
 				nextTransforms[getEntryKey(sectionIndex, 'text')] = getEntryDefaultTransform(sectionIndex, 'text')
 			}
@@ -113,7 +124,7 @@
 		if (!dragDirection.value) return null
 		const delta = dragDirection.value === 'down' ? 1 : -1
 		const nextSection = currentSection.value + delta
-		if (nextSection < 0 || nextSection > 2) return null
+		if (nextSection < 0 || nextSection >= SECTIONS.length) return null
 		return nextSection
 	}
 
@@ -212,7 +223,7 @@
 	.rect-container {
 		position: absolute;
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(v-bind('SECTIONS.length'), 1fr);
 		justify-items: center;
 		align-items: center;
 		top: -3.2rem;
@@ -306,9 +317,7 @@
 		}
 	}
 
-	.perks-header-list,
-	.profile-header-list,
-	.projects-header-list {
+	.section-header-list {
 		@include rotate(0, 40, 0);
 		@include outline(black);
 		position: relative;
@@ -360,9 +369,7 @@
 	}
 
 
-	.content-list-container.is-mobile .perks-header-list,
-	.content-list-container.is-mobile .profile-header-list,
-	.content-list-container.is-mobile .projects-header-list {
+	.content-list-container.is-mobile .section-header-list {
 		@include rotate(0, 0, 0);
 		flex: 1;
 		width: auto;
@@ -402,9 +409,7 @@
 		}
 	}
 
-	.content-list-container.is-mobile .perks-header-list.active,
-	.content-list-container.is-mobile .profile-header-list.active,
-	.content-list-container.is-mobile .projects-header-list.active {
+	.content-list-container.is-mobile .section-header-list.active {
 		transform: translateY(-0.6rem) scale(1);
 	}
 </style>

@@ -5,106 +5,82 @@ export const finished = ref<boolean>(false);
 
 export const SECTION_INDEX = {
 	NONE: -1,
-	PERKS: 0,
-	PROFILE: 1,
-	PROJECTS: 2,
 } as const;
 
-export type SectionIndex = typeof SECTION_INDEX[keyof typeof SECTION_INDEX];
 export type SectionDirection = 'forward' | 'backward' | 'none';
-
-export function getSectionTransitionStates(current: number, previous: number) {
-	const enterPerksFromNone = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.NONE;
-	const enterProfileFromNone = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.NONE;
-	const enterProjectsFromNone = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.NONE;
-
-	const enterPerksFromProfile = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROFILE;
-	const leavePerksToProfile = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.PERKS;
-	const enterPerksFromProjects = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROJECTS;
-	const leavePerksToProjects = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PERKS;
-
-	const enterProfileFromPerks = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.PERKS;
-	const leaveProfileToPerks = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROFILE;
-	const leaveProfileToProjects = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PROFILE;
-	const enterProfileFromProjects = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.PROJECTS;
-
-	const enterProjectsFromProfile = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PROFILE;
-	const leaveProjectsToProfile = current === SECTION_INDEX.PROFILE && previous === SECTION_INDEX.PROJECTS;
-	const enterProjectsFromPerks = current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PERKS;
-	const leaveProjectsToPerks = current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROJECTS;
-
-	const skipProfile =
-		(current === SECTION_INDEX.PERKS && previous === SECTION_INDEX.PROJECTS) ||
-		(current === SECTION_INDEX.PROJECTS && previous === SECTION_INDEX.PERKS);
-
-	return {
-		enterPerksFromNone,
-		enterProfileFromNone,
-		enterProjectsFromNone,
-		enterPerksFromProfile,
-		leavePerksToProfile,
-		enterPerksFromProjects,
-		leavePerksToProjects,
-		enterProfileFromPerks,
-		leaveProfileToPerks,
-		leaveProfileToProjects,
-		enterProfileFromProjects,
-		enterProjectsFromProfile,
-		leaveProjectsToProfile,
-		enterProjectsFromPerks,
-		leaveProjectsToPerks,
-		skipProfile,
-	};
-}
-
-export type SectionTransitionStates = ReturnType<typeof getSectionTransitionStates>;
 
 export type SectionTransitionMeta = {
 	current: number;
 	previous: number;
 	direction: SectionDirection;
+	/** True when this section is now the active one (and wasn't before). */
+	isEnteringSection: (i: number) => boolean;
+	/** True when this section was active and is no longer. */
+	isLeavingSection: (i: number) => boolean;
+	/** True when this was the previous section. */
+	isFromSection: (i: number) => boolean;
+	/** True when this is the current section. */
+	isToSection: (i: number) => boolean;
+	/** True when the section sits between previous and current but is neither (was skipped). */
+	isSkippingSection: (i: number) => boolean;
 };
 
-export type SectionAnimationPredicate = (states: SectionTransitionStates) => boolean;
+export function buildTransitionMeta(
+	current: number,
+	previous: number,
+	direction: SectionDirection
+): SectionTransitionMeta {
+	return {
+		current,
+		previous,
+		direction,
+		isEnteringSection: (i) => current === i && previous !== i,
+		isLeavingSection: (i) => previous === i && current !== i,
+		isFromSection: (i) => previous === i,
+		isToSection: (i) => current === i,
+		isSkippingSection: (i) => {
+			if (current === i || previous === i) return false;
+			const lo = Math.min(current, previous);
+			const hi = Math.max(current, previous);
+			return lo < i && i < hi;
+		},
+	};
+}
 
 export type SectionEnterLeaveAnimationOptions = {
-	isEnter: SectionAnimationPredicate;
-	isLeave: SectionAnimationPredicate;
+	isEnter: (meta: SectionTransitionMeta) => boolean;
+	isLeave: (meta: SectionTransitionMeta) => boolean;
 	onEnter: () => void;
 	onLeave: () => void;
-	initialSection?: SectionIndex;
+	initialSection?: number;
 };
 
-type SectionStatesChangeCallback = (
-	states: SectionTransitionStates,
-	meta: SectionTransitionMeta
-) => void;
+type SectionStatesChangeCallback = (meta: SectionTransitionMeta) => void;
 
 export function onSectionStatesChange(callback: SectionStatesChangeCallback) {
 	return onSectionChange((current, previous, direction) => {
-		const states = getSectionTransitionStates(current, previous);
-		callback(states, { current, previous, direction });
+		callback(buildTransitionMeta(current, previous, direction));
 	});
 }
 
 export function onSectionEnter(
-	section: SectionIndex,
+	section: number,
 	callback: SectionStatesChangeCallback
 ) {
-	return onSectionStatesChange((states, meta) => {
-		if (meta.current === section && meta.previous !== section) {
-			callback(states, meta);
+	return onSectionStatesChange((meta) => {
+		if (meta.isEnteringSection(section)) {
+			callback(meta);
 		}
 	});
 }
 
 export function onSectionLeave(
-	section: SectionIndex,
+	section: number,
 	callback: SectionStatesChangeCallback
 ) {
-	return onSectionStatesChange((states, meta) => {
-		if (meta.previous === section && meta.current !== section) {
-			callback(states, meta);
+	return onSectionStatesChange((meta) => {
+		if (meta.isLeavingSection(section)) {
+			callback(meta);
 		}
 	});
 }
@@ -116,9 +92,9 @@ export function onSectionEnterLeaveAnimation({
 	onLeave,
 	initialSection,
 }: SectionEnterLeaveAnimationOptions) {
-	const cleanup = onSectionStatesChange((states) => {
-		if (isEnter(states)) onEnter();
-		else if (isLeave(states)) onLeave();
+	const cleanup = onSectionStatesChange((meta) => {
+		if (isEnter(meta)) onEnter();
+		else if (isLeave(meta)) onLeave();
 	});
 
 	if (initialSection !== undefined && currentSection.value === initialSection) {
@@ -138,11 +114,6 @@ export type SectionLayerStyleController = {
 	cleanup: () => void;
 };
 
-/**
- * Centralized section visibility styling.
- * - Current section: visible immediately
- * - Previous section: stays visible for `lingerMs`, then fades out over `fadeMs`
- */
 export function CreateSectionLayerStyleController(
 	options: SectionLayerStyleControllerOptions = {}
 ): SectionLayerStyleController {
@@ -164,7 +135,7 @@ export function CreateSectionLayerStyleController(
 		const opacity = visible ? (isFading ? 0 : 1) : 0;
 
 		return {
-			zIndex: isCurrent ? 2 : isLingering ? 1 : 0,
+			zIndex: isCurrent ? 2 : isLingering ? 1 : -100,
 			position: 'relative',
 			pointerEvents: isCurrent ? 'auto' : 'none',
 			opacity,

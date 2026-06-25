@@ -3,10 +3,10 @@ import { breakpoints } from '@modules/animations/animation-handler'
 import {
   onSectionEnterLeaveAnimation,
   onSectionStatesChange,
-  SECTION_INDEX,
-  type SectionTransitionStates,
+  type SectionTransitionMeta,
 } from '@modules/Sections/section-state-machine'
 import { currentSection } from '@modules/Sections/sections'
+import { getSectionIndexById } from '@modules/Sections/section-registry'
 import { dragOffset, dragDirection, consumeLastDragOffsetY as ConsumeLastDragOffsetY, wasTransitionDragged as WasTransitionDragged } from '@modules/Misc/mobile-drag-navigation'
 
 gsap.defaults({ immediateRender: false })
@@ -28,13 +28,6 @@ const BACKGROUND_TARGETS = [
   '.projects-section-background-back',
   '.projects-section-background-front',
 ]
-
-const isPerksEnter = (states: SectionTransitionStates) => states.enterPerksFromProfile || states.enterPerksFromProjects || states.enterPerksFromNone
-const isPerksLeave = (states: SectionTransitionStates) => states.leavePerksToProfile || states.leavePerksToProjects
-const isProfileEnter = (states: SectionTransitionStates) => states.enterProfileFromPerks || states.enterProfileFromProjects || states.enterProfileFromNone
-const isProfileLeave = (states: SectionTransitionStates) => states.leaveProfileToPerks || states.leaveProfileToProjects
-const isProjectsEnter = (states: SectionTransitionStates) => states.enterProjectsFromProfile || states.enterProjectsFromPerks || states.enterProjectsFromNone
-const isProjectsLeave = (states: SectionTransitionStates) =>  states.leaveProjectsToProfile || states.leaveProjectsToPerks
 
 function DragTransition(buildTimeline: (timeline: gsap.core.Timeline) => void) {
   const els = gsap.utils.toArray(BACKGROUND_TARGETS)
@@ -103,7 +96,6 @@ function initMobileBackgroundState() {
     gsap.set(selector, { clearProps: 'transition,transform' })
   })
 
-  // New mobile foundation: all backgrounds start outside the bottom.
   gsap.set('.perks-section-background', { top: MOBILE_BOTTOM_HIDDEN })
   gsap.set('.profile-section-background-back', { top: MOBILE_BOTTOM_HIDDEN })
   gsap.set('.profile-section-background-front', { top: MOBILE_BOTTOM_HIDDEN })
@@ -136,73 +128,60 @@ function playProjectsEnterMobile() {
   })
 }
 
-function playMobileBackgroundTransition(states: SectionTransitionStates) {
-  const shouldAnimate =
-    states.enterPerksFromNone || states.enterPerksFromProfile || states.enterPerksFromProjects ||
-    states.leavePerksToProfile || states.leavePerksToProjects ||
-    states.enterProfileFromPerks || states.enterProfileFromProjects || states.enterProfileFromNone ||
-    states.leaveProfileToPerks || states.leaveProfileToProjects ||
-    states.enterProjectsFromProfile || states.enterProjectsFromPerks || states.enterProjectsFromNone ||
-    states.leaveProjectsToProfile || states.leaveProjectsToPerks
-
-  if (!shouldAnimate) return
-
-  const hasLeave =
-    states.leavePerksToProfile || states.leavePerksToProjects ||
-    states.leaveProfileToPerks || states.leaveProfileToProjects ||
-    states.leaveProjectsToProfile || states.leaveProjectsToPerks
-
+function playMobileBackgroundTransition(
+  meta: SectionTransitionMeta,
+  perksIdx: number,
+  profileIdx: number,
+  projectsIdx: number
+) {
   const enterAt = ENTER_DELAY
 
   DragTransition((tl) => {
     // PERKS
-    if (states.enterPerksFromNone) {
+    if (meta.isEnteringSection(perksIdx) && meta.isFromSection(-1)) {
       tl.set('.perks-section-background', { top: MOBILE_BOTTOM_HIDDEN }, 0)
       tl.to('.perks-section-background', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-    } else if (states.enterPerksFromProfile || states.enterPerksFromProjects) {
+    } else if (meta.isEnteringSection(perksIdx)) {
       tl.set('.perks-section-background', { top: MOBILE_LEAVE_TOP }, 0)
       tl.to('.perks-section-background', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (states.leavePerksToProfile || states.leavePerksToProjects) {
+    if (meta.isLeavingSection(perksIdx)) {
       tl.to('.perks-section-background', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
     }
 
-    // PROFILE
-    if (states.enterProfileFromNone || states.enterProfileFromPerks) {
+    // PROFILE — entering from below (perks) vs. entering from above (projects)
+    if (meta.isEnteringSection(profileIdx) && !meta.isFromSection(projectsIdx)) {
       tl.set('.profile-section-background-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
       tl.set('.profile-section-background-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
       tl.to('.profile-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
       tl.to('.profile-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-    } else if (states.enterProfileFromProjects) {
-      // Coming from Projects: Profile drop in from above.
+    } else if (meta.isEnteringSection(profileIdx) && meta.isFromSection(projectsIdx)) {
       tl.set('.profile-section-background-back', { top: MOBILE_LEAVE_TOP }, 0)
       tl.set('.profile-section-background-front', { top: MOBILE_LEAVE_TOP }, 0)
       tl.to('.profile-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
       tl.to('.profile-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    // Leaving PROFILE to PERKS: go back down.
-    if (states.leaveProfileToPerks) {
+    if (meta.isLeavingSection(profileIdx) && meta.isToSection(perksIdx)) {
       tl.to('.profile-section-background-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
       tl.to('.profile-section-background-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
-    // Leaving PROFILE to PROJECTS: move up 
-    if (states.leaveProfileToProjects) {
+    if (meta.isLeavingSection(profileIdx) && meta.isToSection(projectsIdx)) {
       tl.to('.profile-section-background-back', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
       tl.to('.profile-section-background-front', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
     // PROJECTS
-    if (states.enterProjectsFromNone || states.enterProjectsFromProfile || states.enterProjectsFromPerks) {
+    if (meta.isEnteringSection(projectsIdx)) {
       tl.set('.projects-section-background-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
       tl.set('.projects-section-background-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
       tl.to('.projects-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
       tl.to('.projects-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (states.leaveProjectsToProfile || states.leaveProjectsToPerks) {
+    if (meta.isLeavingSection(projectsIdx)) {
       tl.to('.projects-section-background-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
       tl.to('.projects-section-background-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
@@ -210,6 +189,17 @@ function playMobileBackgroundTransition(states: SectionTransitionStates) {
 }
 
 export function ScrollBackgroundSections() {
+  const perksIdx    = getSectionIndexById('perks')
+  const profileIdx  = getSectionIndexById('profile')
+  const projectsIdx = getSectionIndexById('projects')
+
+  const isPerksEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(perksIdx)
+  const isPerksLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(perksIdx)
+  const isProfileEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(profileIdx)
+  const isProfileLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(profileIdx)
+  const isProjectsEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(projectsIdx)
+  const isProjectsLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(projectsIdx)
+
   const MatchMedia = gsap.matchMedia()
 
   MatchMedia.add(`(min-width: ${breakpoints.smallDesktop}px)`, () => {
@@ -226,7 +216,7 @@ export function ScrollBackgroundSections() {
       isLeave: isPerksLeave,
       onEnter: playPerksEnterDesktop,
       onLeave: playPerksLeaveDesktop,
-      initialSection: SECTION_INDEX.PERKS,
+      initialSection: perksIdx,
     })
 
     const cleanupProfile = onSectionEnterLeaveAnimation({
@@ -234,7 +224,7 @@ export function ScrollBackgroundSections() {
       isLeave: isProfileLeave,
       onEnter: playProfileEnterDesktop,
       onLeave: playProfileLeaveDesktop,
-      initialSection: SECTION_INDEX.PROFILE,
+      initialSection: profileIdx,
     })
 
     const cleanupProjects = onSectionEnterLeaveAnimation({
@@ -242,7 +232,7 @@ export function ScrollBackgroundSections() {
       isLeave: isProjectsLeave,
       onEnter: playProjectsEnterDesktop,
       onLeave: playProjectsLeaveDesktop,
-      initialSection: SECTION_INDEX.PROJECTS,
+      initialSection: projectsIdx,
     })
 
     return () => {
@@ -261,12 +251,12 @@ export function ScrollBackgroundSections() {
 
     initMobileBackgroundState()
 
-    if (currentSection.value === SECTION_INDEX.PERKS) playPerksEnterMobile()
-    else if (currentSection.value === SECTION_INDEX.PROFILE) playProfileEnterMobile()
-    else if (currentSection.value === SECTION_INDEX.PROJECTS) playProjectsEnterMobile()
+    if (currentSection.value === perksIdx) playPerksEnterMobile()
+    else if (currentSection.value === profileIdx) playProfileEnterMobile()
+    else if (currentSection.value === projectsIdx) playProjectsEnterMobile()
 
-    const cleanupMobile = onSectionStatesChange((states) => {
-      playMobileBackgroundTransition(states)
+    const cleanupMobile = onSectionStatesChange((meta) => {
+      playMobileBackgroundTransition(meta, perksIdx, profileIdx, projectsIdx)
     })
 
     return () => {
