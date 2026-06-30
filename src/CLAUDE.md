@@ -10,7 +10,7 @@ A Vue 3 + TypeScript + GSAP single-page portfolio that behaves like a game menu.
 
 Three steps, nothing else needs touching:
 
-1. **Create the Vue component** in `src/components/Sections/Main/<Name> Section/a<Name>-Section.vue`
+1. **Create the Vue component** in `src/components/Pages/Main/<Name> Section/a<Name>-Section.vue`
 
 2. **Create an animation handler** in `src/modules/Sections/<Name> Section/<Name>-Animation-Handler.ts`
    ```typescript
@@ -100,69 +100,6 @@ Sections are never unmounted. The `-100` z-index fully removes them from the sta
 
 ---
 
-## Animation Style Guide
-
-These rules preserve the timing and feel established by `section-backgrounds.ts`, which is the canonical reference for enter/leave motion across the whole system.
-
-### Timing constants
-
-| Constant | Value | Purpose |
-|---|---|---|
-| `ENTER_DELAY` | `0.5s` | How long content waits after its section becomes active before animating in |
-| Enter duration | `0.35–0.6s` (UI), `0.45–0.95s` (backgrounds) | Content arrives faster than it leaves |
-| Leave duration | `0.21–0.5s` | Leave is always noticeably shorter than enter — snappier exit |
-| Multi-layer offset | `0.1s` | Stagger between back and front layers of the same element group |
-
-### Easing
-
-- **Enter ease:** `back.out` for prominent / large elements (slight overshoot lands with snap), `power2.out` for most UI elements (smooth decelerate into place)
-- **Leave ease:** `back.in` for backgrounds and large layers, `power2.in` or `power2.inOut` for UI content
-- **Drifting / floating elements** (e.g. loading notes): `power4.inOut` for position (accelerates then decelerates), `power2.in` for opacity (fades in gradually as the element gathers speed)
-
-### Enter vs leave asymmetry
-
-Every section transition follows the same contract:
-1. **Leave fires immediately at time `0`** — no delay, fast ease-in
-2. **Enter fires at `ENTER_DELAY` (0.5s)** — content waits for the outgoing section to clear
-
-Never reverse this order. Entering content that appears before the previous section has moved away breaks the game-menu feel.
-
-### Timelines
-
-- Use **absolute time positions** (`tl.to(el, {...}, 0.55)`) not sequential `>` chaining — this lets you control overlap precisely
-- When animating a set of elements staggered by position or layer, stagger the absolute start time manually (e.g. `0.55`, `0.60`, `0.65`) rather than relying on `stagger:` alone — it gives finer control
-- Use `gsap.timeline()` any time two or more properties on the same element need different easing curves (put both tweens at position `0`)
-
-### Stagger
-
-- `stagger: 0.03–0.12` between sibling UI elements
-- Use `stagger: { each: 0.15–0.2, from: 'random' }` for sets of 3+ ambient / decorative elements (loading notes, floating icons) — gives an organic, non-mechanical feel
-- Stagger direction should match the travel direction: elements further from the viewport edge arrive slightly later
-
-### Off-screen start positions
-
-Elements always start off-screen in the direction they logically come from:
-- Desktop backgrounds enter from **left or right** (matching the section's side of the screen)
-- Mobile backgrounds enter from **bottom** (`top: 100%`) and exit upward
-- Perks / profile content enters from **left** (slides in from off-screen-left)
-- Projects content enters from **right/bottom**
-- Floating / ambient elements (notes, decorative text) enter from **below** with a larger offset than interactive elements
-
-### What not to do
-
-- Do not use `ease: 'linear'` for enter/leave transitions — it reads as mechanical
-- Do not set `delay` on leave animations — exits must be instant
-- Do not use `>` sequential chaining in section-transition timelines — it makes timing unpredictable when animations are interrupted
-- Do not hardcode offsets in `px` when the layout uses `%` — use matching units so the hidden position stays consistent across viewport sizes
-
-### Exceptions (intentional divergence from the above)
-
-- **Profile cards** (front + back): use `power2.out` without `back.out` because the cards are physically large and the overshoot reads as jitter at that scale; they also use rapid-pass-through detection to skip animations when the user navigates through profile quickly
-- **Loading section notes**: use `power4.inOut` + `power2.in` split-property easing to simulate drifting momentum — the notes are ambient decoration, not navigation feedback, so they follow a different rhythm
-- **Projects container** enter: uses a `1.6s power4.inOut` slide — intentionally slow and dramatic as the section's visual centrepiece
-
----
-
 ## Breakpoints
 
 Defined in `src/modules/animations/animation-handler.ts` as `breakpoints`:
@@ -192,8 +129,8 @@ Mobile layout is fundamentally different from desktop — separate templates in 
 @styleVariables  →  src/style/variables.scss
 @components      →  src/components
 @modules         →  src/modules
-@sections        →  src/components/Sections/Main
-@perks           →  src/components/Sections/Main/Perks Section
-@profile         →  src/components/Sections/Main/Profile Section
-@projects        →  src/components/Sections/Main/Projects Section
+@sections        →  src/components/Sections
+@perks           →  src/components/Pages/Main/Perks Section
+@profile         →  src/components/Pages/Main/Profile Section
+@projects        →  src/components/Pages/Main/Projects Section
 ```

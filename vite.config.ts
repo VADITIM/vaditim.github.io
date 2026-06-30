@@ -18,9 +18,9 @@ export default defineConfig({
       '@modules': path.resolve(__dirname, 'src/modules'),
       '@assets': path.resolve(__dirname, 'src/assets'),
       
-      '@perks': path.resolve(__dirname, 'src/components/Pages/Main/Perks Section'),
-      '@profile': path.resolve(__dirname, 'src/components/Pages/Main/Profile Section'),
-      '@projects': path.resolve(__dirname, 'src/components/Pages/Main/Projects Section'),
+      '@perks': path.resolve(__dirname, 'src/components/Sections/Main/Perks Section'),
+      '@profile': path.resolve(__dirname, 'src/components/Sections/Main/Profile Section'),
+      '@projects': path.resolve(__dirname, 'src/components/Sections/Main/Projects Section'),
       
       '@perksStyle': path.resolve(__dirname, 'src/style/Perks Section'),
       '@profileStyle': path.resolve(__dirname, 'src/style/Profile Section'),
@@ -30,7 +30,7 @@ export default defineConfig({
       '@profileModules': path.resolve(__dirname, 'src/modules/Profile Section'),
       '@projectsModules': path.resolve(__dirname, 'src/modules/Projects Section'),
       
-      '@sections': path.resolve(__dirname, 'src/components/Sections'),
+      '@sections': path.resolve(__dirname, 'src/components/Sections/Main'),
     }
   },
 })

@@ -69,7 +69,7 @@
 		// Initial hidden states
 		gsap.set(topChars, { scaleY: 0, transformOrigin: 'center bottom' });
 		gsap.set(bottomChars, { scaleY: 0, transformOrigin: 'center top' });
-		gsap.set(textElements, { opacity: 0, scale: 0.85, y: 15 });
+		gsap.set(textElements, { opacity: 0, y: 80 });
 		gsap.set('.explore-button', { scale: 0, opacity: 0 });
 
 		// 1. Portfolio chars grow from the split line outward
@@ -77,16 +77,19 @@
 		gsap.to(topChars, charOpts);
 		gsap.to(bottomChars, charOpts);
 
-		// 2. Notes drift up and fade in slowly
-		gsap.to(textElements, {
-			opacity: 1,
-			scale: 1,
-			y: 0,
-			duration: 1.4,
-			stagger: { each: 0.15, from: 'random' },
-			ease: 'power2.out',
-			delay: baseDelay + 0.2,
-		});
+		// 2. Notes drift up from below with increasing momentum, opacity fades in independently
+		const notesTl = gsap.timeline({ delay: baseDelay + 0.2 });
+		notesTl
+			.fromTo(textElements,
+				{ y: 80 },
+				{ y: 0, duration: 2.2, stagger: { each: 0.2, from: 'random' }, ease: 'power4.inOut' },
+				0
+			)
+			.fromTo(textElements,
+				{ opacity: 0 },
+				{ opacity: 1, duration: 1.6, stagger: { each: 0.2, from: 'random' }, ease: 'power2.in' },
+				0
+			);
 
 		// 3. Explore button snaps in after the title finishes
 		gsap.fromTo('.explore-button',
