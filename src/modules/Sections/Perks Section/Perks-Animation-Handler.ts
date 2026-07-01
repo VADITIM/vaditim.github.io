@@ -5,8 +5,12 @@ import {
 	type SectionTransitionMeta,
 } from "../section-state-machine";
 import { getSectionIndexById } from "../section-registry";
+import { SECTION_ENTER_DELAY } from "../section-transition";
 
 gsap.defaults({ immediateRender: false });
+
+/** Stagger of the skills line behind the skills themselves, preserved from the original tuning. */
+const SKILLS_LINE_OFFSET = 0.25;
 
 export function registerPerksAnimations() {
 	const myIndex = getSectionIndexById('perks');
@@ -60,7 +64,7 @@ function RegisterSkillsM(
 				opacity: 1,
 				duration: 0.35,
 				stagger: 0.12,
-				delay: config.enterDelay,
+				delay: SECTION_ENTER_DELAY + config.enterDelay,
 				ease: "power2.out",
 				overwrite: "auto",
 			});
@@ -69,7 +73,7 @@ function RegisterSkillsM(
 				lineAnimation = gsap.to(".skills-line-container", {
 					left: config.lineEnterLeft,
 					duration: 0.35,
-					delay: config.lineDelay,
+					delay: SECTION_ENTER_DELAY + config.lineDelay,
 					ease: "power2.out",
 					overwrite: "auto",
 				});
@@ -138,7 +142,7 @@ function RegisterSkillsD(
 				opacity: 1,
 				duration: 0.35,
 				stagger: 0.12,
-				delay: 0.5,
+				delay: SECTION_ENTER_DELAY,
 				ease: "power2.out",
 				overwrite: "auto",
 			});
@@ -147,7 +151,7 @@ function RegisterSkillsD(
 				lineAnimation = gsap.to(".skills-line-container", {
 					x: config.lineEnterX,
 					duration: 0.35,
-					delay: 0.75,
+					delay: SECTION_ENTER_DELAY + SKILLS_LINE_OFFSET,
 					ease: "power2.out",
 					overwrite: "auto",
 				});
@@ -208,15 +212,15 @@ function SkillsMobile(
 			mediaQuery: `(max-width: ${breakpoints.tablet - 1}px)`,
 			skillEnterLeft: "95%",
 			lineEnterLeft: "100%",
-			enterDelay: 1,
-			lineDelay: 1.25,
+			enterDelay: 0,
+			lineDelay: SKILLS_LINE_OFFSET,
 		},
 		{
 			mediaQuery: `(min-width: ${breakpoints.tablet}px) and (max-width: ${breakpoints.smallDesktop - 1}px)`,
 			skillEnterLeft: "0%",
 			lineEnterLeft: "0",
-			enterDelay: 1.5,
-			lineDelay: 1.75,
+			enterDelay: 0,
+			lineDelay: SKILLS_LINE_OFFSET,
 		},
 	];
 
@@ -283,7 +287,7 @@ function RegisterNameM(
 			nameAnimation = gsap.to(".name-container", {
 				top: config.enterTop,
 				duration: config.enterDuration,
-				delay: config.enterDelay,
+				delay: SECTION_ENTER_DELAY + config.enterDelay,
 				ease: "power2.out",
 				overwrite: "auto",
 			});
@@ -332,7 +336,7 @@ function RegisterNameD(
 			nameAnimation = gsap.to(".name-container", {
 				right: config.enterRight,
 				duration: 0.35,
-				delay: 0.4,
+				delay: SECTION_ENTER_DELAY,
 				ease: "power2.out",
 				overwrite: "auto",
 			});
@@ -376,7 +380,7 @@ function NameMobile(
 			clearProps: "right,left",
 			enterTop: "10%",
 			enterDuration: 0.65,
-			enterDelay: 0.8,
+			enterDelay: 0,
 			leaveDuration: 0.25,
 		},
 		{
@@ -384,7 +388,7 @@ function NameMobile(
 			clearProps: "top",
 			enterTop: "10%",
 			enterDuration: 0.65,
-			enterDelay: 0.85,
+			enterDelay: 0,
 			leaveDuration: 0.5,
 		},
 	];

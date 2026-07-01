@@ -140,12 +140,18 @@
 		opacity 0.4s ease,
 		margin 0.4s ease,
 		padding 0.4s ease,
-		color 0.4s ease,
-		right 0.2s ease,
-		top 0.3s ease;
+		color 0.3s ease,
+		right 0.25s ease,
+		top 0.3s ease,
+		letter-spacing 0.3s ease,
+		filter 0.3s ease;
 		
-	&:hover {
+	&:not(.position-0):hover {
 		opacity: 1;
+		color: $red;
+		right: 15%;
+		letter-spacing: 0.05em;
+		filter: drop-shadow(0 0 12px rgba(200, 30, 30, 0.7));
 	}
 
 	&.active {

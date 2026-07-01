@@ -6,6 +6,7 @@ import {
   type SectionTransitionMeta,
 } from "../section-state-machine";
 import { getSectionIndexById } from "../section-registry";
+import { SECTION_ENTER_DELAY } from "../section-transition";
 
 gsap.defaults({ immediateRender: false });
 
@@ -44,8 +45,10 @@ function SetCardStates(
   });
 }
 
-function CreateTimeline(build: (timeline: gsap.core.Timeline) => void) {
-  const timeline = gsap.timeline();
+// `delay` gates enter timelines behind the section-cut curtain; leave timelines
+// pass 0 so they fire immediately at the hook.
+function CreateTimeline(build: (timeline: gsap.core.Timeline) => void, delay = 0) {
+  const timeline = gsap.timeline({ delay });
   build(timeline);
   return timeline;
 }
@@ -86,6 +89,7 @@ function RegisterProfileM(
         y: 0,
         duration: 0.45,
         stagger: 0.03,
+        delay: SECTION_ENTER_DELAY,
         ease: "power2.out",
         overwrite: "auto",
       });
@@ -163,7 +167,7 @@ function RegisterContactD(
           top: "50%",
           left: "80%",
           duration: 0.6,
-          delay: .3,
+          delay: SECTION_ENTER_DELAY + 0.3,
           ease: "power2.out"
         });
       } else if (LeaveToPerks) {
@@ -190,7 +194,7 @@ function RegisterContactD(
           top: "50%",
           left: "80%",
           duration: 0.7,
-          delay: 0.3,
+          delay: SECTION_ENTER_DELAY + 0.3,
           ease: "elastic.inOut(.3, 0.3)"
         });
       }
@@ -311,7 +315,7 @@ function RegisterFrontCardsD(
           timeline.fromTo(".card2", startPosition.card2, { ...finalPosition.card2, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.55);
           timeline.fromTo(".card3", startPosition.card3, { ...finalPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.60);
           timeline.fromTo(".card4", startPosition.card4, { ...finalPosition.card4, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.65);
-        });
+        }, SECTION_ENTER_DELAY);
 
       } else if (LeaveToPerks) {
         KillTimeline(frontCardsTimeline);
@@ -336,7 +340,7 @@ function RegisterFrontCardsD(
           timeline.fromTo(".card2", { ...finalPosition.card2, ...hideUpPosition.card2 }, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.70);
           timeline.fromTo(".card3", { ...finalPosition.card3, ...hideUpPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.61);
           timeline.fromTo(".card4", { ...finalPosition.card4, ...hideUpPosition.card4 }, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.61);
-        });
+        }, SECTION_ENTER_DELAY);
 
       } else if (LeaveToProjects) {
         KillTimeline(frontCardsTimeline);
@@ -472,7 +476,7 @@ function RegisterBackCardsD(
           timeline.fromTo(".back-card4", { ...finalPosition.card4, ...hideUpPosition.card4 }, { ...finalPosition.card4, opacity: 1, duration: 0.46, ease: "power2.out" }, 0.8);
           timeline.fromTo(".back-card3", { ...finalPosition.card3, ...hideUpPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.44, ease: "power2.out" }, 0.73);
           timeline.fromTo(".back-card2", { ...finalPosition.card2, ...hideUpPosition.card2 }, { ...finalPosition.card2, opacity: 1, duration: 0.42, ease: "power2.out" }, 0.76);
-        });
+        }, SECTION_ENTER_DELAY);
 
       } else if (LeaveToPerks) {
         KillTimeline(backCardsTimeline);
@@ -497,7 +501,7 @@ function RegisterBackCardsD(
           timeline.fromTo(".back-card2", { ...finalPosition.card2, ...hideDownPosition.card2 }, { ...finalPosition.card2, opacity: 1, duration: 0.3 }, 0.55);
           timeline.fromTo(".back-card3", { ...finalPosition.card3, ...hideDownPosition.card3 }, { ...finalPosition.card3, opacity: 1, duration: 0.3 }, 0.42);
           timeline.fromTo(".back-card4", { ...finalPosition.card4, ...hideDownPosition.card4 }, { ...finalPosition.card4, opacity: 1, duration: 0.3 }, 0.58);
-        });
+        }, SECTION_ENTER_DELAY);
 
       } else if (LeaveToProjects) {
         KillTimeline(backCardsTimeline);

@@ -2,9 +2,11 @@ import type { Component } from 'vue';
 import PerksPage from '@perks/aPerks-Section.vue';
 import ProfilePage from '@profile/aProfile-Section.vue';
 import ProjectsPage from '@projects/aProjects-Section.vue';
+import PlaygroundPage from '@sections/Playground Section/aPlayground-Section.vue';
 import { registerPerksAnimations } from './Perks Section/Perks-Animation-Handler';
 import { registerProfileAnimations } from './Profile Section/Profile-Animation-Handler';
 import { registerProjectsAnimations } from './Projects Section/Projects-Animation-Handler';
+import { registerPlaygroundAnimations } from './Playground Section/Playground-Animation-Handler';
 
 export const LOADING_COLOR = '#5bfd5b';
 
@@ -29,6 +31,7 @@ export const SECTIONS: SectionDefinition[] = [
 	{ id: 'perks',    label: 'PERKS',    color: '#FFDD1B', component: PerksPage,    registerAnimations: registerPerksAnimations    },
 	{ id: 'profile',  label: 'PROFILE',  color: '#0040ff', component: ProfilePage,  registerAnimations: registerProfileAnimations  },
 	{ id: 'projects', label: 'PROJECTS', color: '#DC143C', component: ProjectsPage, registerAnimations: registerProjectsAnimations },
+	{ id: 'playground', label: 'SANDBOX', color: '#5bfd5b', component: PlaygroundPage, registerAnimations: registerPlaygroundAnimations },
 ];
 
 export function getSectionIndexById(id: string): number {

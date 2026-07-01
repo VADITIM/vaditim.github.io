@@ -107,6 +107,15 @@ export function onSectionEnterLeaveAnimation({
 export type SectionLayerStyleControllerOptions = {
 	lingerMs?: number;
 	fadeMs?: number;
+	/**
+	 * How long the *leaving* section stays stacked above the entering one at the
+	 * start of a transition, so its exit animation is visible before the
+	 * section-cut curtain closes over the swap. Without this, entering an opaque
+	 * section (e.g. Playground) instantly covers the leaving section and its exit
+	 * animation plays invisibly underneath. Kept shorter than the curtain's close
+	 * time so the swap itself is never revealed.
+	 */
+	leaveLiftMs?: number;
 };
 
 export type SectionLayerStyleController = {
@@ -119,23 +128,31 @@ export function CreateSectionLayerStyleController(
 ): SectionLayerStyleController {
 	const lingerMs = options.lingerMs ?? 1500;
 	const fadeMs = options.fadeMs ?? 150;
+	const leaveLiftMs = options.leaveLiftMs ?? 450;
 
 	const lingeringSection = ref<number | null>(null);
 	const fadingSection = ref<number | null>(null);
+	// The section currently leaving — held above the entering one for `leaveLiftMs`
+	// so its exit animation is visible until the curtain closes over the swap.
+	const liftedSection = ref<number | null>(null);
 
 	let fadeTimer: number | null = null;
 	let clearTimer: number | null = null;
+	let liftTimer: number | null = null;
 
 	const GetSectionLayerStyle = (sectionIndex: number): CSSProperties => {
 		const isCurrent = currentSection.value === sectionIndex;
 		const isLingering = lingeringSection.value === sectionIndex;
 		const isFading = fadingSection.value === sectionIndex && !isCurrent;
+		const isLifted = liftedSection.value === sectionIndex && !isCurrent;
 
 		const visible = isCurrent || isLingering;
 		const opacity = visible ? (isFading ? 0 : 1) : 0;
 
 		return {
-			zIndex: isCurrent ? 2 : isLingering ? 1 : -100,
+			// Lifted (leaving) section sits above the entering one so its exit plays
+			// in view; the curtain (z-index 40) still masks the actual swap.
+			zIndex: isLifted ? 3 : isCurrent ? 2 : isLingering ? 1 : -100,
 			position: 'relative',
 			pointerEvents: isCurrent ? 'auto' : 'none',
 			opacity,
@@ -150,9 +167,16 @@ export function CreateSectionLayerStyleController(
 
 			lingeringSection.value = oldSection;
 			fadingSection.value = null;
+			liftedSection.value = oldSection;
 
 			if (fadeTimer !== null) window.clearTimeout(fadeTimer);
 			if (clearTimer !== null) window.clearTimeout(clearTimer);
+			if (liftTimer !== null) window.clearTimeout(liftTimer);
+
+			liftTimer = window.setTimeout(() => {
+				if (liftedSection.value === oldSection) liftedSection.value = null;
+				liftTimer = null;
+			}, leaveLiftMs);
 
 			fadeTimer = window.setTimeout(() => {
 				if (lingeringSection.value === oldSection) {
@@ -174,10 +198,13 @@ export function CreateSectionLayerStyleController(
 		stopWatch();
 		if (fadeTimer !== null) window.clearTimeout(fadeTimer);
 		if (clearTimer !== null) window.clearTimeout(clearTimer);
+		if (liftTimer !== null) window.clearTimeout(liftTimer);
 		fadeTimer = null;
 		clearTimer = null;
+		liftTimer = null;
 		lingeringSection.value = null;
 		fadingSection.value = null;
+		liftedSection.value = null;
 	};
 
 	return { GetSectionLayerStyle, cleanup };

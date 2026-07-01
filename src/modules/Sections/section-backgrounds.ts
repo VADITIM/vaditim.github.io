@@ -7,11 +7,11 @@ import {
 } from '@modules/Sections/section-state-machine'
 import { currentSection } from '@modules/Sections/sections'
 import { getSectionIndexById } from '@modules/Sections/section-registry'
+import { SECTION_ENTER_DELAY } from '@modules/Sections/section-transition'
 import { dragOffset, dragDirection, consumeLastDragOffsetY as ConsumeLastDragOffsetY, wasTransitionDragged as WasTransitionDragged } from '@modules/Misc/mobile-drag-navigation'
 
 gsap.defaults({ immediateRender: false })
 
-const ENTER_DELAY = 0.5
 const FRONT_LAYER_OFFSET = 0.1
 const DURATION = 0.45
 
@@ -45,42 +45,48 @@ function DragTransition(buildTimeline: (timeline: gsap.core.Timeline) => void) {
 }
 
 function playPerksEnterDesktop() {
-    DragTransition((tl) => {
-      tl.to('.perks-section-background',{ left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION },ENTER_DELAY)
-    })
+  gsap.killTweensOf('.perks-section-background')
+  DragTransition((tl) => {
+    tl.to('.perks-section-background', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+  })
 }
 
 function playPerksLeaveDesktop() {
+  gsap.killTweensOf('.perks-section-background')
   DragTransition((tl) => {
-    tl.to('.perks-section-background', { left: '-30%', top: '0%', ease: 'back.in', duration: DURATION, onComplete: vibrateOnComplete }, 0)
+    tl.to('.perks-section-background', { left: '-30%', top: '0%', ease: 'back.in', duration: DURATION, overwrite: 'auto', onComplete: vibrateOnComplete }, 0)
   })
 }
 
 function playProfileEnterDesktop() {
+  gsap.killTweensOf(['.profile-section-background-back', '.profile-section-background-front'])
   DragTransition((tl) => {
-    tl.to('.profile-section-background-back', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION }, ENTER_DELAY)
-    tl.to('.profile-section-background-front', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION }, ENTER_DELAY + FRONT_LAYER_OFFSET)
+    tl.to('.profile-section-background-back', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    tl.to('.profile-section-background-front', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
 }
 
 function playProfileLeaveDesktop() {
+  gsap.killTweensOf(['.profile-section-background-back', '.profile-section-background-front'])
   DragTransition((tl) => {
-    tl.to('.profile-section-background-back', { left: '-30%', ease: 'back.in', duration: DURATION }, 0)
-    tl.to('.profile-section-background-front', { left: '-30%', ease: 'back.in', duration: DURATION }, FRONT_LAYER_OFFSET)
+    tl.to('.profile-section-background-back', { left: '-30%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    tl.to('.profile-section-background-front', { left: '-30%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
 }
 
 function playProjectsEnterDesktop() {
+  gsap.killTweensOf(['.projects-section-background-back', '.projects-section-background-front'])
   DragTransition((tl) => {
-    tl.to('.projects-section-background-back', { right: '-10%', ease: 'back.out', duration: DURATION }, ENTER_DELAY)
-    tl.to('.projects-section-background-front', { right: '-10%', ease: 'back.out', duration: DURATION }, ENTER_DELAY + FRONT_LAYER_OFFSET)
+    tl.to('.projects-section-background-back', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    tl.to('.projects-section-background-front', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
 }
 
 function playProjectsLeaveDesktop() {
+  gsap.killTweensOf(['.projects-section-background-back', '.projects-section-background-front'])
   DragTransition((tl) => {
-    tl.to('.projects-section-background-back', { right: '-40%', ease: 'back.in', duration: DURATION }, 0)
-    tl.to('.projects-section-background-front', { right: '-40%', ease: 'back.in', duration: DURATION }, FRONT_LAYER_OFFSET)
+    tl.to('.projects-section-background-back', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    tl.to('.projects-section-background-front', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
 }
 
@@ -106,7 +112,7 @@ function initMobileBackgroundState() {
 function playPerksEnterMobile() {
   DragTransition((tl) => {
     tl.set('.perks-section-background', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.perks-section-background', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, ENTER_DELAY)
+    tl.to('.perks-section-background', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
@@ -114,8 +120,8 @@ function playProfileEnterMobile() {
   DragTransition((tl) => {
     tl.set('.profile-section-background-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
     tl.set('.profile-section-background-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.profile-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, ENTER_DELAY)
-    tl.to('.profile-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, ENTER_DELAY)
+    tl.to('.profile-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    tl.to('.profile-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
@@ -123,8 +129,8 @@ function playProjectsEnterMobile() {
   DragTransition((tl) => {
     tl.set('.projects-section-background-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
     tl.set('.projects-section-background-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.projects-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, ENTER_DELAY)
-    tl.to('.projects-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, ENTER_DELAY)
+    tl.to('.projects-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    tl.to('.projects-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
@@ -134,7 +140,7 @@ function playMobileBackgroundTransition(
   profileIdx: number,
   projectsIdx: number
 ) {
-  const enterAt = ENTER_DELAY
+  const enterAt = SECTION_ENTER_DELAY
 
   DragTransition((tl) => {
     // PERKS

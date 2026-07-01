@@ -7,6 +7,9 @@ import path from 'path'
 export default defineConfig({
   base: './',
   plugins: [vue()],
+  server: {
+    host: true, // listen on all interfaces (0.0.0.0) so LAN devices (phone) can connect
+  },
   build: {
     outDir: 'docs',
     emptyOutDir: true,

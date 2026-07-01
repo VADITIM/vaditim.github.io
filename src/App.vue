@@ -3,7 +3,7 @@
 
     <template v-if="!isMobile" >
       <HardwareAccelerationNotice />
-      <LoadingSection v-if="showLoadingPage && !hardwareNoticeActive" />
+      <LandingSection v-if="showLoadingPage && !hardwareNoticeActive" />
       <template v-if="!hardwareNoticeActive">
         <MagneticDots :isDisabled="activeProjectIndex !== null" />
         <SectionBackgrounds />
@@ -14,12 +14,13 @@
         >
           <component :is="section.component" />
         </div>
+        <SectionTransition />
         <SectionsDisplay />
       </template>
     </template>
 
     <template v-else>
-      <LoadingSection v-if="showLoadingPage" />
+      <LandingSection v-if="showLoadingPage" />
       <SectionsDisplay />
       <SectionBackgrounds />
     </template>
@@ -40,12 +41,13 @@
   import { finished, CreateSectionLayerStyleController } from '@modules/Sections/section-state-machine';
   import { setSectionCount } from '@modules/Sections/sections';
 
-  import LoadingSection from '@components/Sections/Main/Loading Section/LoadingSection.vue';
+  import LandingSection from '@components/Sections/Main/Landing Section/LandingSection.vue';
   import SectionBackgrounds from '@components/Misc/Section-Background-Display.vue';
   import SectionsDisplay from '@components/Misc/Sections-State-Display.vue';
   import ExploreFullscreenToggle from '@components/Misc/Explore-Fullscreen-Toggle.vue';
   import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
   import MagneticDots from '@components/Misc/Magnetic-Dots.vue';
+  import SectionTransition from '@components/Misc/Section-Transition.vue';
 
   import { hardwareNoticeActive } from '@modules/Misc/hardware-notice';
   import { isMobile } from '@modules/Misc/is-mobile';

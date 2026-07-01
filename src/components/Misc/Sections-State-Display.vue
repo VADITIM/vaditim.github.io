@@ -16,9 +16,13 @@
 				:key="section.id"
 				class="section-header-list"
 				:class="[`${section.id}-header-list`, getEntryClasses(i)]"
-				:style="getEntryDragStyle(i, 'text')"
+				:style="[{ '--accent': section.color }, getEntryDragStyle(i, 'text')]"
 				@click="onEntryClick(i)"
-			>{{ section.label }}</div>
+			>
+				<span class="shl-marker"></span>
+				<span class="shl-index">{{ String(i + 1).padStart(2, '0') }}</span>
+				<span class="shl-label">{{ section.label }}</span>
+			</div>
 	  </div>
 
 </template>
@@ -112,11 +116,8 @@
 	})
 
 	const getEntryClasses = (sectionIndex: number) => {
-		const isActive = currentSection.value === sectionIndex
-		const isLocked = navigationLockRef.value && !isActive
 		return {
-			active: isActive,
-			locked: isLocked,
+			active: currentSection.value === sectionIndex,
 		}
 	}
 
@@ -283,23 +284,33 @@
 		display: flex;
 		position: fixed;
 		flex-direction: column;
-		bottom: 1%;
-		left: 1%;
-		width: 15rem;
 		font-family: Wosker;
-		perspective: 1000px;
 		z-index: 20;
-		filter: drop-shadow(0px 0px 30px black);
 
-		transition: 
+		transition:
 			.5s ease all;
-
-		&.active {
-			left: -20%
-		}
 
 		&.dragging {
 			transition: none;
+		}
+	}
+
+	// ── desktop: modern top-right section index ──
+	.content-list-container.is-desktop {
+		top: 2.1rem;
+		right: 2.2rem;
+		left: auto;
+		bottom: auto;
+		width: auto;
+		align-items: flex-end;
+		gap: 0.15rem;
+		filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
+
+		// slide out of view while a project detail window is open
+		&.active {
+			opacity: 0;
+			transform: translateX(46px);
+			pointer-events: none;
 		}
 	}
 
@@ -318,37 +329,79 @@
 	}
 
 	.section-header-list {
-		@include rotate(0, 40, 0);
-		@include outline(black);
 		position: relative;
 		display: flex;
-		width: 10%;
-		align-self: start;
-		line-height: 1rem;
-		margin: .8rem .7rem;
-		font-size: 1.7rem;
 		cursor: pointer;
 		text-wrap: nowrap;
+		transition: .3s all;
+	}
 
-		transition: 
-			.3s all;
+	// ── desktop entry: [label] [index] [diamond marker], right-aligned ──
+	.content-list-container.is-desktop .section-header-list {
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.7rem;
+		padding: 0.32rem 0;
+		color: #6a6a6a;
+		transition: color .3s ease, transform .35s cubic-bezier(0.22, 1, 0.36, 1);
 
-		&:hover {
-			font-size: 2.1rem;
+		.shl-label {
+			font-family: 'Wosker';
+			font-size: 1.45rem;
+			line-height: 1;
+			letter-spacing: 1px;
+			transition: font-size .35s cubic-bezier(0.22, 1, 0.36, 1), color .3s ease, text-shadow .3s ease;
 		}
 
+		.shl-index {
+			font-family: 'Audiowide';
+			font-size: 0.66rem;
+			letter-spacing: 2px;
+			color: #4f4f4f;
+			transition: color .3s ease;
+		}
+
+		.shl-marker {
+			width: 9px;
+			height: 9px;
+			flex-shrink: 0;
+			border: 2px solid #4f4f4f;
+			border-radius: 2px;
+			transform: rotate(45deg);
+			transition: all .35s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		// hover — lift toward white, nudge left
+		&:hover:not(.active) {
+			color: #cfcfcf;
+			transform: translateX(-4px);
+
+			.shl-label { font-size: 1.6rem; color: #fff; }
+			.shl-index { color: #9a9a9a; }
+			.shl-marker { border-color: #fff; }
+		}
+
+		// active — section accent colour, enlarged, glowing diamond
 		&.active {
-			font-size: 4rem;
-			color: $red;
-			line-height: 1rem;
-			margin: 2rem 1rem;
-		}
-
-		&.locked {
-			color: rgb(179, 179, 179);
-			transform: scale(.8);
+			.shl-label {
+				font-size: 2.5rem;
+				color: var(--accent, #{$red});
+				text-shadow: 0 0 22px var(--accent, #{$red});
+			}
+			.shl-index { color: var(--accent, #{$red}); }
+			.shl-marker {
+				background: var(--accent, #{$red});
+				border-color: var(--accent, #{$red});
+				box-shadow: 0 0 14px var(--accent, #{$red});
+			}
 		}
 	}
+
+	// the old vertical bar is only used by the mobile layout
+	.content-list-container.is-desktop .line { display: none; }
+
+	.content-list-container.is-mobile .shl-index,
+	.content-list-container.is-mobile .shl-marker { display: none; }
 
 	.line {
 		display: flex;
@@ -364,23 +417,20 @@
 
 		@include allMobile {
 			visibility: hidden;
-		}	
+		}
 
 	}
 
 
 	.content-list-container.is-mobile .section-header-list {
 		@include rotate(0, 0, 0);
+		@include outline(black);
 		flex: 1;
 		width: auto;
 		justify-content: center;
 		text-align: center;
 		height: 3rem;
 		transform: translateY(0);
-
-		&.locked {
-			transform: translateY(0) scale(.8);
-		}
 
 		@include mobile {
 			margin: 0;

@@ -2,11 +2,15 @@ import { ref } from 'vue'
 import { getVirtualSectionHeightPx } from '../Misc/virtual-scroll'
 import { isMobile } from '../Misc/is-mobile'
 import { navigationLockRef, setNavigationLock } from '../Misc/navigation-lock'
+import { activateSectionEnterGate } from './section-transition'
 
 let totalSections = 3;
 export function setSectionCount(count: number) { totalSections = count; }
 
-const SECTION_TRANSITION_LOCK_MS = 1000
+// Must cover the full section-cut curtain (~1.67s, see SECTION_ENTER_DELAY in
+// section-transition.ts) so a new navigation can't pre-empt the curtain before
+// the incoming section's gated enter animations have started.
+const SECTION_TRANSITION_LOCK_MS = 1800
 let transitionLockTimer: number | null = null
 
 const LockTransition = () => {
@@ -53,6 +57,12 @@ export function onSectionChange(callback: SectionChangeCallback) {
 
 
 export function ChangeSection(current: number, previous: number, direction: 'forward' | 'backward' | 'none' = 'none') {
+  // First real navigation between two sections: switch enter animations from
+  // immediate (cold-mount / loading handoff) to gated-behind-the-curtain. The
+  // loading handoff comes in as previous === -1 and plays no curtain, so it must
+  // stay immediate.
+  if (previous >= 0) activateSectionEnterGate()
+
   previousSection.value = previous
   currentSection.value = current
   sectionDirection.value = direction

@@ -92,6 +92,7 @@ Sections are never unmounted. The `-100` z-index fully removes them from the sta
 
 ## GSAP Rules
 
+- **Every section component and animation module must define BOTH an enter and a leave animation, and every element animated on enter must also be animated on leave (and vice-versa).** A reveal without a matching exit — or an element that animates in but never out — is a bug: it strands content on screen during the transition and breaks the game-menu feel. When you add a new animated element, register it in both the enter (`playReveal`) and leave (`playLeave`) paths.
 - Never animate components that can be `v-if`'d out of the DOM — keep sections always mounted
 - Always use `overwrite: 'auto'` when enter/leave animations can race
 - Always return the cleanup function from `gsap.matchMedia().add()` callbacks
@@ -197,3 +198,58 @@ Mobile layout is fundamentally different from desktop — separate templates in 
 @profile         →  src/components/Sections/Main/Profile Section
 @projects        →  src/components/Sections/Main/Projects Section
 ```
+
+---
+
+## Future Tasks
+
+### Comments Section (backed by a database)
+
+Build a comments feature backed by a database so visitors can leave a message that
+persists and is shown to future visitors.
+
+- **Storage:** a database (table/collection) holding each comment with its text,
+  timestamp, and a per-visitor identifier.
+- **Visitor identity & rate limit:** identify anonymous visitors by their IP address
+  (or another device-derived fingerprint) so each visitor can post **only one**
+  comment. Enforce the one-comment-per-identity rule on write.
+- **Display:** a later-built Comments section reads from the database and renders the
+  stored comments to all visitors.
+
+Notes / open questions to resolve when implementing:
+- IP alone is imperfect (shared/NAT'd IPs, changing IPs) — decide whether to combine
+  it with a browser fingerprint or a cookie/localStorage token.
+- Needs a backend/API (this is currently a static SPA deployed to GitHub Pages) —
+  choose a hosted DB + serverless endpoint, since GitHub Pages can't run server code.
+- Add basic abuse protection (length limits, sanitization/escaping, profanity or spam
+  filtering) before displaying user-submitted text.
+
+#### Candidate backend: ASP.NET Core Minimal API
+
+A .NET **Minimal API** is a good fit — a full comments backend (DB + one-comment-per-IP
+rule + read endpoint) is ~40 lines. Read the IP via `ctx.Connection.RemoteIpAddress`,
+reject the POST with `Results.Conflict(...)` if that IP already has a row, and enable
+CORS for the GitHub Pages origin so the Vue app can call it cross-origin.
+
+Sketch:
+```csharp
+app.MapPost("/comments", async (CommentInput input, HttpContext ctx, CommentsDb db) =>
+{
+    var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    if (await db.Comments.AnyAsync(c => c.Ip == ip))
+        return Results.Conflict("You've already posted a comment.");
+    db.Comments.Add(new Comment { Text = input.Text.Trim(), Ip = ip, CreatedAt = DateTime.UtcNow });
+    await db.SaveChangesAsync();
+    return Results.Created(...);
+});
+```
+
+Hosting caveat: **GitHub Pages cannot run the API** — it serves static files only. The
+API must be hosted separately (Azure App Service free tier, Azure Container Apps,
+Fly.io, or Render) and the SPA calls it cross-origin. For persistent storage use a
+hosted DB (Azure SQL free tier, or Postgres on Neon/Supabase); a local SQLite file
+resets on hosts with an ephemeral filesystem.
+
+Trade-off: Minimal API is the right call if working in C# is preferred. For a single
+endpoint, a serverless function or a BaaS (Supabase/Firebase — DB + API + rate limiting
+bundled) is less infrastructure to run than an always-on server.

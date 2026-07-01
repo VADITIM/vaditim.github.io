@@ -92,6 +92,7 @@ Sections are never unmounted. The `-100` z-index fully removes them from the sta
 
 ## GSAP Rules
 
+- **Every section component and animation module must define BOTH an enter and a leave animation, and every element animated on enter must also be animated on leave (and vice-versa).** A reveal without a matching exit — or an element that animates in but never out — is a bug: it strands content on screen during the transition and breaks the game-menu feel. When you add a new animated element, register it in both the enter (`playReveal`) and leave (`playLeave`) paths.
 - Never animate components that can be `v-if`'d out of the DOM — keep sections always mounted
 - Always use `overwrite: 'auto'` when enter/leave animations can race
 - Always return the cleanup function from `gsap.matchMedia().add()` callbacks

@@ -240,8 +240,8 @@
   .bubble {
     --opacity-duration: 0.6s;
     position: absolute;
-    width: 15rem;
-    height: 15rem;
+    width: 19rem;
+    height: 19rem;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -252,25 +252,31 @@
     opacity: 1;
     pointer-events: auto;
     
-    transition: 
+    transition:
       top 0.6s cubic-bezier(0.4, 0, 0.2, 1),
       left 0.6s cubic-bezier(0.4, 0, 0.2, 1),
       width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
       height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
       opacity var(--opacity-duration) cubic-bezier(0.4, 0, 0.2, 1) .6s,
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+      filter 0.22s ease,
       box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
       z-index 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 
-    &:not(.helper):hover {
-      filter: brightness(1.1);
-      transform: translate(-50%, -50%) scale(1.05);
+    &:not(.helper):not(.current):hover {
+      filter: brightness(1.35) drop-shadow(0 0 24px rgba(255, 255, 255, 0.55)) saturate(1.3);
+      transform: translate(-50%, -50%) scale(1.18) rotate(-4deg);
+    }
+
+    &.current:not(.active):hover {
+      filter: brightness(1.25) drop-shadow(0 0 40px rgba(200, 30, 30, 0.85)) saturate(1.4);
+      transform: translate(-50%, -50%) scale(1.14);
     }
 
     &.current {
-      width: 18rem;
+      width: 23rem;
       opacity: 1;
-      height: 18rem;
+      height: 23rem;
       z-index: 22;
       @include boxShadow(0 0 20px rgba(185, 26, 26, 0.5));
       
