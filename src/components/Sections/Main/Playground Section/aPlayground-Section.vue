@@ -26,7 +26,7 @@
         <div class="pg-win-body">
           <div ref="magCountRef" class="mi-mag-count">{{ magClicks }}</div>
           <div ref="magWrapRef" class="mi-mag-wrap">
-            <div ref="magBtnRef" class="mi-mag-btn">START&nbsp;GAME</div>
+            <div ref="magBtnRef" class="mi-mag-btn">HIT&nbsp;ME</div>
           </div>
           <div class="pg-caption">move toward it ◂▸ then click · how big can you get it?</div>
         </div>
@@ -54,6 +54,10 @@
         <div class="pg-win-hue"></div>
         <div class="pg-win-label pg-win-label--over">03 · ZERO-G&nbsp;SPACE</div>
         <div ref="gravRef" class="pg-grav"></div>
+        <div class="pg-grav-controls">
+          <button type="button" class="pg-grav-btn" @click="addParticle">+</button>
+          <button type="button" class="pg-grav-btn" @click="removeParticle">−</button>
+        </div>
         <div class="pg-caption pg-caption--over">drift in zero-g · hold to pull · release to burst</div>
       </div>
 
@@ -101,16 +105,18 @@
   const gravRef = ref<HTMLElement | null>(null)
 
   const pgIndex = getSectionIndexById('playground')
-  const MAG_MAX_SCALE = 2.6
-  const MAG_RESET_MS = 350
+  const MAG_MAX_SCALE = 2.1
+  const MAG_RESET_MS = 200
   let magCombo = 0
-  let magGrowth = 1
+  let magGrowth = .8
   let magResetTimer = 0
 
   // ── particle physics state ──
   type Shape = { el: HTMLElement; r: number; x: number; y: number; vx: number; vy: number; rot: number; vr: number }
-  const PARTICLE_COUNT = 15
-  const PARTICLE_COLORS = ['#5bfd5b', '#DC143C', '#ffffff', '#ff7588']
+  const PARTICLE_COUNT = 8
+  const PARTICLE_MIN = 3
+  const PARTICLE_MAX = 30
+  const PARTICLE_COLORS = ['#6fae7c', '#b06a6a', '#8a9a6f']
   const REST = 0.86      // velocity kept after a bounce
   const DRIFT = 0.9995   // near-frictionless space
 
@@ -172,16 +178,34 @@
       magClicks.value = magCombo
       gsap.fromTo(magCountRef.value, { scale: 1.3, color: '#5bfd5b' }, { scale: 1, color: '#fff', duration: 0.35, ease: 'power3.out', overwrite: 'auto' })
 
-      // each successive hit grows the button less than the last — gets harder to reach max
-      const increment = 0.14 * Math.pow(0.85, magCombo - 1)
-      magGrowth = Math.min(magGrowth + increment, MAG_MAX_SCALE)
+      // each successive hit closes a fraction of the remaining gap to max — gets
+      // harder to reach max (asymptotic) but, unlike a fixed-size diminishing
+      // increment, it can actually still reach MAG_MAX_SCALE regardless of its value
+      const remaining = MAG_MAX_SCALE - magGrowth
+      magGrowth += remaining * 0.22
+      if (MAG_MAX_SCALE - magGrowth < 0.05) magGrowth = MAG_MAX_SCALE
 
-      gsap.killTweensOf(btn)
+      gsap.killTweensOf(btn, 'scale')
       gsap.to(btn, { scale: magGrowth, duration: 0.12, ease: 'back.out(2)', overwrite: 'auto' })
       gsap.to(btn, { scale: Math.max(1, magGrowth - 0.12), duration: 0.35, ease: 'power2.in', delay: 0.16, overwrite: 'auto' })
 
+      // punch impact — quick multi-axis vibration (rotation + skew, distinct from the
+      // magnetic x/y offset). Unlike a decaying shake, the offset is HELD at the end
+      // of each hit (not reset to 0) so hits visibly accumulate/alternate until the
+      // combo resets or the next punch lands — reads as sustained impact, not a blip.
+      const kick = 3 + Math.min(magCombo, 5)
+      const dir = magCombo % 2 === 0 ? 1 : -1
+      gsap.killTweensOf(btn, 'rotation,skewX,skewY')
+      gsap.timeline({ overwrite: 'auto' })
+        .to(btn, { rotation: -dir * kick, skewX: -dir * kick * 0.6, skewY: dir * kick * 0.3, duration: 0.04, ease: 'power1.out' })
+        .to(btn, { rotation: dir * kick * 0.8, skewX: dir * kick * 0.5, skewY: -dir * kick * 0.25, duration: 0.05, ease: 'power1.inOut' })
+        .to(btn, { rotation: dir * kick * 0.5, skewX: dir * kick * 0.3, skewY: -dir * kick * 0.15, duration: 0.08, ease: 'power2.out' })
+
       if (magGrowth >= MAG_MAX_SCALE) {
-        gsap.fromTo(btn, { backgroundColor: '#ff2b2b' }, { backgroundColor: '#5bfd5b', duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
+        gsap.timeline({ overwrite: 'auto' })
+          .set(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 24px 6px rgba(255,43,43,0.85)' })
+          .to(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 32px 10px rgba(255,43,43,0.95)', duration: 0.12, ease: 'power2.out', repeat: 1, yoyo: true })
+          .to(btn, { backgroundColor: '#5bfd5b', boxShadow: '0 0 0 0 rgba(255,43,43,0)', duration: 0.4, ease: 'power2.out' })
       }
 
       magResetTimer = window.setTimeout(() => {
@@ -189,6 +213,7 @@
         magGrowth = 1
         magClicks.value = 0
         gsap.to(btn, { scale: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
+        gsap.to(btn, { rotation: 0, skewX: 0, skewY: 0, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
         gsap.to(magCountRef.value, { opacity: 0.4, duration: 0.3, overwrite: 'auto', onComplete: () => gsap.to(magCountRef.value, { opacity: 1, duration: 0.3 }) })
       }, MAG_RESET_MS)
     })
@@ -246,23 +271,41 @@
   }
 
   // ── zero-g particles ──
+  function createShape(cont: HTMLElement, i: number): Shape {
+    const r = 9 + Math.random() * 14
+    const type = i % 3 // 0 circle, 1 square, 2 triangle
+    const col = PARTICLE_COLORS[i % PARTICLE_COLORS.length]
+    const el = document.createElement('div')
+    let css = `position:absolute;left:0;top:0;width:${r * 2}px;height:${r * 2}px;will-change:transform;pointer-events:none;`
+    if (type === 0) css += `border-radius:50%;background:${col};`
+    else if (type === 1) css += `border-radius:4px;background:${col};`
+    else css += `background:${col};clip-path:polygon(50% 0,100% 100%,0 100%);`
+    el.style.cssText = css
+    cont.appendChild(el)
+    const rect = cont.getBoundingClientRect()
+    const x = r + Math.random() * Math.max(1, rect.width - 2 * r)
+    const y = r + Math.random() * Math.max(1, rect.height - 2 * r)
+    const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 1.2
+    return { el, r, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, rot: Math.random() * 360, vr: (Math.random() - 0.5) * 8 }
+  }
+
+  function addParticle() {
+    const cont = gravRef.value
+    if (!cont || shapes.length >= PARTICLE_MAX) return
+    shapes.push(createShape(cont, shapes.length))
+  }
+
+  function removeParticle() {
+    if (shapes.length <= PARTICLE_MIN) return
+    const s = shapes.pop()
+    s?.el.remove()
+  }
+
   function initParticles() {
     const cont = gravRef.value
     if (!cont) return
     shapes = []
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const r = 9 + Math.random() * 14
-      const type = i % 3 // 0 circle, 1 square, 2 triangle
-      const col = PARTICLE_COLORS[i % PARTICLE_COLORS.length]
-      const el = document.createElement('div')
-      let css = `position:absolute;left:0;top:0;width:${r * 2}px;height:${r * 2}px;will-change:transform;pointer-events:none;`
-      if (type === 0) css += `border-radius:50%;background:${col};`
-      else if (type === 1) css += `border-radius:4px;background:${col};`
-      else css += `background:${col};clip-path:polygon(50% 0,100% 100%,0 100%);`
-      el.style.cssText = css
-      cont.appendChild(el)
-      shapes.push({ el, r, x: 0, y: 0, vx: 0, vy: 0, rot: Math.random() * 360, vr: (Math.random() - 0.5) * 8 })
-    }
+    for (let i = 0; i < PARTICLE_COUNT; i++) shapes.push(createShape(cont, i))
 
     buildPullField(cont)
 
@@ -934,6 +977,39 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+  }
+
+  .pg-grav-controls {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pg-grav-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Mono';
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #9a9a9a;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #2c2c2c;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      color: #6fae7c;
+      border-color: #6fae7c;
+    }
   }
 
   .pg-tilt-wrap {

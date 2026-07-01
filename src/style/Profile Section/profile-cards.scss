@@ -13,6 +13,11 @@
   @include mobile {
     overflow: hidden;
   }
+
+  // The card stack is the mobile-only Profile layout; desktop shows cubes.
+  @include smallDesktop {
+    display: none;
+  }
 }
 
 .cards-container {

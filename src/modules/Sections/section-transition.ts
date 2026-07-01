@@ -109,14 +109,19 @@ export const SECTION_CUT_DURATION =
  * first section blank for a full curtain's length. `activateSectionEnterGate()`
  * (called from `ChangeSection`) raises it once the user actually navigates.
  *
- * The gate lands at `OPEN_AT` — the instant the curtain starts to part — so the
- * section's enter animations are revealed *by* the opening bars, with no dead
- * gap between the transitioner finishing and the section animating in.
+ * The gate is a fixed `SECTION_ENTER_GATE` (1.4s) rather than the worst-case
+ * `SECTION_CUT_DURATION` (1.72s). The bars' random staggers mean the curtain
+ * usually finishes opening well before its worst case, so 1.4s lands after the
+ * bulk of the sweep has cleared without leaving a long dead gap. Every section's
+ * enter animations fire together at this one instant — not too early (mid-sweep),
+ * not too late (staring at an empty section).
  */
+const SECTION_ENTER_GATE = 1.4
+
 export let SECTION_ENTER_DELAY = 0
 
 export function activateSectionEnterGate() {
-  SECTION_ENTER_DELAY = OPEN_AT
+  SECTION_ENTER_DELAY = SECTION_ENTER_GATE
 }
 
 let activeTimeline: gsap.core.Timeline | null = null
@@ -159,6 +164,10 @@ function play(meta: SectionTransitionMeta) {
   const midBarColor = midBarIndex % 2 === 0 ? accent : accentMuted
   const labelColor = midBarColor === accent ? textColorOnAccent : textColorOnMuted
 
+  // The heading is outlined in the opposing text colour (black fill → white
+  // stroke and vice-versa) so its edges stay crisp against the bar behind it.
+  const labelOutlineColor = labelColor === '#ffffff' ? '#000000' : '#ffffff'
+
   if (heading) heading.textContent = label
   if (kicker) kicker.textContent = kickerText
 
@@ -180,7 +189,7 @@ function play(meta: SectionTransitionMeta) {
     tl.to(kicker, { yPercent: 0, skewY: 0, duration: 0.45, ease: 'expo.out' }, 0.44)
   }
   if (heading) {
-    gsap.set(heading, { yPercent: 115, skewY: 5, color: labelColor })
+    gsap.set(heading, { yPercent: 115, skewY: 5, color: labelColor, webkitTextStroke: `1px ${labelOutlineColor}` })
     tl.to(heading, { opacity: 1, yPercent: 0, skewY: 0, duration: 0.5, ease: 'expo.out' }, 0.52)
   }
 

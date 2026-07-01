@@ -4,8 +4,18 @@
 		<div class="bottom-background"></div>
 
 		<div class="landing-greeting">
-			<div class="greet-line greet-1">Greetings User.</div>
-			<div class="greet-line greet-2">Enjoy the experience!</div>
+			<div class="greet-line greet-1">
+				<div class="greet-inner">
+					<div class="greet-text">Greetings User.</div>
+					<div class="greet-bar"></div>
+				</div>
+			</div>
+			<div class="greet-line greet-2">
+				<div class="greet-inner">
+					<div class="greet-text">Enjoy your experience!</div>
+					<div class="greet-bar"></div>
+				</div>
+			</div>
 		</div>
 
 		<div class="landing-content">
@@ -51,20 +61,40 @@
 		}
 	}
 
+	// Label reveal (system-wide label-reveal pattern — see CLAUDE.md), coloured
+	// with the section's main accent (green) rather than the pattern's default.
+	function buildGreetReveal(el: HTMLElement | null) {
+		const tl = gsap.timeline();
+		if (!el) return tl;
+		const text = el.querySelector<HTMLElement>('.greet-text');
+		const bar = el.querySelector<HTMLElement>('.greet-bar');
+		if (!text || !bar) return tl;
+		gsap.set(text, { clipPath: 'inset(0 100% 0 0)' });
+		gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' });
+		tl.to(bar, { scaleX: 1, duration: 0.42, ease: 'power3.inOut' })
+			.set(text, { clipPath: 'inset(0 0% 0 0)' })
+			.set(bar, { transformOrigin: 'right center' })
+			.to(bar, { scaleX: 0, duration: 0.5, ease: 'power3.inOut' })
+			.set(bar, { opacity: 0 });
+		return tl;
+	}
+
 	// ── enter reveal (design "01 · Landing / Signature Reveal") ──
-	// Each paragraph animates on its own: the greeting builds up, then PORTFOLIO
-	// pops one character at a time (the subtitle fades in alongside it), and the
-	// EXPLORE button snaps in last.
+	// The two greeting lines uncover via the label-reveal pattern, then lift away
+	// and fade out before PORTFOLIO pops in one character at a time (the subtitle
+	// fades in alongside it), and the EXPLORE button snaps in last.
 	function PlayEnterAnimation() {
 		if (!loadingContainer.value) return;
 
 		const chars = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.portfolio-text .portfolio-char'));
 		const lines = Array.from(loadingContainer.value.querySelectorAll<HTMLElement>('.rv-l1, .rv-l2'));
+		const greet1 = loadingContainer.value.querySelector<HTMLElement>('.greet-1');
+		const greet2 = loadingContainer.value.querySelector<HTMLElement>('.greet-2');
 
 		const baseDelay = 1;
 
 		// Initial hidden states
-		gsap.set('.greet-line', { y: 24, opacity: 0 });
+		gsap.set('.landing-greeting', { y: 0, opacity: 1 });
 		gsap.set(chars, { scale: 0, opacity: 0, transformOrigin: 'center center' });
 		gsap.set(lines, { yPercent: 115, skewY: 5, opacity: 0 });
 		gsap.set('.rv-ul', { scaleX: 0 });
@@ -73,26 +103,36 @@
 
 		const tl = gsap.timeline({ delay: baseDelay });
 
-		// 1. "Greetings User." rises in on its own
-		tl.to('.greet-1', { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 0);
+		// 1. "Greetings User." uncovers, then "Enjoy your experience!" follows
+		const greetStagger = 0.2;
+		const greetRevealDur = 0.42 + 0.5;
+		tl.add(buildGreetReveal(greet1), 0);
+		tl.add(buildGreetReveal(greet2), greetStagger);
 
-		// 2. "Enjoy the experience!" rises in next — lingers before the title
-		tl.to('.greet-2', { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 1.4);
+		// 2. once both labels have finished, each lifts away and fades on its own —
+		// staggered by the same gap they started with, so greet-1 (which started
+		// first) also fades out first.
+		const fadeStart = greetStagger + greetRevealDur + 0.15;
+		const fadeDur = 0.35;
+		tl.to(greet1, { y: -40, opacity: 0, duration: fadeDur, ease: 'power2.in' }, fadeStart);
+		tl.to(greet2, { y: -40, opacity: 0, duration: fadeDur, ease: 'power2.in' }, fadeStart + greetStagger);
 
-		// 3. PORTFOLIO pops one character at a time…
-		tl.to(chars, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(3)' }, 2.75);
+		// 3. only now — after a little extra breathing room — does PORTFOLIO pop in
+		// one character at a time…
+		const portfolioStart = fadeStart + greetStagger + fadeDur + 0.3;
+		tl.to(chars, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(3)' }, portfolioStart);
 
 		// …and the subtitle reveals at the same moment PORTFOLIO becomes visible
-		tl.to(lines, { yPercent: 0, skewY: 0, opacity: 1, duration: 0.85, stagger: 0.1, ease: 'expo.out' }, 2.75);
-		tl.to('.rv-ul', { scaleX: 1, duration: 0.6, ease: 'power3.inOut' }, 2.95);
+		tl.to(lines, { yPercent: 0, skewY: 0, opacity: 1, duration: 0.85, stagger: 0.1, ease: 'expo.out' }, portfolioStart);
+		tl.to('.rv-ul', { scaleX: 1, duration: 0.6, ease: 'power3.inOut' }, portfolioStart + 0.2);
 
-		tl.to('.landing-credit', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 2.95);
+		tl.to('.landing-credit', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, portfolioStart + 0.2);
 
 		// 4. EXPLORE button snaps in last (rendered by Explore-Fullscreen-Toggle)
 		tl.fromTo('.explore-button',
 			{ scale: 0, opacity: 0, y: 12 },
 			{ scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(3.5)' },
-			3.6
+			portfolioStart + 0.85
 		);
 	}
 
@@ -178,13 +218,38 @@
 		z-index: 306;
 	}
 
+	// ── greeting labels (system-wide label-reveal pattern) ──
 	.greet-line {
+		position: relative;
+	}
+
+	.greet-inner {
+		position: relative;
+		display: inline-block;
+		overflow: hidden;
+	}
+
+	.greet-text {
 		font-family: 'Mono';
 		color: #fff;
 		white-space: nowrap;
+		clip-path: inset(0 100% 0 0);
 	}
 
-	.greet-1 {
+	.greet-bar {
+		position: absolute;
+		top: -10%;
+		bottom: -10%;
+		left: 0;
+		width: 100%;
+		background: #5bfd5b;
+		box-shadow: 0 0 26px #5bfd5b;
+		border-radius: 0;
+		transform-origin: left center;
+		transform: scaleX(0);
+	}
+
+	.greet-1 .greet-text {
 		font-size: 1.6rem;
 		letter-spacing: 3px;
 
@@ -195,14 +260,17 @@
 	}
 
 	.greet-2 {
-		font-size: 1rem;
-		letter-spacing: 4px;
-		color: #888;
 		margin-top: 0.4rem;
 
-		@include mobile {
-			font-size: 0.8rem;
-			letter-spacing: 2px;
+		.greet-text {
+			font-size: 1rem;
+			letter-spacing: 4px;
+			color: #888;
+
+			@include mobile {
+				font-size: 0.8rem;
+				letter-spacing: 2px;
+			}
 		}
 	}
 

@@ -9,8 +9,23 @@
       <div class="proj-kicker-clip">
         <div ref="kickerRef" class="proj-kicker">FEATURED&nbsp;·&nbsp;SELECTED&nbsp;WORK</div>
       </div>
-      <div class="proj-h-clip">
-        <div ref="headingRef" class="proj-h">{{ currentProjectName }}</div>
+      <div class="proj-h-wrap">
+        <div class="proj-h-inner">
+          <div ref="headingRef" class="proj-h">{{ currentProjectName }}</div>
+          <div ref="headingBarRef" class="proj-h-bar"></div>
+        </div>
+      </div>
+      <div class="proj-sub-wrap">
+        <div class="proj-sub-inner">
+          <div ref="descRef" class="proj-sub proj-sub-desc">{{ currentProjectDescription }}</div>
+          <div ref="descBarRef" class="proj-sub-bar"></div>
+        </div>
+      </div>
+      <div class="proj-sub-wrap">
+        <div class="proj-sub-inner">
+          <div ref="yearRef" class="proj-sub proj-sub-year">{{ currentProjectYear }}</div>
+          <div ref="yearBarRef" class="proj-sub-bar"></div>
+        </div>
       </div>
     </div>
 
@@ -55,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+  import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
   import { gsap } from 'gsap'
   import { projects, activeProjectIndex } from '@modules/Sections/Projects Section/projects'
   import ProjectDetailWindow from '@projects/Project-Detail-Window.vue'
@@ -70,11 +85,18 @@
   const helixRef = ref<HTMLElement | null>(null)
   const kickerRef = ref<HTMLElement | null>(null)
   const headingRef = ref<HTMLElement | null>(null)
+  const headingBarRef = ref<HTMLElement | null>(null)
+  const descRef = ref<HTMLElement | null>(null)
+  const descBarRef = ref<HTMLElement | null>(null)
+  const yearRef = ref<HTMLElement | null>(null)
+  const yearBarRef = ref<HTMLElement | null>(null)
   const fanRef = ref<HTMLElement | null>(null)
   const cardRefs = ref<HTMLElement[]>([])
 
   const fanCenter = ref(Math.floor(N / 2))
   const currentProjectName = computed(() => projects[fanCenter.value]?.name?.toUpperCase() ?? 'PROJECTS')
+  const currentProjectDescription = computed(() => projects[fanCenter.value]?.description ?? '')
+  const currentProjectYear = computed(() => String(projects[fanCenter.value]?.year ?? '').toUpperCase())
 
   // drag state
   let dragging = false
@@ -83,6 +105,10 @@
 
   const listeners: Array<() => void> = []
   let stopSectionWatch: (() => void) | null = null
+  // Handle to the delayed enter timeline so a fast leave can cancel it before its
+  // deferred card/heading/strand tweens fire — otherwise they animate content back
+  // in on top of the leave when the section is exited before SECTION_ENTER_DELAY.
+  let feedTl: gsap.core.Timeline | null = null
 
   function on(target: Window | HTMLElement, type: string, handler: EventListenerOrEventListenerObject, opts?: AddEventListenerOptions) {
     target.addEventListener(type, handler, opts)
@@ -134,9 +160,67 @@
     })
   }
 
+  // ── heading label reveal (system-wide label-reveal pattern — see CLAUDE.md) ──
+  // A bar sweeps across the project name, covering it while the text swaps
+  // underneath, then recedes to leave the new name behind.
+  function playHeadingReveal(delay = 0) {
+    const text = headingRef.value
+    const bar = headingBarRef.value
+    if (!text || !bar) return
+    gsap.killTweensOf([text, bar])
+    gsap.set(text, { clipPath: 'inset(0 100% 0 0)' })
+    gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
+    const tl = gsap.timeline({ delay })
+    tl.to(bar, { scaleX: 1, duration: 0.3, ease: 'power3.inOut' })
+      .set(text, { clipPath: 'inset(0 0% 0 0)' })
+      .set(bar, { transformOrigin: 'right center' })
+      .to(bar, { scaleX: 0, duration: 0.36, ease: 'power3.inOut' })
+      .set(bar, { opacity: 0 })
+  }
+
+  // Leave re-collapses instantly, no stagger — per the enter/leave asymmetry rule.
+  function playHeadingLeave() {
+    const text = headingRef.value
+    const bar = headingBarRef.value
+    if (!text || !bar) return
+    gsap.killTweensOf([text, bar])
+    gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
+    gsap.set(bar, { opacity: 0 })
+  }
+
+  // Description + year underneath the heading, same label-reveal pattern
+  // (see CLAUDE.md), staggered slightly after the heading's own reveal.
+  function playSubReveal(delay = 0) {
+    const pairs: [HTMLElement | null, HTMLElement | null][] = [
+      [descRef.value, descBarRef.value],
+      [yearRef.value, yearBarRef.value],
+    ]
+    pairs.forEach(([text, bar], i) => {
+      if (!text || !bar) return
+      gsap.killTweensOf([text, bar])
+      gsap.set(text, { clipPath: 'inset(0 100% 0 0)' })
+      gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
+      const tl = gsap.timeline({ delay: delay + i * 0.08 })
+      tl.to(bar, { scaleX: 1, duration: 0.36, ease: 'power3.inOut' })
+        .set(text, { clipPath: 'inset(0 0% 0 0)' })
+        .set(bar, { transformOrigin: 'right center' })
+        .to(bar, { scaleX: 0, duration: 0.42, ease: 'power3.inOut' })
+        .set(bar, { opacity: 0 })
+    })
+  }
+
+  function playSubLeave() {
+    const els = [descRef.value, yearRef.value]
+    const bars = [descBarRef.value, yearBarRef.value]
+    gsap.killTweensOf([...els, ...bars])
+    els.forEach((text) => { if (text) gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' }) })
+    bars.forEach((bar) => { if (bar) gsap.set(bar, { opacity: 0 }) })
+  }
+
   function centerOn(i: number) {
     fanCenter.value = ((i % N) + N) % N
     layoutFan(true)
+    nextTick(() => { playHeadingReveal(0); playSubReveal(0.1) })
   }
   function feedNext() { centerOn(fanCenter.value + 1) }
   function feedPrev() { centerOn(fanCenter.value - 1) }
@@ -190,26 +274,27 @@
   // ── enter reveal (adapted from the design's playFeed) ──
   function playFeed() {
     const kicker = kickerRef.value
-    const h = headingRef.value
     const cards = cardRefs.value
     const strands = gsap.utils.toArray<HTMLElement>(helixRef.value?.querySelectorAll('.proj-strand') ?? [])
 
     fanCenter.value = Math.floor(N / 2)
 
-    gsap.killTweensOf([kicker, h, ...cards, ...strands])
+    feedTl?.kill()
+    gsap.killTweensOf([kicker, ...cards, ...strands])
     gsap.set(kicker, { yPercent: 110, skewY: 3 })
-    gsap.set(h, { yPercent: 115, skewY: 5, opacity: 0 })
     gsap.set(cards, { xPercent: -50, yPercent: -50, x: 0, y: 180, opacity: 0, scale: 0.7, rotation: 0, rotationX: 0, rotationY: 0 })
     gsap.set(strands, { opacity: 0 })
 
     // Wait for the section-cut curtain to fully close before fanning the feed in,
     // so the reveal happens behind the curtain rather than alongside it.
     const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
+    feedTl = tl
     strands.forEach((s, i) => {
       tl.to(s, { opacity: 1, duration: 0.22, ease: 'power2.out' }, i * 0.03)
     })
     tl.to(kicker, { yPercent: 0, skewY: 0, duration: 0.55, ease: 'expo.out' }, 0.1)
-    tl.to(h, { yPercent: 0, skewY: 0, opacity: 1, duration: 0.8, ease: 'expo.out' }, 0.22)
+    tl.add(() => playHeadingReveal(0), 0.22)
+    tl.add(() => playSubReveal(0.1), 0.22)
     tl.add(() => {
       const ordered = cards.slice().sort(
         (a, b) => Math.abs(fanOffset(Number(a.getAttribute('data-i')))) - Math.abs(fanOffset(Number(b.getAttribute('data-i'))))
@@ -224,12 +309,16 @@
 
   function playLeave() {
     const kicker = kickerRef.value
-    const h = headingRef.value
     const cards = cardRefs.value
     const strands = gsap.utils.toArray<HTMLElement>(helixRef.value?.querySelectorAll('.proj-strand') ?? [])
 
-    gsap.killTweensOf([kicker, h, ...cards, ...strands])
-    gsap.to(h, { yPercent: -115, skewY: -3, opacity: 0, duration: 0.38, ease: 'power2.in', overwrite: 'auto' })
+    // Cancel a still-pending enter timeline first — its deferred callback would
+    // otherwise re-spawn card/heading tweens after this leave has run.
+    feedTl?.kill()
+    feedTl = null
+    gsap.killTweensOf([kicker, ...cards, ...strands])
+    playHeadingLeave()
+    playSubLeave()
     gsap.to(kicker, { yPercent: -110, skewY: -2, duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(cards, { opacity: 0, y: 180, scale: 0.7, duration: 0.18, ease: 'power3.in', overwrite: 'auto' })
     strands.forEach((s, i) => {
@@ -283,6 +372,8 @@
   onBeforeUnmount(() => {
     stopSectionWatch?.()
     stopSectionWatch = null
+    feedTl?.kill()
+    feedTl = null
     listeners.forEach((off) => off())
     listeners.length = 0
   })
@@ -374,9 +465,16 @@
     color: #ff506e;
   }
 
-  .proj-h-clip {
+  // ── heading label reveal (system-wide label-reveal pattern) ──
+  .proj-h-wrap {
+    position: relative;
+    display: inline-block;
     overflow: hidden;
-    padding: 2px 0;
+  }
+
+  .proj-h-inner {
+    position: relative;
+    display: inline-block;
   }
 
   .proj-h {
@@ -385,6 +483,65 @@
     line-height: 1;
     color: #fff;
     will-change: transform;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .proj-h-bar {
+    position: absolute;
+    top: -4%;
+    bottom: -4%;
+    left: 0;
+    width: 100%;
+    background: #ff506e;
+    box-shadow: 0 0 26px #ff506e;
+    border-radius: 0;
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+
+  // ── description / year (same label-reveal pattern, underneath the name) ──
+  .proj-sub-wrap {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .proj-sub-inner {
+    position: relative;
+    display: inline-block;
+  }
+
+  .proj-sub {
+    font-family: Mono, monospace;
+    line-height: 1.3;
+    color: #d8c3c8;
+    will-change: transform;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .proj-sub-desc {
+    font-size: clamp(13px, 1.1vw, 16px);
+    max-width: 44vw;
+  }
+
+  .proj-sub-year {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #ff7588;
+  }
+
+  .proj-sub-bar {
+    position: absolute;
+    top: -8%;
+    bottom: -8%;
+    left: 0;
+    width: 100%;
+    background: #ff506e;
+    box-shadow: 0 0 18px #ff506e;
+    border-radius: 0;
+    transform-origin: left center;
+    transform: scaleX(0);
   }
 
   // ── fan ──

@@ -164,6 +164,33 @@ Elements always start off-screen in the direction they logically come from:
 
 ---
 
+## Label Reveal Pattern (system-wide)
+
+Any set of static corner/edge labels (first introduced in `Profile-Cubes.vue`) uses
+this reveal, and it should be reused as-is for future sections rather than
+reinvented per-component.
+
+**Structure**: each label is `.pc-label > .pc-label-inner > (.pc-label-text, .pc-label-bar)`.
+- `.pc-label-text` starts fully hidden via `clip-path: inset(0 100% 0 0)` (clipped from the right).
+- `.pc-label-bar` is a solid, glowing (`box-shadow`) bar the same size as the text, starting at `scaleX(0)` with `transform-origin: left center`.
+
+**Reveal sequence** (one GSAP timeline per label):
+1. Bar grows left→right (`scaleX(0)` → `scaleX(1)`, `power3.inOut`, ~0.42s) — it visually "covers" the text as it grows, since text is invisible until step 2.
+2. The instant the bar has fully grown, the text's clip-path is set to `inset(0 0% 0 0)` (fully revealed) *underneath* the now-opaque bar — the swap is invisible because the bar is on top.
+3. `transform-origin` flips to `right center`, and the bar shrinks back to `scaleX(0)` (`power3.inOut`, ~0.5s) — it "uncovers" the text as it recedes, exiting to the right.
+4. Bar opacity is set to `0` once fully collapsed.
+
+The net effect: a bar sweeps across each label, and the text is left behind once the bar has passed — never a plain fade or slide.
+
+**Positional stagger — top-left first, bottom-right last**: labels do not all fire at the same delay. Each label's start delay is derived from its screen position:
+- Vertical position (`top` as a fraction of viewport height, 0 = top, ~1 = bottom) sets the primary delay offset — lower labels start later.
+- Horizontal position works the same way on the same row: two labels at equal height but different `x` are **not simultaneous** — the more left-aligned one starts (and therefore finishes) first, the more right-aligned one starts later. The rule generalizes to “distance from the top-left corner”: compute a combined offset from both the label's `top%` and `left%` (treating `right`-anchored labels by their effective left position), and use that single scalar as the delay multiplier. Top-left labels are always the fastest/first to animate; bottom-right labels are always the slowest/last — never the reverse, and never perfectly synced across different (x, y) positions.
+- On leave, labels re-collapse **without** re-running the positional stagger — leave is instant per the enter/leave asymmetry rule above (no `delay`, snappier duration).
+
+**Default requirement**: every text element (headings, labels, captions, static copy) must use this Label Reveal API unless explicitly told otherwise for that element. Plain fades/slides for text are the exception, not the default.
+
+---
+
 ## Breakpoints
 
 Defined in `src/modules/animations/animation-handler.ts` as `breakpoints`:
@@ -175,6 +202,44 @@ Defined in `src/modules/animations/animation-handler.ts` as `breakpoints`:
 The primary split is **mobile `< 1200px`** vs **desktop `>= 1200px`** (`breakpoints.smallDesktop`). The intermediate values exist for fine-tuning animation positions but represent layout variants, not full layout changes.
 
 Mobile layout is fundamentally different from desktop — separate templates in `App.vue` handle this.
+
+---
+
+## Section Backgrounds (required per section)
+
+Every section **must** have a **slice background** — the slanted, `clip-path`
+polygon coloured layer that enters/leaves with the section. These live in
+`Section-Background-Display.vue` (one `<div>` per section, e.g.
+`.profile-section-background-back` / `-front`) and are animated by
+`section-backgrounds.ts`. The diagonal slice is the signature look of the whole
+menu; a section without one reads as unfinished. When adding a section, add its
+background layer(s) here and register enter/leave motion in `section-backgrounds.ts`.
+(The SANDBOX/Playground background is not built yet — it will be added later.)
+
+---
+
+## Profile Section: desktop vs mobile layouts
+
+The Profile section renders **two different layouts** by breakpoint:
+
+- **Desktop (`>= 1200px`):** `Profile-Cubes.vue` — four rotating wireframe cubes
+  (one per category: TECHNICAL, PROFESSIONAL, ACHIEVEMENTS, MINDSET), each with six
+  labelled faces. On enter the faces drop in from above with a per-cube and per-face
+  stagger (like building blocks), then three corner labels are uncovered by a bar
+  that wipes across them. The cubes idle-spin and are drag-rotatable. The whole
+  build/reveal/leave choreography is **self-contained in the component**, driven by
+  `onSectionStatesChange` and gated behind `SECTION_ENTER_DELAY`, following the
+  enter/leave asymmetry in the Animation Style Guide. Cubes are `display: none`
+  below `1200px` (`allMobile`).
+- **Mobile (`< 1200px`):** the original **card stack** (`Profile-Cards.vue` +
+  `Profile-Animation-Handler.ts`) — the rotated, stacked cards that read as a single
+  3D cube. This is the layout to keep building on for mobile; it is hidden on desktop
+  (the `.container` is `display: none` at `smallDesktop`). `Profile-Animation-Handler.ts`
+  now only owns the mobile card animations — the old desktop card timelines were
+  removed when desktop switched to cubes.
+
+`Profile-Contact.vue` is currently **not rendered** — the contact card is being moved
+into a future dedicated **"Extra"** section. The file is kept for that migration.
 
 ---
 

@@ -297,7 +297,7 @@
 
 	// ── desktop: modern top-right section index ──
 	.content-list-container.is-desktop {
-		top: 2.1rem;
+		top: 50%;
 		right: 2.2rem;
 		left: auto;
 		bottom: auto;
@@ -305,11 +305,12 @@
 		align-items: flex-end;
 		gap: 0.15rem;
 		filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
+		transform: translateY(-50%);
 
 		// slide out of view while a project detail window is open
 		&.active {
 			opacity: 0;
-			transform: translateX(46px);
+			transform: translateY(-50%) translateX(46px);
 			pointer-events: none;
 		}
 	}

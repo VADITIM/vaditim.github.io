@@ -104,7 +104,7 @@
 
 	.explore-mag-wrap {
 		position: fixed;
-		bottom: 9%;
+		bottom: 15%;
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 310;
