@@ -9,7 +9,6 @@ pnpm-debug.log*
 # Node modules
 node_modules/
 
->>>>>>> no-scroll
 # Local environment files
 .env.local
 .env.*.local
@@ -42,3 +41,7 @@ vite.config.timestamp*
 
 # Generated files
 types/generated/
+
+# Local assistant/config folders
+/.github/
+/.claude/

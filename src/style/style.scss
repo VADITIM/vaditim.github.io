@@ -1,4 +1,7 @@
 :root {
+  --squircle: 0.75rem;
+  --section-color: #5bfd5b;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -13,9 +16,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
+*, *::before, *::after {
   padding: 0;
   margin: 0;
+  border-radius: var(--squircle);
 }
 
 #app {
@@ -45,12 +49,8 @@ html {
 }
 
 html::-webkit-scrollbar {
-  display: flex; 
-}
-
-
-html::-webkit-scrollbar {
   display: none;
+  opacity: 0;
 }
 
 body {
@@ -62,5 +62,7 @@ body {
 #app {
   overflow-x: clip;
   position: relative;
+  margin: 0;
+  padding: 0;
   width: 100vw;
 }

@@ -1,60 +1,88 @@
 <template>
   <main class="app-container" ref="container">
-    <MobileNotice />
-    <HardwareAccelerationNotice />
-    <LoadingPage v-if="showLoadingPage && !hardwareNoticeActive" />
 
-    <SectionsNextSection />
-    <SectionsPreviousSection />
-
-    <template v-if="!hardwareNoticeActive">
-      <SectionBackgrounds />
-      <div :style="{ zIndex: currentSection === 0 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 0 ? 'auto' : 'none' }"><PerksPage /></div>
-      <div :style="{ zIndex: currentSection === 2 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 2 ? 'auto' : 'none' }"><ProjectsPage /></div>
-      <div :style="{ zIndex: currentSection === 1 ? 1 : 0, position: 'relative', pointerEvents: currentSection === 1 ? 'auto' : 'none' }"><ProfilePage /></div>
-      <SectionsDisplay />
+    <template v-if="!isMobile" >
+      <HardwareAccelerationNotice />
+      <StartSection v-if="showLoadingPage && !hardwareNoticeActive" />
+      <template v-if="!hardwareNoticeActive">
+        <MagneticDots :isDisabled="activeProjectIndex !== null" />
+        <SectionCoverSlice />
+        <div
+          v-for="(section, i) in SECTIONS"
+          :key="section.id"
+          :style="GetSection(i)"
+        >
+          <component :is="section.component" />
+        </div>
+        <SectionTransition />
+        <Navigator />
+      </template>
     </template>
+
+    <template v-else>
+      <StartSection v-if="showLoadingPage" />
+      <Navigator />
+      <SectionCoverSlice />
+    </template>
+
+    <StartTransition :show-loading-page="showLoadingPage" :container-element="container" :is-mobile="isMobile" />
+
   </main>
 </template>
 
 <script setup lang="ts">
 
-  import { nextTick, ref, watch } from 'vue';
+  import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
-  import { currentSection } from '@modules/sections';
-  import { PageAnimations } from '@modules/animations/animation-handler';
-  import { InitializeVirtualScroll } from '@modules/virtual-scroll';
+  import { SECTIONS, LOADING_COLOR } from '@modules/sectionsRegistry';
+  import { onSectionChange } from '@modules/sectionsCore';
+  import { PageAnimations } from '@modules/animationHandler';
+  import { InitializeVirtualScroll, unlockScroll } from '@modules/miscVirtualScroll';
+  import { finished, CreateSectionLayerStyleController } from '@modules/sectionsStateMachine';
+  import { setSectionCount } from '@modules/sectionsCore';
 
-  import PerksPage from '@perks/aPerks-Section.vue';
-  import ProfilePage from '@profile/aProfile-Section.vue';
-  import ProjectsPage from '@projects/aProjects-Section.vue';
+  import StartSection from '@components/Main/Landing Section/Start-Section.vue';
+  import SectionCoverSlice from '@components/Misc/Section-Cover-Slice.vue';
+  import Navigator from '@components/Misc/Navigator.vue';
+  import StartTransition from '@components/Misc/Start-Transition.vue';
+  import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
+  import MagneticDots from '@components/Misc/Magnetic-Dots.vue';
+  import SectionTransition from '@components/Misc/Section-Transition.vue';
 
-  import SectionBackgrounds from '@sections/Section-Background-Display.vue';
-  import SectionsDisplay from '@sections/Sections-State-Display.vue';
+  import { hardwareNoticeActive } from '@modules/miscHardwareNotice';
+  import { isMobile } from '@modules/miscIsMobile';
+  import { activeProjectIndex } from '@modules/sectionsProjects';
 
-  import LoadingPage from '@components/Pages/Main/LoadingPage.vue';
+  setSectionCount(SECTIONS.length);
 
-  import HardwareAccelerationNotice from '@components/Hardware-Acceleration-Notice.vue';
-  import { hardwareNoticeActive } from '@modules/hardware-notice';
-  import MobileNotice from '@components/Mobile-Notice.vue';
-  import SectionsNextSection from '@components/Sections/Sections-Next-Section.vue';
-  import SectionsPreviousSection from '@components/Sections/Sections-Previous-Section.vue';
+  document.documentElement.style.setProperty('--section-color', LOADING_COLOR);
+  onSectionChange((current) => {
+    document.documentElement.style.setProperty('--section-color', SECTIONS[current]?.color ?? LOADING_COLOR);
+  });
 
-  // const showLoadingPage = ref(true);
-  const showLoadingPage = ref(false);
+  const container = ref<HTMLElement | null>(null);
+  const showLoadingPage = ref(true);
   const hasInitialized = ref(false);
   const sectionHeightVh = 100;
 
-  const initializeApp = () => {
-    if (hasInitialized.value) return;
 
-    InitializeVirtualScroll(3, sectionHeightVh);
-    PageAnimations();
+  const { GetSectionLayerStyle: GetSection, cleanup: cleanupSectionLayerStyle } = CreateSectionLayerStyleController({
+    lingerMs: 1500,
+  });
+
+  onBeforeUnmount(() => {
+    cleanupSectionLayerStyle();
+  });
+
+  const tryInitializeApp = () => {
+    if (hasInitialized.value || (!isMobile.value && hardwareNoticeActive.value) || !finished.value) return;
+    PageAnimations(SECTIONS);
     hasInitialized.value = true;
+    showLoadingPage.value = false;
 
-    setTimeout(() => {
-      showLoadingPage.value = false;
-    }, 3000);
+    if (!isMobile.value) {
+      InitializeVirtualScroll(SECTIONS.length, sectionHeightVh);
+    }
   };
 
   watch(
@@ -62,11 +90,19 @@
     async (isActive) => {
       if (isActive || hasInitialized.value) return;
       await nextTick();
-      initializeApp();
+      tryInitializeApp();
     },
     { immediate: true, flush: 'post' }
   );
 
+  watch(
+    finished,
+    (isFinished) => {
+      if (!isFinished) return;
+      tryInitializeApp();
+      unlockScroll();
+    }
+  );
 </script>
 
 <style scoped lang="scss">
@@ -79,6 +115,9 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    overscroll-behavior: none;
+    background-color: #181818;
+    user-select: none
   }
 
   .app-container>* {
@@ -87,14 +126,10 @@
     @include mobile {
       overflow-x: clip;
       overflow-y: visible;
+      overscroll-behavior: none;
     }
 
-    @include allTablets {
-      overflow-x: clip;
-      overflow-y: visible;
-    }
-
-    @include allDesktops {
+    @include desktop {
       overflow-x: visible;
       overflow-y: visible;
     }
