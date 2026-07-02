@@ -1,13 +1,14 @@
 import type { Component } from 'vue';
+export { getSectionIndexById } from './sectionLookup';
 import PerksPage from '@components/Main/Perks Section/Perks-Section.vue';
-import ProfilePage from '@components/Main/Profile Section/Logs-Section.vue';
+import LogsPage from '@components/Main/Logs Section/Logs-Section.vue';
 import ProjectsPage from '@components/Main/Projects Section/Projects-Section.vue';
-import PlaygroundPage from '@components/Main/Playground Section/Playground-Section.vue';
+import SandboxPage from '@components/Main/Sandbox Section/Sandbox-Section.vue';
 import ExtraPage from '@components/Main/Extra Section/Extra-Section.vue';
 import { registerPerksAnimations } from './sectionsPerksAnimationHandler';
-import { registerProfileAnimations } from './sectionsProfileAnimationHandler';
+import { registerLogsAnimations } from './sectionsLogsAnimationHandler';
 import { registerProjectsAnimations } from './sectionsProjectsAnimationHandler';
-import { registerPlaygroundAnimations } from './sectionsPlaygroundAnimationHandler';
+import { registerSandboxAnimations } from './sectionsSandboxAnimationHandler';
 import { registerExtraAnimations } from './sectionsExtraAnimationHandler';
 
 export const LOADING_COLOR = '#5bfd5b';
@@ -31,12 +32,9 @@ export interface SectionDefinition {
  */
 export const SECTIONS: SectionDefinition[] = [
 	{ id: 'perks',    label: 'PERKS',    color: '#FFDD1B', component: PerksPage,    registerAnimations: registerPerksAnimations    },
-	{ id: 'profile',  label: 'PROFILE',  color: '#0040ff', component: ProfilePage,  registerAnimations: registerProfileAnimations  },
+	{ id: 'logs',     label: 'LOGS',     color: '#0040ff', component: LogsPage,     registerAnimations: registerLogsAnimations     },
 	{ id: 'projects', label: 'PROJECTS', color: '#DC143C', component: ProjectsPage, registerAnimations: registerProjectsAnimations },
-	{ id: 'playground', label: 'SANDBOX', color: '#5bfd5b', component: PlaygroundPage, registerAnimations: registerPlaygroundAnimations },
-	{ id: 'extra',      label: 'EXTRA',   color: '#f09b3a', component: ExtraPage,      registerAnimations: registerExtraAnimations      },
+	{ id: 'sandbox',  label: 'SANDBOX',  color: '#5bfd5b', component: SandboxPage,  registerAnimations: registerSandboxAnimations   },
+	{ id: 'extra',    label: 'EXTRA',    color: '#f09b3a', component: ExtraPage,    registerAnimations: registerExtraAnimations    },
 ];
 
-export function getSectionIndexById(id: string): number {
-	return SECTIONS.findIndex(s => s.id === id);
-}

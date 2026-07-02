@@ -75,7 +75,7 @@
   import { projects, activeProjectIndex } from '@modules/sectionsProjects'
   import ProjectDetailWindow from '@components/Main/Projects Section/Project-Detail-Window.vue'
   import { currentSection } from '@modules/sectionsCore'
-  import { getSectionIndexById } from '@modules/sectionsRegistry'
+  import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
 
@@ -225,7 +225,7 @@
   function feedNext() { centerOn(fanCenter.value + 1) }
   function feedPrev() { centerOn(fanCenter.value - 1) }
 
-  // ── pointer tilt + parallax (ported from the Playground sandbox) ──
+  // ── pointer tilt + parallax (ported from the Sandbox section) ──
   function initCardTilt() {
     cardRefs.value.forEach((card) => {
       on(card, 'mousemove', (e) => {

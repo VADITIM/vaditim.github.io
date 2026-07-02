@@ -2,7 +2,7 @@
  * Projects section animations.
  *
  * The Projects section was rebuilt as a fanned card feed (see
- * `Projects-Section.vue`). Like the Playground, it co-locates its layout, drag
+ * `Projects-Section.vue`). Like the Sandbox, it co-locates its layout, drag
  * interactions, and enter/leave reveal inside the component using template refs
  * and `onSectionStatesChange`, so there is nothing to register here.
  *

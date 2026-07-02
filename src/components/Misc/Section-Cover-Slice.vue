@@ -1,23 +1,23 @@
 <template>
     <div class="section-background-layer">
-      <div class="perks-section-background-back" :style="GetBackgroundStyle('perks-back')"></div>
-      <div class="perks-section-background-front" :style="GetBackgroundStyle('perks-front')"></div>
-      <div class="profile-section-background-back" :style="GetBackgroundStyle('profile-back')"></div>
-      <div class="profile-section-background-front" :style="GetBackgroundStyle('profile-front')"></div>
-      <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
-      <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
-      <div class="extra-section-background-topright"></div>
-      <div class="extra-section-background-bottomleft"></div>
-      <div class="sandbox-corner-tl"></div>
-      <div class="sandbox-corner-tr"></div>
-      <div class="sandbox-corner-bl"></div>
-      <div class="sandbox-corner-br"></div>
+      <div class="perks-back" :style="GetBackgroundStyle('perks-back')"></div>
+      <div class="perks-front" :style="GetBackgroundStyle('perks-front')"></div>
+      <div class="logs-back" :style="GetBackgroundStyle('logs-back')"></div>
+      <div class="logs-front" :style="GetBackgroundStyle('logs-front')"></div>
+      <div class="projects-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
+      <div class="projects-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
+      <div class="extra-tr"></div>
+      <div class="extra-bl"></div>
+      <div class="sandbox-tl"></div>
+      <div class="sandbox-tr"></div>
+      <div class="sandbox-bl"></div>
+      <div class="sandbox-br"></div>
     </div>
 </template>
 
 <script setup lang="ts" >
   import { onBeforeUnmount, watch, ref, computed } from 'vue';
-  import { ScrollBackgroundSections } from '@modules/sectionsBackgrounds';
+  import { ScrollBackgroundSections } from '@modules/sectionCoverSlices';
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { finished } from '@modules/sectionsStateMachine';
   import { dragOffset, dragDirection, isDragging, thresholdReached, consumeLastDragOffsetY } from '@modules/miscMobileDragNavigation';
@@ -37,7 +37,7 @@
     
     const isInteractiveSection =
       ((type === 'perks-back' || type === 'perks-front') && activeSectionIndex === 0) ||
-      ((type === 'profile-back' || type === 'profile-front') && activeSectionIndex === 1) ||
+      ((type === 'logs-back' || type === 'logs-front') && activeSectionIndex === 1) ||
       ((type === 'projects-back' || type === 'projects-front') && activeSectionIndex === 2)
 
     if (!isInteractiveSection) return {}
@@ -106,12 +106,12 @@
     pointer-events: none;
   }
 
-  .perks-section-background-front {
+  .perks-front {
     position: absolute;
     top: 0;
     left: -30%;
     width: 30%;
-    height: 100vh;
+    height: 110vh;
     background: linear-gradient(180deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
     clip-path: polygon(0 0, 100% 0, 10% 100%, 0% 100%);
     z-index: 2;
@@ -127,12 +127,12 @@
     }
   }
 
-  .perks-section-background-back {
+  .perks-back {
     position: absolute;
     top: 0;
     left: -30%;
     width: 30%;
-    height: 100vh;
+    height: 110vh;
     background: linear-gradient(180deg, rgba(153, 132, 16, 1) 15%, rgba(255, 221, 27, 1) 85%);
     clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
     z-index: 1;
@@ -148,7 +148,7 @@
     }
   }
 
-  .profile-section-background-front {
+  .logs-front {
     position: absolute;
     left: -30%;
     width: 30%;
@@ -172,7 +172,7 @@
     }
   }
 
-  .profile-section-background-back {
+  .logs-back {
     position: absolute;
     left: -30%;
     width: 30%;
@@ -197,7 +197,7 @@
     }
   }
 
-  .projects-section-background-back {
+  .projects-back {
     position: absolute;
     right: -40%;
     width: 25%;
@@ -233,7 +233,7 @@
     }
   }
 
-  .projects-section-background-front {
+  .projects-front {
     position: absolute;
     right: -40%;
     width: 25%;
@@ -271,7 +271,7 @@
 
   // Corner slices — top-right drops in from the top, bottom-left rises from
   // the bottom (see CLAUDE.md Current Task 6).
-  .extra-section-background-topright {
+  .extra-tr {
     position: absolute;
     top: -40%;
     right: 0;
@@ -294,7 +294,7 @@
     }
   }
 
-  .extra-section-background-bottomleft {
+  .extra-bl {
     position: absolute;
     bottom: -40%;
     left: 0;
@@ -319,7 +319,7 @@
 
   // Sandbox corner accents — top corners drop from the top, bottom corners
   // rise from the bottom, same rule as the extra slices above.
-  .sandbox-corner-tl {
+  .sandbox-tl {
     position: absolute;
     top: -40%;
     left: 0;
@@ -336,7 +336,7 @@
     }
   }
 
-  .sandbox-corner-tr {
+  .sandbox-tr {
     position: absolute;
     top: -40%;
     right: 0;
@@ -353,7 +353,7 @@
     }
   }
 
-  .sandbox-corner-bl {
+  .sandbox-bl {
     position: absolute;
     bottom: -40%;
     left: 0;
@@ -370,7 +370,7 @@
     }
   }
 
-  .sandbox-corner-br {
+  .sandbox-br {
     position: absolute;
     bottom: -40%;
     right: 0;

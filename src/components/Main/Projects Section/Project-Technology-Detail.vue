@@ -145,15 +145,15 @@
     filter: drop-shadow(0px 0px 30px rgb(121, 121, 121));
 
     &.download {
-      background-image: url("../../assets/images/icons/download.png");
+      background-image: url("../../../assets/images/icons/download.png");
     }
 
     &.info {
-      background-image: url("../../assets/images/icons/info.png");
+      background-image: url("../../../assets/images/icons/info.png");
     }
 
     &.play {
-      background-image: url("../../assets/images/icons/play.png");
+      background-image: url("../../../assets/images/icons/play.png");
     }
   }
 </style>

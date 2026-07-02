@@ -14,7 +14,7 @@
     <div class="ex-grid">
 
       <!-- LEFT · comments layout (skeleton, no backend yet) -->
-      <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments">
+      <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments" caption="one message per visitor · stored for everyone">
         <template #label>01 · COMMENTS</template>
         <div class="ex-comment-list">
           <div v-for="c in PLACEHOLDER_COMMENTS" :key="c.name" class="ex-comment">
@@ -36,16 +36,15 @@
             placeholder="Leave a message… (coming soon)"
             disabled
           ></textarea>
-          <button type="button" class="ex-send" disabled>SEND</button>
+          <MagneticButton type="button" class="ex-send-wrap" :zone="16" :disabled="true">SEND</MagneticButton>
         </div>
-        <div class="ex-caption">one message per visitor · stored for everyone</div>
       </ModuleDisplay>
 
       <!-- RIGHT · contacts (existing container, repositioned into the panel) -->
       <ModuleDisplay ref="contactPanelRef" accent="#f09b3a" class="ex-contact">
         <template #label>02 · CONTACT</template>
         <div class="ex-contact-host">
-          <ProfileContact />
+          <LogsContact />
         </div>
       </ModuleDisplay>
 
@@ -67,7 +66,7 @@
 
     <!-- Impressum panel revealed by pulling the liquid tab -->
     <div ref="impressumRef" class="ex-impressum">
-      <button type="button" class="ex-impressum-close" @click="closeImpressum">✕</button>
+      <MagneticButton type="button" class="ex-impressum-close-wrap" :zone="14" @click="closeImpressum">✕</MagneticButton>
       <div class="ex-impressum-title">IMPRESSUM</div>
       <div class="ex-impressum-body">
         <p>Vadim Niedental</p>
@@ -84,12 +83,13 @@
   import { onBeforeUnmount, onMounted, ref } from 'vue'
   import { gsap } from 'gsap'
   import { currentSection } from '@modules/sectionsCore'
-  import { getSectionIndexById } from '@modules/sectionsRegistry'
+  import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
   import LabelSet from '@components/Misc/Label-Set.vue'
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
-  import ProfileContact from '@components/Main/Profile Section/Contact.vue'
+  import MagneticButton from '@components/Misc/Magnetic-Button.vue'
+  import LogsContact from '@components/Main/Logs Section/Contact.vue'
 
   const EXTRA_LABELS = [
     { text: 'IMPRESSED?', pos: { top: '5%', left: '4%' } },
@@ -189,8 +189,9 @@
     // gsap.set() never renders, so seed the hidden state at each tween's start.
     const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
     tl.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    tl.fromTo(commentsEl, { x: '-60vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.15)
-    tl.fromTo(contactEl, { x: '60vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.25)
+    // Both panels start near center and repel outward — comments pushes left, contact pushes right.
+    tl.fromTo(commentsEl, { x: '28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
+    tl.fromTo(contactEl, { x: '-28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
     tl.fromTo(liquidRef.value, { y: '18vh' }, { y: 0, opacity: impressumOpen ? 0 : 1, duration: 0.5, ease: 'back.out(1.6)' }, 0.45)
   }
 
@@ -199,8 +200,8 @@
     gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl, liquidRef.value])
     if (impressumOpen) closeImpressum()
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
-    gsap.to(commentsEl, { x: '-60vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
-    gsap.to(contactEl, { x: '60vw', opacity: 0, duration: 0.28, ease: 'power2.in', delay: 0.05, overwrite: 'auto' })
+    gsap.to(commentsEl, { x: '28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
+    gsap.to(contactEl, { x: '-28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(liquidRef.value, { y: '18vh', duration: 0.24, ease: 'power2.in', overwrite: 'auto' })
   }
 
@@ -376,26 +377,20 @@
     &:disabled { cursor: not-allowed; }
   }
 
-  .ex-send {
+  .ex-send-wrap {
     align-self: stretch;
-    padding: 0 22px;
-    font-family: 'Audiowide';
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: #0e0e0e;
-    background: #f09b3a;
-    border: none;
-    border-radius: 6px;
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
 
-  .ex-caption {
-    font-family: 'Mono';
-    font-size: 10px;
-    color: #4a4a4a;
-    text-align: center;
-    padding: 0 16px 12px;
+    :deep(.mag-btn) {
+      height: 100%;
+      padding: 0 22px;
+      font-family: 'Audiowide';
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #0e0e0e;
+      background: #f09b3a;
+      border-radius: 6px;
+      opacity: 0.35;
+    }
   }
 
   // ── contact panel: re-anchor the existing container inside the panel ──
@@ -470,24 +465,23 @@
     will-change: transform;
   }
 
-  .ex-impressum-close {
+  .ex-impressum-close-wrap {
     position: absolute;
     top: 12px;
     right: 14px;
-    width: 1.8rem;
-    height: 1.8rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Mono';
-    font-size: 0.9rem;
-    color: #161616;
-    background: rgba(0, 0, 0, 0.12);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
 
-    &:hover { background: rgba(0, 0, 0, 0.25); }
+    :deep(.mag-btn) {
+      width: 1.8rem;
+      height: 1.8rem;
+      font-family: 'Mono';
+      font-size: 0.9rem;
+      color: #161616;
+      background: rgba(0, 0, 0, 0.12);
+      border-radius: 50%;
+      transition: background 0.2s ease;
+
+      &:hover { background: rgba(0, 0, 0, 0.25); }
+    }
   }
 
   .ex-impressum-title {

@@ -32,7 +32,7 @@
   import { onMounted, onBeforeUnmount, ref, type CSSProperties } from 'vue';
   import { gsap } from 'gsap';
   import { onSectionStatesChange, type SectionTransitionMeta } from '@modules/sectionsStateMachine';
-  import { getSectionIndexById } from '@modules/sectionsRegistry';
+  import { getSectionIndexById } from '@modules/sectionLookup';
   import { currentSection } from '@modules/sectionsCore';
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition';
   import { hideLabels, playLabelReveals, playLabelLeave } from '@modules/miscLabelReveal';

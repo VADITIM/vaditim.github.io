@@ -1,13 +1,16 @@
 <template>
   <!-- Reusable panel "window": a box/border frame with a label header,
-       section-accent aware. Shared by Sandbox, Extra, and Profile's cubes —
+       section-accent aware. Shared by Sandbox, Extra, and the Logs cubes —
        see CLAUDE.md Current Task 3. -->
-  <div ref="root" class="module-display" :style="{ '--accent': accent, opacity: staticVisible ? 1 : undefined }">
-    <div v-if="hue" class="module-display-hue"></div>
+  <div ref="root" class="module-display" :style="staticVisible ? { '--accent': accent, opacity: 1 } : { '--accent': accent }">
+    <div class="module-display-hue"></div>
     <div class="module-display-label" :class="{ 'module-display-label--over': labelOver }">
       <slot name="label">{{ label }}</slot>
     </div>
-    <slot />
+    <div class="module-display-content">
+      <slot />
+    </div>
+    <div v-if="caption" class="module-display-caption">{{ caption }}</div>
   </div>
 </template>
 
@@ -17,15 +20,15 @@
   const props = withDefaults(defineProps<{
     label?: string;
     accent?: string;
-    hue?: boolean;          // cursor-following border glow
     labelOver?: boolean;    // label floats above overlay content (z-index, no pointer events)
     staticVisible?: boolean; // skip the default opacity:0 — use when content reveals itself internally rather than via a container-level enter tween
+    caption?: string;       // optional hint line pinned to the bottom centre of the box
   }>(), {
     label: '',
     accent: '#5bfd5b',
-    hue: false,
     labelOver: false,
     staticVisible: false,
+    caption: '',
   });
 
   const root = ref<HTMLElement | null>(null);
@@ -34,7 +37,7 @@
   defineExpose({ get el() { return root.value; } });
 
   onMounted(() => {
-    if (!props.hue || !root.value) return;
+    if (!root.value) return;
     const el = root.value;
     const glow = el.querySelector<HTMLElement>('.module-display-hue');
     if (!glow) return;
@@ -59,6 +62,7 @@
 <style scoped lang="scss">
   .module-display {
     position: relative;
+    z-index: 7;
     border: 1px solid #262626;
     border-radius: 12px;
     background: rgba(18, 18, 18, 0.85);
@@ -93,17 +97,44 @@
     will-change: opacity;
   }
 
+  // Predetermined top-left position — absolute so it never shifts when a
+  // consumer overrides the box's own padding (e.g. Cubes.vue's `.pc-cell`).
   .module-display-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
     font-family: 'Mono';
     font-size: 10px;
+    font-weight: 500;
     letter-spacing: 3px;
-    color: #5f5f5f;
+    color: #8a8a8a;
     padding: 13px 16px;
+    pointer-events: none;
 
     &--over {
-      position: relative;
-      z-index: 4;
-      pointer-events: none;
+      z-index: 6;
     }
+  }
+
+  .module-display-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 44px 16px 16px;
+  }
+
+  .module-display-caption {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: 'Mono';
+    font-size: 10px;
+    color: #4a4a4a;
+    pointer-events: none;
+    z-index: 4;
   }
 </style>

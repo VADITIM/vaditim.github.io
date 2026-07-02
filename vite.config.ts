@@ -22,7 +22,7 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, 'src/assets'),
       
       '@perks': path.resolve(__dirname, 'src/components/Main/Perks Section'),
-      '@profile': path.resolve(__dirname, 'src/components/Main/Profile Section'),
+      '@logs': path.resolve(__dirname, 'src/components/Main/Logs Section'),
       '@projects': path.resolve(__dirname, 'src/components/Main/Projects Section'),
 
       '@sections': path.resolve(__dirname, 'src/components/Main'),

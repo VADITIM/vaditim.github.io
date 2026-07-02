@@ -55,7 +55,7 @@ Manages DOM body height and smooth wheel snapping. Drives scroll position only �
 ### `src/modules/animations/animation-handler.ts`
 Entry point: `PageAnimations(sections)` loops the registry calling each section's `registerAnimations()`. Also exports `breakpoints` constants used by all animation handlers.
 
-### `src/modules/Sections/section-backgrounds.ts`
+### `src/modules/sectionCoverSlices.ts`
 Background-layer GSAP animations. Exported as `ScrollBackgroundSections()`. Called from `Section-Background-Display.vue`. Uses `getSectionIndexById` to resolve indices at runtime — does not hardcode them.
 
 ---
@@ -103,7 +103,7 @@ Sections are never unmounted. The `-100` z-index fully removes them from the sta
 
 ## Animation Style Guide
 
-These rules preserve the timing and feel established by `section-backgrounds.ts`, which is the canonical reference for enter/leave motion across the whole system.
+These rules preserve the timing and feel established by `sectionCoverSlices.ts`, which is the canonical reference for enter/leave motion across the whole system.
 
 ### Timing constants
 
@@ -145,7 +145,7 @@ Never reverse this order. Entering content that appears before the previous sect
 Elements always start off-screen in the direction they logically come from:
 - Desktop backgrounds enter from **left or right** (matching the section's side of the screen)
 - Mobile backgrounds enter from **bottom** (`top: 100%`) and exit upward
-- Perks / profile content enters from **left** (slides in from off-screen-left)
+- Perks / logs content enters from **left** (slides in from off-screen-left)
 - Projects content enters from **right/bottom**
 - Floating / ambient elements (notes, decorative text) enter from **below** with a larger offset than interactive elements
 
@@ -158,7 +158,7 @@ Elements always start off-screen in the direction they logically come from:
 
 ### Exceptions (intentional divergence from the above)
 
-- **Profile cards** (front + back): use `power2.out` without `back.out` because the cards are physically large and the overshoot reads as jitter at that scale; they also use rapid-pass-through detection to skip animations when the user navigates through profile quickly
+- **Logs cards** (front + back): use `power2.out` without `back.out` because the cards are physically large and the overshoot reads as jitter at that scale; they also use rapid-pass-through detection to skip animations when the user navigates through logs quickly
 - **Loading section notes**: use `power4.inOut` + `power2.in` split-property easing to simulate drifting momentum — the notes are ambient decoration, not navigation feedback, so they follow a different rhythm
 - **Projects container** enter: uses a `1.6s power4.inOut` slide — intentionally slow and dramatic as the section's visual centrepiece
 
@@ -166,7 +166,7 @@ Elements always start off-screen in the direction they logically come from:
 
 ## Label Reveal Pattern (system-wide)
 
-Any set of static corner/edge labels (first introduced in `Profile-Cubes.vue`) uses
+Any set of static corner/edge labels (first introduced in `Cubes.vue`, Logs section) uses
 this reveal, and it should be reused as-is for future sections rather than
 reinvented per-component.
 
@@ -203,6 +203,10 @@ The primary split is **mobile `< 1200px`** vs **desktop `>= 1200px`** (`breakpoi
 
 Mobile layout is fundamentally different from desktop — separate templates in `App.vue` handle this.
 
+**Mobile development is currently paused.** Do not add or modify mobile-specific
+layouts, breakpoints, or animations unless explicitly asked. Treat `< 1200px` code
+paths as frozen; focus all unprompted work on desktop (`>= 1200px`).
+
 ---
 
 ## Section Backgrounds (required per section)
@@ -210,48 +214,10 @@ Mobile layout is fundamentally different from desktop — separate templates in 
 Every section **must** have a **slice background** — the slanted, `clip-path`
 polygon coloured layer that enters/leaves with the section. These live in
 `Section-Background-Display.vue` (one `<div>` per section, e.g.
-`.profile-section-background-back` / `-front`) and are animated by
-`section-backgrounds.ts`. The diagonal slice is the signature look of the whole
+`.logs-back` / `-front`) and are animated by
+`sectionCoverSlices.ts`. The diagonal slice is the signature look of the whole
 menu; a section without one reads as unfinished. When adding a section, add its
-background layer(s) here and register enter/leave motion in `section-backgrounds.ts`.
-
----
-
-## Profile Section: desktop vs mobile layouts
-
-The Profile section renders **two different layouts** by breakpoint:
-
-- **Desktop (`>= 1200px`):** `Profile-Cubes.vue` — four rotating wireframe cubes
-  (one per category: TECHNICAL, PROFESSIONAL, ACHIEVEMENTS, MINDSET), each with six
-  labelled faces. On enter the faces drop in from above with a per-cube and per-face
-  stagger (like building blocks), then three corner labels are uncovered by a bar
-  that wipes across them. The cubes idle-spin and are drag-rotatable. The whole
-  build/reveal/leave choreography is **self-contained in the component**, driven by
-  `onSectionStatesChange` and gated behind `SECTION_ENTER_DELAY`, following the
-  enter/leave asymmetry in the Animation Style Guide. Cubes are `display: none`
-  below `1200px` (`allMobile`).
-- **Mobile (`< 1200px`):** the original **card stack** (`Profile-Cards.vue` +
-  `Profile-Animation-Handler.ts`) — the rotated, stacked cards that read as a single
-  3D cube. This is the layout to keep building on for mobile; it is hidden on desktop
-  (the `.container` is `display: none` at `smallDesktop`). `Profile-Animation-Handler.ts`
-  now only owns the mobile card animations — the old desktop card timelines were
-  removed when desktop switched to cubes.
-
-`Profile-Contact.vue` is rendered inside the **Extra** section's contact panel
-(right side of the split layout) — not in the Profile section itself.
-
----
-
-## Extra Section
-
-The last section (`id: 'extra'`, accent `#f09b3a`). Split layout like the Sandbox's
-window panels: **left** a comments/guestbook skeleton (placeholder list + disabled
-input — the database backend is a Future Task below), **right** the existing
-`Profile-Contact.vue` container re-anchored into the panel. At the bottom centre a
-**liquid Impressum tab** (SVG blob fused with the screen edge, pointer-draggable)
-opens the Impressum panel when pulled past its threshold. All animation/interaction
-logic is co-located in `aExtra-Section.vue` (Playground-style); the registry handler
-is a stub.
+background layer(s) here and register enter/leave motion in `sectionCoverSlices.ts`.
 
 ---
 
@@ -260,7 +226,7 @@ is a stub.
 - Use `vh`/`vw` units and `clamp()` for sizes that should scale proportionally
 - Avoid hardcoded `px` values for positioning elements that need to stay aligned across viewport sizes
 - CSS custom properties (`--card-size`, `--cards-container-size`) are defined in `variables.scss` and overridden at the mobile breakpoint
-- Profile cards use percentage-based positioning via the GSAP animation handler (`Profile-Animation-Handler.ts`) — not CSS position
+- Logs cards use percentage-based positioning via the GSAP animation handler (`sectionsLogsAnimationHandler.ts`) — not CSS position
 
 ---
 
@@ -272,7 +238,7 @@ is a stub.
 @modules         →  src/modules
 @sections        →  src/components/Sections/Main
 @perks           →  src/components/Sections/Main/Perks Section
-@profile         →  src/components/Sections/Main/Profile Section
+@logs            →  src/components/Sections/Main/Logs Section
 @projects        →  src/components/Sections/Main/Projects Section
 ```
 
@@ -310,60 +276,12 @@ is a stub.
 - **"Build the app" procedure:** build on `dev` → push the build output to
   `gh-pages` → publish. The `gh-pages` build must never be broken and no source may
   ever be lost during branch operations.
+- **Never add `Co-Authored-By: Claude ...` (or any assistant co-author trailer) to
+  commit messages.** Commits are authored solely as the user (`VADITIM`). This
+  applies to every commit on every branch, including ones generated by Claude Code.
 
 ---
 
-## Current Tasks (ordered)
-
-Work these in order — each is scoped so later steps don't churn earlier ones:
-small API changes first, then features that use them, then the big rename refactor
-(done once, over final code), then cleanups that depend on the final structure, and
-the git restructure last on a stable tree.
-
-1. ~~**Landing section → labels API.** Convert all landing text (greeting lines,
-   subtitle, credit) to the shared label-reveal API (`buildLabelReveal` /
-   `playLabelLeave` in `label-reveal.ts`). PORTFOLIO keeps its char-pop (hero
-   centrepiece exception).~~ **Done 2026-07-02.**
-
-2. ~~**Labels API `stretch` option.** Add a `stretch?: boolean` per label in
-   `Label-Set.vue` — same idea as `wrap` but horizontal: the text splits into
-   words laid out side by side, each word revealed as its own label (own bar sweep
-   + own positional delay).~~ **Done** — see the `stretch` branch (`.pc-label-row`)
-   in `Label-Set.vue`; per-element positional delay in `miscLabelReveal.ts` already
-   generalizes to it with no extra code.
-
-3. ~~**Standalone `Module-Display` component.** Extract the panel "window" used by
-   Sandbox (`.pg-win`) and Extra (`.ex-panel`) into one reusable component
-   (`components/Misc/Module-Display.vue` — box/border + label header, section-accent
-   aware). Replace the duplicated markup/styles in both sections with it.~~ **Done —
-   see `Module-Display.vue`.**
-
-4. ~~**Profile cubes in module displays.** Wrap the four desktop cubes
-   (`Cubes.vue`) in `Module-Display` — one box per cube, like Sandbox/Extra — and
-   make the cubes a little bigger, contained within their boxes.~~ **Done** — see
-   `.pc-cell` (430×430px `ModuleDisplay`) in `Cubes.vue`.
-
-5. ~~**Perks slice enter parity.** The perks background slice's enter animation does
-   not match profile/projects (they animate `top`/layer offsets consistently; perks
-   differs). Align it with the same enter choreography.~~ **Done 2026-07-02** — perks
-   is now a `-back`/`-front` two-layer slice with the same `FRONT_LAYER_OFFSET`
-   stagger as profile/projects, see `playPerksEnterDesktop`/`playPerksLeaveDesktop`
-   in `sectionsBackgrounds.ts`.
-
-6. ~~**Extra background slices rework.** Replace the current right-side slices with
-   slices at **bottom-left** and **top-right**. The top-right slice enters from the
-   top, the bottom-left slice from the bottom. Slices still play before all other
-   enter animations (current sequencing stays).~~ **Done 2026-07-02** — see
-   `.extra-section-background-topright` / `-bottomleft` in `Section-Cover-Slice.vue`
-   and `playExtraEnterDesktop`/`playExtraLeaveDesktop` in `sectionsBackgrounds.ts`.
-
-7. ~~**Sandbox background.** Corner-accent slices (top-left, top-right, bottom-left,
-   bottom-right) matching the same slice system as the other sections, entering from
-   top/bottom per corner.~~ **Done 2026-07-02** — see `.sandbox-corner-*` in
-   `Section-Cover-Slice.vue` and `playSandboxEnterDesktop`/`playSandboxLeaveDesktop`
-   in `sectionsBackgrounds.ts`.
-
----
 
 ## Future Tasks
 
@@ -373,38 +291,69 @@ Build a comments feature backed by a database so visitors can leave a message th
 persists and is shown to future visitors.
 
 - **Storage:** a database (table/collection) holding each comment with its text,
-  timestamp, and a per-visitor identifier.
-- **Visitor identity & rate limit:** identify anonymous visitors by their IP address
-  (or another device-derived fingerprint) so each visitor can post **only one**
-  comment. Enforce the one-comment-per-identity rule on write.
+  timestamp, an owner token hash (see below), and a like count.
+- **Visitor identity — crypto token / proof-of-work, not IP.** IP-based identity was
+  rejected (shared/NAT'd IPs, VPNs, changing IPs make it both leaky and unreliable).
+  Instead use a web3-style local identity:
+  - On first visit, the client generates a keypair (or a random high-entropy secret)
+    entirely client-side and stores it in `localStorage`. This is the visitor's
+    **owner token** — nothing server-generated, nothing tied to IP.
+  - Before the comment is accepted, the client must complete a small **proof-of-work**
+    challenge (server sends a nonce/difficulty target, client hashes
+    `token + nonce + text` until the hash meets the target, e.g. leading zero bits).
+    This is the anti-spam gate instead of IP rate-limiting — cheap for a real visitor,
+    expensive to script at scale.
+  - The server stores only a **hash of the owner token** (never the raw token) against
+    the comment row. The one-comment-per-identity rule is enforced by rejecting a new
+    comment if that token hash already owns one.
+  - **Edit / delete:** the same owner token is required to prove ownership — the client
+    resends the token, the server re-hashes and compares against the stored hash before
+    allowing `PATCH`/`DELETE` on that comment. Losing `localStorage` means losing the
+    ability to edit/delete (acceptable trade-off, no account system).
+- **Likes:** any visitor (not just the comment's owner) can like a comment, keyed by
+  their own owner token so a given visitor can only like a given comment once. Likes
+  don't require proof-of-work — only new comment creation does.
 - **Display:** a later-built Comments section reads from the database and renders the
-  stored comments to all visitors.
+  stored comments, their like counts, and edit/delete controls (shown only when the
+  local owner token matches the comment's stored hash) to all visitors.
 
 Notes / open questions to resolve when implementing:
-- IP alone is imperfect (shared/NAT'd IPs, changing IPs) — decide whether to combine
-  it with a browser fingerprint or a cookie/localStorage token.
 - Needs a backend/API (this is currently a static SPA deployed to GitHub Pages) —
   choose a hosted DB + serverless endpoint, since GitHub Pages can't run server code.
 - Add basic abuse protection (length limits, sanitization/escaping, profanity or spam
-  filtering) before displaying user-submitted text.
+  filtering) before displaying user-submitted text, in addition to the proof-of-work
+  gate.
+- Proof-of-work difficulty should be tunable server-side so it can be raised if spam
+  volume increases, without a client redeploy.
 
 #### Candidate backend: ASP.NET Core Minimal API
 
-A .NET **Minimal API** is a good fit — a full comments backend (DB + one-comment-per-IP
-rule + read endpoint) is ~40 lines. Read the IP via `ctx.Connection.RemoteIpAddress`,
-reject the POST with `Results.Conflict(...)` if that IP already has a row, and enable
-CORS for the GitHub Pages origin so the Vue app can call it cross-origin.
+A .NET **Minimal API** is a good fit — a full comments backend (DB + token-hash
+ownership + PoW-gated create + edit/delete/like endpoints) is still a small handful of
+endpoints. Store only `Sha256(ownerToken)` per comment; verify ownership by re-hashing
+the token sent with edit/delete/like requests and comparing.
 
 Sketch:
 ```csharp
-app.MapPost("/comments", async (CommentInput input, HttpContext ctx, CommentsDb db) =>
+app.MapPost("/comments", async (CommentInput input, CommentsDb db) =>
 {
-    var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-    if (await db.Comments.AnyAsync(c => c.Ip == ip))
+    if (!ProofOfWork.Verify(input.Token, input.Nonce, input.Text, difficulty: 20))
+        return Results.BadRequest("Invalid proof of work.");
+    var tokenHash = Sha256(input.Token);
+    if (await db.Comments.AnyAsync(c => c.OwnerTokenHash == tokenHash))
         return Results.Conflict("You've already posted a comment.");
-    db.Comments.Add(new Comment { Text = input.Text.Trim(), Ip = ip, CreatedAt = DateTime.UtcNow });
+    db.Comments.Add(new Comment { Text = input.Text.Trim(), OwnerTokenHash = tokenHash, CreatedAt = DateTime.UtcNow });
     await db.SaveChangesAsync();
     return Results.Created(...);
+});
+
+app.MapDelete("/comments/{id}", async (Guid id, string token, CommentsDb db) =>
+{
+    var comment = await db.Comments.FindAsync(id);
+    if (comment is null || comment.OwnerTokenHash != Sha256(token)) return Results.Forbid();
+    db.Comments.Remove(comment);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
 });
 ```
 
@@ -415,5 +364,25 @@ hosted DB (Azure SQL free tier, or Postgres on Neon/Supabase); a local SQLite fi
 resets on hosts with an ephemeral filesystem.
 
 Trade-off: Minimal API is the right call if working in C# is preferred. For a single
-endpoint, a serverless function or a BaaS (Supabase/Firebase — DB + API + rate limiting
-bundled) is less infrastructure to run than an always-on server.
+endpoint, a serverless function or a BaaS (Supabase/Firebase — DB + API bundled) is
+less infrastructure to run than an always-on server, though proof-of-work verification
+logic still needs to live somewhere server-side either way.
+
+
+
+
+
+
+
+
+# KNOWN ISSUES
+
+- Project-Section projectname leave animation — Need to trace how project switching is driven, find where the name element is animated, and add a fast leave (power3.in, no delay) that mirrors the section-leave style. More surface to understand before writing a line.
+
+- Impressum as a proper draggable bottom-sheet — Largest scope: new generic draggable-sheet component, pointer-capture drag tracking, spring/snap physics on release, replace the entire liquid-blob mechanic. New component API, DOM attachment pattern, edge-case handling (velocity on release, scroll lock). Hardest by a clear margin.
+
+
+
+
+
+

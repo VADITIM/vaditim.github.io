@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-  import { cards } from '@modules/sectionsProfileCards';
+  import { cards } from '@modules/sectionsLogsCards';
 </script>
 
 <style lang="scss" scoped>
@@ -34,7 +34,7 @@
       overflow: hidden;
     }
 
-    // The card stack is the mobile-only Profile layout; desktop shows cubes.
+    // The card stack is the mobile-only Logs layout; desktop shows cubes.
     @include smallDesktop {
       display: none;
     }

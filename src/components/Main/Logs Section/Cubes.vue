@@ -1,25 +1,27 @@
 ﻿<template>
   <!-- Desktop-only wireframe cubes. Hidden below smallDesktop (see <style>). -->
-  <div ref="root" class="profile-cubes">
+  <div ref="root" class="logs-cubes">
     <!-- Cubes, centered -->
     <div class="pc-stage">
       <div class="pc-row">
         <ModuleDisplay v-for="(cube, ci) in cubes" :key="'cube-' + ci" class="pc-cell" :accent="cube.color">
           <template #label>{{ String(ci + 1).padStart(2, '0') }} · {{ cube.name }}</template>
-          <div class="pc-scene">
-            <div class="pc-cube" :data-cube="ci">
-              <div v-for="(face, fi) in cube.faces" :key="'face-' + fi" class="pc-face-anim">
-                <div class="pc-face" :style="faceStyle(cube, face.tf)">
-                  <span :style="{ color: cube.color, textShadow: `0 0 12px ${cube.bg}` }">{{ face.token }}</span>
+          <div class="pc-body">
+            <div class="pc-scene">
+              <div class="pc-cube" :data-cube="ci">
+                <div v-for="(face, fi) in cube.faces" :key="'face-' + fi" class="pc-face-anim">
+                  <div class="pc-face" :style="faceStyle(cube, face.tf)">
+                    <span :style="{ color: cube.color, textShadow: `0 0 12px ${cube.bg}` }">{{ face.token }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="pc-shadow" :style="{ background: `radial-gradient(ellipse at center, ${cube.bg} 0%, transparent 70%)` }"></div>
-          <div class="pc-name pc-label">
-            <div class="pc-label-inner">
-              <div class="pc-label-text" :style="{ color: cube.color, textShadow: `0 0 14px ${cube.bg}` }">{{ cube.name }}</div>
-              <div class="pc-label-bar" :style="{ background: cube.color, boxShadow: `0 0 22px ${cube.color}` }"></div>
+            <div class="pc-shadow" :style="{ background: `radial-gradient(ellipse at center, ${cube.bg} 0%, transparent 70%)` }"></div>
+            <div class="pc-name pc-label">
+              <div class="pc-label-inner">
+                <div class="pc-label-text" :style="{ color: cube.color, textShadow: `0 0 14px ${cube.bg}` }">{{ cube.name }}</div>
+                <div class="pc-label-bar" :style="{ background: cube.color, boxShadow: `0 0 22px ${cube.color}` }"></div>
+              </div>
             </div>
           </div>
         </ModuleDisplay>
@@ -32,7 +34,7 @@
   import { onMounted, onBeforeUnmount, ref } from 'vue';
   import { gsap } from 'gsap';
   import { onSectionStatesChange, type SectionTransitionMeta } from '@modules/sectionsStateMachine';
-  import { getSectionIndexById } from '@modules/sectionsRegistry';
+  import { getSectionIndexById } from '@modules/sectionLookup';
   import { currentSection } from '@modules/sectionsCore';
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition';
   import { hideLabels, playLabelReveals, playLabelLeave } from '@modules/miscLabelReveal';
@@ -98,7 +100,7 @@
   let cleanupStates: (() => void) | null = null;
   const detachers: Array<() => void> = [];
 
-  const profileIdx = getSectionIndexById('profile');
+  const logsIdx = getSectionIndexById('logs');
 
   function setup() {
     if (!root.value) return;
@@ -121,12 +123,12 @@
     raf = requestAnimationFrame(tick);
 
     cleanupStates = onSectionStatesChange((meta: SectionTransitionMeta) => {
-      if (meta.isEnteringSection(profileIdx)) playAll();
-      else if (meta.isLeavingSection(profileIdx)) playLeave();
+      if (meta.isEnteringSection(logsIdx)) playAll();
+      else if (meta.isLeavingSection(logsIdx)) playLeave();
     });
 
-    // Cold-mount case: if Profile is already the active section, build immediately.
-    if (currentSection.value === profileIdx) playAll();
+    // Cold-mount case: if Logs is already the active section, build immediately.
+    if (currentSection.value === logsIdx) playAll();
   }
 
   function spinStep() {
@@ -305,7 +307,7 @@
 <style lang="scss" scoped>
   @use "@styleVariables" as *;
 
-  .profile-cubes {
+  .logs-cubes {
     position: absolute;
     inset: 0;
     color: #fff;
@@ -336,16 +338,24 @@
   }
 
   // Overrides the base .module-display: a fixed 1:1 square (border-box, so padding
-  // can't skew the ratio), enlarged to properly contain the bigger cube, and
-  // centered/padded content.
+  // can't skew the ratio), enlarged to properly contain the bigger cube. The
+  // module label keeps its own predetermined top-left position regardless.
   .pc-cell {
     width: 430px;
     height: 430px;
     box-sizing: border-box;
+    pointer-events: auto;
+  }
+
+  // Centers the cube content within the box.
+  .pc-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 0 16px 16px;
+    min-height: 0;
   }
 
   .pc-scene {

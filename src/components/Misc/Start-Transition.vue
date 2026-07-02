@@ -1,7 +1,9 @@
 <template>
 	<div>
-		<div v-if="showLoadingPage" ref="exploreWrapRef" class="explore-mag-wrap" @mousemove="onWrapMove" @mouseleave="onWrapLeave">
-			<div ref="exploreButtonRef" class="explore-button" @click="OnExploreClick">EXPLORE&nbsp;▸</div>
+		<div v-if="showLoadingPage" class="explore-mag-pos">
+			<MagneticButton ref="exploreBtnRef" :zone="48" :strength="0.4" @click="OnExploreClick">
+				EXPLORE&nbsp;▸
+			</MagneticButton>
 		</div>
 
 		<div v-if="!showLoadingPage && isMobile" class="fullscreen-toggle" @click="ToggleFullscreen" title="Toggle fullscreen">
@@ -18,6 +20,7 @@
 	import { onBeforeUnmount, onMounted, ref } from 'vue';
 	import fullscreenIcon from '@assets/images/icons/fullscreen.png';
 	import minimiseIcon from '@assets/images/icons/minimise.png';
+	import MagneticButton from '@components/Misc/Magnetic-Button.vue';
 
 	interface Props {
 		showLoadingPage: boolean;
@@ -27,26 +30,18 @@
 
 	const props = defineProps<Props>();
 	const isFullscreen = ref(false);
-	const exploreButtonRef = ref<HTMLElement | null>(null);
-	const exploreWrapRef = ref<HTMLElement | null>(null);
+	const exploreBtnRef = ref<InstanceType<typeof MagneticButton> | null>(null);
 
-	// Magnetic follow for the EXPLORE button (design "01 · Loading Reveal").
-	const onWrapMove = (e: MouseEvent) => {
-		const wrap = exploreWrapRef.value, btn = exploreButtonRef.value;
-		if (!wrap || !btn) return;
-		const r = wrap.getBoundingClientRect();
-		const dx = e.clientX - (r.left + r.width / 2);
-		const dy = e.clientY - (r.top + r.height / 2);
-		gsap.to(btn, { x: dx * 0.4, y: dy * 0.4, duration: 0.4, ease: 'power3.out' });
-	};
-	const onWrapLeave = () => {
-		if (exploreButtonRef.value) gsap.to(exploreButtonRef.value, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.3)' });
-	};
+	// Expose the inner button element so Start-Section.vue can drive its
+	// enter/exit GSAP tweens (the `.explore-button` selector is gone).
+	defineExpose({
+		get exploreEl() { return exploreBtnRef.value?.el ?? null }
+	});
 
 	async function OnExploreClick() {
-		// Play bouncy scale-away animation
-		if (exploreButtonRef.value) {
-			gsap.to(exploreButtonRef.value, {
+		const btn = exploreBtnRef.value?.el;
+		if (btn) {
+			gsap.to(btn, {
 				scale: 0,
 				opacity: 0,
 				duration: 0.6,
@@ -102,42 +97,35 @@
 <style scoped lang="scss">
 	@use "@styleVariables" as *;
 
-	.explore-mag-wrap {
+	.explore-mag-pos {
 		position: fixed;
 		bottom: 15%;
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 310;
-		padding: 32px 48px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
 
 		@include allMobile {
 			bottom: 16%;
-			padding: 24px 36px;
 		}
-	}
 
-	.explore-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 12px;
-		padding: 20px 50px;
-		font-size: 20px;
-		letter-spacing: 2px;
-		font-family: 'Audiowide';
-		color: #0e0e0e;
-		background-color: #5bfd5b;
-		border-radius: 4px;
-		cursor: pointer;
-		white-space: nowrap;
-		will-change: transform;
+		:deep(.mag-btn) {
+			display: inline-flex;
+			align-items: center;
+			gap: 12px;
+			padding: 20px 50px;
+			font-size: 20px;
+			letter-spacing: 2px;
+			font-family: 'Audiowide';
+			color: #0e0e0e;
+			background-color: #5bfd5b;
+			border-radius: 4px;
+			white-space: nowrap;
+			opacity: 0;
 
-		@include allMobile {
-			padding: 15px 36px;
-			font-size: 16px;
+			@include allMobile {
+				padding: 15px 36px;
+				font-size: 16px;
+			}
 		}
 	}
 

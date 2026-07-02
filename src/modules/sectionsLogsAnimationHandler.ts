@@ -15,16 +15,16 @@ const BACK_CARD_SELECTOR = ".back-card1, .back-card2, .back-card3, .back-card4";
 // Desktop (>= smallDesktop) now shows Cubes.vue, which drives its own
 // enter/leave animations internally. This handler only owns the mobile
 // (< smallDesktop) card-stack layout.
-export function registerProfileAnimations() {
-  const profileIdx = getSectionIndexById('profile');
+export function registerLogsAnimations() {
+  const logsIdx = getSectionIndexById('logs');
 
-  const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(profileIdx);
-  const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(profileIdx);
+  const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(logsIdx);
+  const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(logsIdx);
 
-  ProfileMobile(profileIdx, isEnter, isLeave);
+  LogsMobile(logsIdx, isEnter, isLeave);
 }
 
-function RegisterProfileM(
+function RegisterLogsM(
   config: { mediaQuery: string; selector: string },
   isEnter: (m: SectionTransitionMeta) => boolean,
   isLeave: (m: SectionTransitionMeta) => boolean,
@@ -77,8 +77,8 @@ function RegisterProfileM(
   });
 }
 
-function ProfileMobile(
-  profileIdx: number,
+function LogsMobile(
+  logsIdx: number,
   isEnter: (m: SectionTransitionMeta) => boolean,
   isLeave: (m: SectionTransitionMeta) => boolean
 ) {
@@ -89,5 +89,5 @@ function ProfileMobile(
     },
   ];
 
-  mobileVariants.forEach(v => RegisterProfileM(v, isEnter, isLeave, profileIdx));
+  mobileVariants.forEach(v => RegisterLogsM(v, isEnter, isLeave, logsIdx));
 }

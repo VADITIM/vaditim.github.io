@@ -111,7 +111,7 @@ export type SectionLayerStyleControllerOptions = {
 	 * How long the *leaving* section stays stacked above the entering one at the
 	 * start of a transition, so its exit animation is visible before the
 	 * section-cut curtain closes over the swap. Without this, entering an opaque
-	 * section (e.g. Playground) instantly covers the leaving section and its exit
+	 * section (e.g. Sandbox) instantly covers the leaving section and its exit
 	 * animation plays invisibly underneath. Kept shorter than the curtain's close
 	 * time so the swap itself is never revealed.
 	 */

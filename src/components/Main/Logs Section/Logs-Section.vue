@@ -1,20 +1,20 @@
 <template>
-  <div class="profile-section-container">
+  <div class="logs-section-container">
       <!-- Desktop (>= smallDesktop): wireframe cubes + corner labels -->
       <Cubes />
-      <LabelSet class="profile-labels-desktop-only" :labels="profileLabels" section-id="profile" accent="#3664fc" />
+      <LabelSet class="logs-labels-desktop-only" :labels="logsLabels" section-id="logs" accent="#3664fc" />
       <!-- Mobile (< smallDesktop): the original rotated card stack -->
       <Cards class="cards-mobile-only" />
     </div>
 </template>
 
 <script setup lang="ts">
-  import Cubes from '@components/Main/Profile Section/Cubes.vue';
-  import Cards from '@components/Main/Profile Section/Cards.vue';
+  import Cubes from '@components/Main/Logs Section/Cubes.vue';
+  import Cards from '@components/Main/Logs Section/Cards.vue';
   import LabelSet from '@components/Misc/Label-Set.vue';
   import type { CSSProperties } from 'vue';
 
-  const profileLabels: { text: string; pos: CSSProperties; wrap?: boolean }[] = [
+  const logsLabels: { text: string; pos: CSSProperties; wrap?: boolean }[] = [
     { text: 'CRAFTED\nWITH INTENT', pos: { top: '8%', left: '20%' } },
     { text: 'BUILT TO\nCAPTIVATE',       pos: { top: '8%', right: '10%', textAlign: 'right' } },
     { text: 'EXPERIENCE DESIGN', pos: { bottom: '2%', left: '15%' }, wrap: true },
@@ -24,13 +24,13 @@
 <style lang="scss" scoped>
   @use "@styleVariables" as *;
 
-  .profile-labels-desktop-only {
+  .logs-labels-desktop-only {
     @include allMobile {
       display: none;
     }
   }
 
-  .profile-section-container {
+  .logs-section-container {
     position: absolute;
     top: 0;
     left: 0;

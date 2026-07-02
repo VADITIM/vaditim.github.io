@@ -54,7 +54,7 @@
 	import { onBeforeUnmount, onMounted, ref } from 'vue';
 	import { finished } from '@modules/sectionsStateMachine';
 	import { ChangeSection } from '@modules/sectionsCore';
-	import { getSectionIndexById } from '@modules/sectionsRegistry';
+	import { getSectionIndexById } from '@modules/sectionLookup';
 	import { isMobile } from '@modules/miscIsMobile';
 	import { buildLabelReveal, playLabelLeave } from '@modules/miscLabelReveal';
 
@@ -82,7 +82,7 @@
 	// away and fade out before PORTFOLIO pops in one character at a time (the
 	// subtitle and credit uncover via the same API alongside it), and the EXPLORE
 	// button snaps in last. PORTFOLIO itself keeps its char-pop — it's the hero
-	// centrepiece, not a label (same exception as the Playground's kickable title).
+	// centrepiece, not a label (same exception as the Sandbox's kickable title).
 	function PlayEnterAnimation() {
 		if (!loadingContainer.value) return;
 
@@ -99,7 +99,7 @@
 		gsap.set('.landing-greeting', { y: 0, opacity: 1 });
 		gsap.set(chars, { scale: 0, opacity: 0, transformOrigin: 'center center' });
 		gsap.set('.rv-ul', { scaleX: 0 });
-		gsap.set('.explore-button', { scale: 0, opacity: 0 });
+		gsap.set('.explore-mag-pos .mag-btn', { scale: 0, opacity: 0 });
 
 		const tl = gsap.timeline({ delay: baseDelay });
 
@@ -132,7 +132,7 @@
 		if (credit) tl.add(buildLabelReveal(credit), portfolioStart + 0.35);
 
 		// 4. EXPLORE button snaps in last (rendered by Start-Transition)
-		tl.fromTo('.explore-button',
+		tl.fromTo('.explore-mag-pos .mag-btn',
 			{ scale: 0, opacity: 0, y: 12 },
 			{ scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(3.5)' },
 			portfolioStart + 0.85

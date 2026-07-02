@@ -74,10 +74,10 @@
   }
 
   .github {
-    background-image: url("../../../../assets/images/icons/github.png");
+    background-image: url("../../../assets/images/icons/github.png");
   }
 
   .telegram {
-    background-image: url("../../../../assets/images/icons/telegram.png");
+    background-image: url("../../../assets/images/icons/telegram.png");
   }
 </style>

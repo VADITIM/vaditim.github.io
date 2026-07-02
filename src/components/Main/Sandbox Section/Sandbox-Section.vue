@@ -1,40 +1,39 @@
 ﻿<template>
-  <div ref="rootRef" class="playground-section">
+  <div ref="rootRef" class="sandbox-section">
 
-    <div class="pg-header">
-      <div ref="eyebrowRef" class="pg-eyebrow">INTERACTION&nbsp;·&nbsp;PLAYGROUND</div>
+    <div class="sb-header">
+      <div ref="eyebrowRef" class="sb-eyebrow">INTERACTION&nbsp;·&nbsp;SANDBOX</div>
     </div>
 
     <!-- Kickable physics title — each glyph is its own no-gravity body that
          bounces off the viewport edges and the module windows, and gets shoved
          by the cursor on contact. -->
-    <div ref="lettersRef" class="pg-letters">
+    <div ref="lettersRef" class="sb-letters">
       <span
         v-for="(ch, i) in TITLE_LETTERS"
         :key="i"
         ref="charRefs"
-        class="pg-char"
+        class="sb-char"
       >{{ ch }}</span>
     </div>
 
-    <div class="pg-grid">
+    <div class="sb-grid">
 
       <!-- WINDOW 1 · magnetic button -->
-      <ModuleDisplay hue>
+      <ModuleDisplay caption="move toward it ◂▸ then click · how big can you get it?">
         <template #label>01 · MAGNETIC&nbsp;+&nbsp;IMPACT</template>
-        <div class="pg-win-body">
+        <div class="sb-win-body">
           <div ref="magCountRef" class="mi-mag-count">{{ magClicks }}</div>
-          <div ref="magWrapRef" class="mi-mag-wrap">
-            <div ref="magBtnRef" class="mi-mag-btn">HIT&nbsp;ME</div>
-          </div>
-          <div class="pg-caption">move toward it ◂▸ then click · how big can you get it?</div>
+          <MagneticButton ref="magBtnCompRef" class="mi-mag-btn-wrap" :zone="60" :strength="0.4" @click="onHitMeClick">
+            HIT&nbsp;ME
+          </MagneticButton>
         </div>
       </ModuleDisplay>
 
       <!-- WINDOW 2 · hover-focus list -->
-      <ModuleDisplay hue>
+      <ModuleDisplay>
         <template #label>02 · HOVER&nbsp;FOCUS&nbsp;·&nbsp;LIST</template>
-        <div class="pg-win-body pg-list-body">
+        <div class="sb-win-body sb-list-body">
           <div
             v-for="label in LIST_ITEMS"
             :key="label"
@@ -48,25 +47,24 @@
       </ModuleDisplay>
 
       <!-- WINDOW 3 · zero-g space -->
-      <ModuleDisplay hue label-over>
+      <ModuleDisplay label-over caption="drift in zero-g · hold to pull · release to burst">
         <template #label>03 · ZERO-G&nbsp;SPACE</template>
-        <div ref="gravRef" class="pg-grav"></div>
-        <div class="pg-grav-controls">
-          <button type="button" class="pg-grav-btn" @click="addParticle">+</button>
-          <button type="button" class="pg-grav-btn" @click="removeParticle">−</button>
+        <div ref="gravRef" class="sb-grav"></div>
+        <div class="sb-grav-controls">
+          <MagneticButton type="button" class="sb-grav-btn-wrap" :zone="10" :strength="0.3" @click="addParticle">+</MagneticButton>
+          <MagneticButton type="button" class="sb-grav-btn-wrap" :zone="10" :strength="0.3" @click="removeParticle">−</MagneticButton>
         </div>
-        <div class="pg-caption pg-caption--over">drift in zero-g · hold to pull · release to burst</div>
       </ModuleDisplay>
 
       <!-- WINDOW 4 · tilt parallax -->
-      <ModuleDisplay hue label-over>
+      <ModuleDisplay label-over>
         <template #label>04 · TILT&nbsp;PARALLAX</template>
-        <div ref="tiltWrapRef" class="pg-tilt-wrap">
-          <div ref="tiltRef" class="pg-tilt">
-            <div class="pg-tilt-frame"></div>
-            <img :src="qrSrc" class="pg-tilt-qr" alt="Scan me" draggable="false" />
-            <div class="pg-tilt-chip">2026</div>
-            <div class="pg-tilt-name">SCAN&nbsp;ME</div>
+        <div ref="tiltWrapRef" class="sb-tilt-wrap">
+          <div ref="tiltRef" class="sb-tilt">
+            <div class="sb-tilt-frame"></div>
+            <img :src="qrSrc" class="sb-tilt-qr" alt="Scan me" draggable="false" />
+            <div class="sb-tilt-chip">2026</div>
+            <div class="sb-tilt-name">SCAN&nbsp;ME</div>
           </div>
         </div>
       </ModuleDisplay>
@@ -79,10 +77,11 @@
   import { onBeforeUnmount, onMounted, ref } from 'vue'
   import { gsap } from 'gsap'
   import { currentSection } from '@modules/sectionsCore'
-  import { getSectionIndexById } from '@modules/sectionsRegistry'
+  import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
+  import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import qrSrc from '@assets/images/rickroll-qr.png'
 
   const LIST_ITEMS = ['NEBULA UI', 'HELIX', 'PULSE', 'ARCADE']
@@ -93,15 +92,14 @@
   const charRefs = ref<HTMLElement[]>([])
   const eyebrowRef = ref<HTMLElement | null>(null)
   const listItemRefs = ref<HTMLElement[]>([])
-  const magWrapRef = ref<HTMLElement | null>(null)
-  const magBtnRef = ref<HTMLElement | null>(null)
+  const magBtnCompRef = ref<InstanceType<typeof MagneticButton> | null>(null)
   const magCountRef = ref<HTMLElement | null>(null)
   const magClicks = ref(0)
   const tiltWrapRef = ref<HTMLElement | null>(null)
   const tiltRef = ref<HTMLElement | null>(null)
   const gravRef = ref<HTMLElement | null>(null)
 
-  const pgIndex = getSectionIndexById('playground')
+  const sbIndex = getSectionIndexById('sandbox')
   const MAG_MAX_SCALE = 2.1
   const MAG_RESET_MS = 200
   let magCombo = 0
@@ -157,63 +155,44 @@
     listeners.push(() => target.removeEventListener(type, handler, opts))
   }
 
-  // ── magnetic button ──
-  function initMagnetic() {
-    const wrap = magWrapRef.value, btn = magBtnRef.value
-    if (!wrap || !btn) return
-    on(wrap, 'mousemove', (e) => {
-      const ev = e as MouseEvent
-      const r = wrap.getBoundingClientRect()
-      const dx = ev.clientX - (r.left + r.width / 2)
-      const dy = ev.clientY - (r.top + r.height / 2)
-      gsap.to(btn, { x: dx * 0.4, y: dy * 0.4, duration: 0.4, ease: 'power3.out' })
-    })
-    on(wrap, 'mouseleave', () => gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.3)' }))
-    on(btn, 'click', () => {
-      clearTimeout(magResetTimer)
-      magCombo++
-      magClicks.value = magCombo
-      gsap.fromTo(magCountRef.value, { scale: 1.3, color: '#5bfd5b' }, { scale: 1, color: '#fff', duration: 0.35, ease: 'power3.out', overwrite: 'auto' })
+  // ── magnetic button impact (extra function appended to the base MagneticButton) ──
+  function onHitMeClick() {
+    const btn = magBtnCompRef.value?.el
+    if (!btn) return
 
-      // each successive hit closes a fraction of the remaining gap to max — gets
-      // harder to reach max (asymptotic) but, unlike a fixed-size diminishing
-      // increment, it can actually still reach MAG_MAX_SCALE regardless of its value
-      const remaining = MAG_MAX_SCALE - magGrowth
-      magGrowth += remaining * 0.22
-      if (MAG_MAX_SCALE - magGrowth < 0.05) magGrowth = MAG_MAX_SCALE
+    clearTimeout(magResetTimer)
+    magCombo++
+    magClicks.value = magCombo
+    gsap.fromTo(magCountRef.value, { scale: 1.3, color: '#5bfd5b' }, { scale: 1, color: '#fff', duration: 0.35, ease: 'power3.out', overwrite: 'auto' })
 
-      gsap.killTweensOf(btn, 'scale')
-      gsap.to(btn, { scale: magGrowth, duration: 0.12, ease: 'back.out(2)', overwrite: 'auto' })
-      gsap.to(btn, { scale: Math.max(1, magGrowth - 0.12), duration: 0.35, ease: 'power2.in', delay: 0.16, overwrite: 'auto' })
+    const remaining = MAG_MAX_SCALE - magGrowth
+    magGrowth += remaining * 0.22
+    if (MAG_MAX_SCALE - magGrowth < 0.05) magGrowth = MAG_MAX_SCALE
 
-      // punch impact — quick multi-axis vibration (rotation + skew, distinct from the
-      // magnetic x/y offset). Unlike a decaying shake, the offset is HELD at the end
-      // of each hit (not reset to 0) so hits visibly accumulate/alternate until the
-      // combo resets or the next punch lands — reads as sustained impact, not a blip.
-      const kick = 3 + Math.min(magCombo, 5)
-      const dir = magCombo % 2 === 0 ? 1 : -1
-      gsap.killTweensOf(btn, 'rotation,skewX,skewY')
-      gsap.timeline({ overwrite: 'auto' })
-        .to(btn, { rotation: -dir * kick, skewX: -dir * kick * 0.6, skewY: dir * kick * 0.3, duration: 0.04, ease: 'power1.out' })
-        .to(btn, { rotation: dir * kick * 0.8, skewX: dir * kick * 0.5, skewY: -dir * kick * 0.25, duration: 0.05, ease: 'power1.inOut' })
-        .to(btn, { rotation: dir * kick * 0.5, skewX: dir * kick * 0.3, skewY: -dir * kick * 0.15, duration: 0.08, ease: 'power2.out' })
+    gsap.killTweensOf(btn, 'scale,rotation,skewX,skewY,backgroundColor,boxShadow')
 
-      if (magGrowth >= MAG_MAX_SCALE) {
-        gsap.timeline({ overwrite: 'auto' })
-          .set(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 24px 6px rgba(255,43,43,0.85)' })
-          .to(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 32px 10px rgba(255,43,43,0.95)', duration: 0.12, ease: 'power2.out', repeat: 1, yoyo: true })
-          .to(btn, { backgroundColor: '#5bfd5b', boxShadow: '0 0 0 0 rgba(255,43,43,0)', duration: 0.4, ease: 'power2.out' })
-      }
+    const kick = 3 + Math.min(magCombo, 5)
+    const dir = magCombo % 2 === 0 ? 1 : -1
+    const hit = gsap.timeline({ overwrite: 'auto' })
+    hit.to(btn, { scale: magGrowth, duration: 0.12, ease: 'back.out(2)' }, 0)
+    hit.to(btn, { scale: Math.max(1, magGrowth - 0.12), duration: 0.35, ease: 'power2.in' }, 0.16)
+    hit.to(btn, { rotation: -dir * kick, skewX: -dir * kick * 0.6, skewY: dir * kick * 0.3, duration: 0.04, ease: 'power1.out' }, 0)
+    hit.to(btn, { rotation: dir * kick * 0.8, skewX: dir * kick * 0.5, skewY: -dir * kick * 0.25, duration: 0.05, ease: 'power1.inOut' }, 0.04)
+    hit.to(btn, { rotation: dir * kick * 0.5, skewX: dir * kick * 0.3, skewY: -dir * kick * 0.15, duration: 0.08, ease: 'power2.out' }, 0.09)
 
-      magResetTimer = window.setTimeout(() => {
-        magCombo = 0
-        magGrowth = 1
-        magClicks.value = 0
-        gsap.to(btn, { scale: 1, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
-        gsap.to(btn, { rotation: 0, skewX: 0, skewY: 0, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
-        gsap.to(magCountRef.value, { opacity: 0.4, duration: 0.3, overwrite: 'auto', onComplete: () => gsap.to(magCountRef.value, { opacity: 1, duration: 0.3 }) })
-      }, MAG_RESET_MS)
-    })
+    if (magGrowth >= MAG_MAX_SCALE) {
+      hit.set(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 24px 6px rgba(255,43,43,0.85)' }, 0)
+      hit.to(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 32px 10px rgba(255,43,43,0.95)', duration: 0.12, ease: 'power2.out', repeat: 1, yoyo: true }, 0)
+      hit.to(btn, { backgroundColor: '#5bfd5b', boxShadow: '0 0 0 0 rgba(255,43,43,0)', duration: 0.4, ease: 'power2.out' }, 0.24)
+    }
+
+    magResetTimer = window.setTimeout(() => {
+      magCombo = 0
+      magGrowth = 1
+      magClicks.value = 0
+      gsap.to(btn, { scale: 1, rotation: 0, skewX: 0, skewY: 0, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
+      gsap.to(magCountRef.value, { opacity: 0.4, duration: 0.3, overwrite: 'auto', onComplete: () => gsap.to(magCountRef.value, { opacity: 1, duration: 0.3 }) })
+    }, MAG_RESET_MS)
   }
 
   // ── hover-focus list (overwrite:'auto' everywhere so fast toggling never glitches) ──
@@ -238,14 +217,18 @@
   function initTilt() {
     const wrap = tiltWrapRef.value, card = tiltRef.value
     if (!wrap || !card) return
+    // Pre-register GSAP's transform state so the first mousemove tween has a
+    // known starting point and doesn't trigger a scale glitch from reading the
+    // browser's computed CSS with no prior GSAP _gsap data on the element.
+    gsap.set(card, { rotationX: 0, rotationY: 0, transformPerspective: 900 })
     on(wrap, 'mousemove', (e) => {
       const ev = e as MouseEvent
       const r = wrap.getBoundingClientRect()
       const px = (ev.clientX - (r.left + r.width / 2)) / (r.width / 2)
       const py = (ev.clientY - (r.top + r.height / 2)) / (r.height / 2)
-      gsap.to(card, { rotationY: px * 16, rotationX: -py * 16, duration: 0.4, ease: 'power3.out', transformPerspective: 900 })
+      gsap.to(card, { rotationY: px * 16, rotationX: -py * 16, duration: 0.4, ease: 'power3.out', transformPerspective: 900, overwrite: 'auto' })
     })
-    on(wrap, 'mouseleave', () => gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1,0.4)' }))
+    on(wrap, 'mouseleave', () => gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1,0.4)', overwrite: 'auto' }))
   }
 
   // ── zero-g particles ──
@@ -431,7 +414,7 @@
   }
 
   function loop() {
-    const active = currentSection.value === pgIndex
+    const active = currentSection.value === sbIndex
     if (shapes.length && active) step()
     if (glyphsReleased && active) letterStep()
     rafId = requestAnimationFrame(loop)
@@ -448,19 +431,9 @@
     return rootRef.value?.getBoundingClientRect() ?? null
   }
 
-  // Cache the module-window rectangles in section-space; letters bounce off these.
+  // Characters phase through all module windows — glyphBoxes stays empty.
   function refreshGlyphBounds() {
-    const sec = sectionRect()
-    if (!sec || !rootRef.value) return
-    // The zero-g window (module 03) is intentionally NOT a wall — letters can fly
-    // into it, get tugged by its black hole, and bump the floating shapes.
-    const gravWin = gravRef.value?.closest('.module-display') ?? null
-    glyphBoxes = Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display'))
-      .filter((w) => w !== gravWin)
-      .map((w) => {
-        const r = w.getBoundingClientRect()
-        return { l: r.left - sec.left, t: r.top - sec.top, r: r.right - sec.left, b: r.bottom - sec.top }
-      })
+    glyphBoxes = []
   }
 
   // Lay the glyphs out as a centred title row near the top and record those as
@@ -636,7 +609,7 @@
     const eyebrow = eyebrowRef.value
     const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
     const items = listItemRefs.value
-    const btn = magBtnRef.value
+    const btn = magBtnCompRef.value?.el ?? null
     const chars = glyphs.map((g) => g.el)
 
     // Freeze the title physics and recompute its home row + the box geometry it
@@ -675,7 +648,6 @@
   }
 
   onMounted(() => {
-    initMagnetic()
     initList()
     initTilt()
     initParticles()
@@ -724,11 +696,11 @@
     rafId = requestAnimationFrame(loop)
 
     stopSectionWatch = onSectionStatesChange((meta) => {
-      if (meta.isLeavingSection(pgIndex)) playLeave()
-      else if (meta.isEnteringSection(pgIndex)) playReveal()
+      if (meta.isLeavingSection(sbIndex)) playLeave()
+      else if (meta.isEnteringSection(sbIndex)) playReveal()
     })
 
-    if (currentSection.value === pgIndex) playReveal()
+    if (currentSection.value === sbIndex) playReveal()
   })
 
   onBeforeUnmount(() => {
@@ -750,7 +722,7 @@
 <style scoped lang="scss">
   @use "@styleVariables" as *;
 
-  .playground-section {
+  .sandbox-section {
     position: absolute;
     top: 0;
     left: 0;
@@ -765,7 +737,7 @@
     overflow: hidden;
   }
 
-  .pg-header {
+  .sb-header {
     position: absolute;
     top: 4%;
     left: 0;
@@ -774,7 +746,7 @@
     z-index: 3;
   }
 
-  .pg-eyebrow {
+  .sb-eyebrow {
     font-family: 'Audiowide';
     font-size: 11px;
     letter-spacing: 5px;
@@ -786,7 +758,7 @@
   // Full-section layer the glyphs roam across. pointer-events:none so the cursor
   // still reaches the module windows beneath — kicking is driven by tracked
   // cursor position, not real hit-testing.
-  .pg-letters {
+  .sb-letters {
     position: absolute;
     inset: 0;
     z-index: 6;
@@ -794,7 +766,7 @@
     overflow: hidden;
   }
 
-  .pg-char {
+  .sb-char {
     position: absolute;
     left: 0;
     top: 0;
@@ -806,7 +778,7 @@
     user-select: none;
   }
 
-  .pg-grid {
+  .sb-grid {
     position: absolute;
     left: 0;
     right: 0;
@@ -819,7 +791,7 @@
     gap: 18px;
   }
 
-  .pg-win-body {
+  .sb-win-body {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -828,24 +800,8 @@
     gap: 10px;
   }
 
-  .pg-list-body {
+  .sb-list-body {
     gap: 2px;
-  }
-
-  .pg-caption {
-    font-family: 'Mono';
-    font-size: 10px;
-    color: #4a4a4a;
-
-    &--over {
-      position: absolute;
-      bottom: 12px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      pointer-events: none;
-      z-index: 4;
-    }
   }
 
   .mi-mag-count {
@@ -858,28 +814,16 @@
     will-change: transform, color;
   }
 
-  .mi-mag-wrap {
-    position: relative;
-    width: 260px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .mi-mag-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 18px 40px;
-    background: #5bfd5b;
-    color: #0e0e0e;
-    font-family: 'Audiowide';
-    font-size: 16px;
-    letter-spacing: 2px;
-    border-radius: 6px;
-    cursor: pointer;
-    will-change: transform;
+  .mi-mag-btn-wrap {
+    :deep(.mag-btn) {
+      padding: 18px 40px;
+      background: #5bfd5b;
+      color: #0e0e0e;
+      font-family: 'Audiowide';
+      font-size: 16px;
+      letter-spacing: 2px;
+      border-radius: 6px;
+    }
   }
 
   .mi-item {
@@ -902,13 +846,13 @@
     transform-origin: left center;
   }
 
-  .pg-grav {
+  .sb-grav {
     position: absolute;
     inset: 0;
     overflow: hidden;
   }
 
-  .pg-grav-controls {
+  .sb-grav-controls {
     position: absolute;
     top: 50%;
     right: 14px;
@@ -919,29 +863,27 @@
     gap: 8px;
   }
 
-  .pg-grav-btn {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Mono';
-    font-size: 1.5rem;
-    line-height: 1;
-    color: #9a9a9a;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid #2c2c2c;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: color 0.2s ease, border-color 0.2s ease;
+  .sb-grav-btn-wrap {
+    :deep(.mag-btn) {
+      width: 2.5rem;
+      height: 2.5rem;
+      font-family: 'Mono';
+      font-size: 1.5rem;
+      line-height: 1;
+      color: #9a9a9a;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid #2c2c2c;
+      border-radius: 5px;
+      transition: color 0.2s ease, border-color 0.2s ease;
 
-    &:hover {
-      color: #6fae7c;
-      border-color: #6fae7c;
+      &:hover {
+        color: #6fae7c;
+        border-color: #6fae7c;
+      }
     }
   }
 
-  .pg-tilt-wrap {
+  .sb-tilt-wrap {
     flex: 1;
     min-height: 0;
     display: grid;
@@ -953,7 +895,7 @@
     container-type: size;
   }
 
-  .pg-tilt {
+  .sb-tilt {
     position: relative;
     // Size the card off the container height to preserve the 1/1 square aspect.
     height: 78cqh;
@@ -966,7 +908,7 @@
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
   }
 
-  .pg-tilt-frame {
+  .sb-tilt-frame {
     position: absolute;
     inset: 14px;
     border: 1px solid #2a2a2a;
@@ -976,7 +918,7 @@
 
   // QR code parallax layer — sits highest on the Z axis so it floats most
   // prominently above the card face as it tilts. Rendered as-is from the PNG.
-  .pg-tilt-qr {
+  .sb-tilt-qr {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -988,7 +930,7 @@
     user-select: none;
   }
 
-  .pg-tilt-chip {
+  .sb-tilt-chip {
     position: absolute;
     top: 18px;
     left: 18px;
@@ -999,7 +941,7 @@
     transform: translateZ(60px);
   }
 
-  .pg-tilt-name {
+  .sb-tilt-name {
     position: absolute;
     bottom: 20px;
     left: 18px;
