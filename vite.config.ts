@@ -7,6 +7,9 @@ import path from 'path'
 export default defineConfig({
   base: './',
   plugins: [vue()],
+  server: {
+    host: true, // listen on all interfaces (0.0.0.0) so LAN devices (phone) can connect
+  },
   build: {
     outDir: 'docs',
     emptyOutDir: true,
@@ -18,19 +21,11 @@ export default defineConfig({
       '@modules': path.resolve(__dirname, 'src/modules'),
       '@assets': path.resolve(__dirname, 'src/assets'),
       
-      '@perks': path.resolve(__dirname, 'src/components/Pages/Main/Perks Section'),
-      '@profile': path.resolve(__dirname, 'src/components/Pages/Main/Profile Section'),
-      '@projects': path.resolve(__dirname, 'src/components/Pages/Main/Projects Section'),
-      
-      '@perksStyle': path.resolve(__dirname, 'src/style/Perks Section'),
-      '@profileStyle': path.resolve(__dirname, 'src/style/Profile Section'),
-      '@projectsStyle': path.resolve(__dirname, 'src/style/Projects Section'),
-      
-      '@perksModules': path.resolve(__dirname, 'src/modules/Perks Section'),
-      '@profileModules': path.resolve(__dirname, 'src/modules/Profile Section'),
-      '@projectsModules': path.resolve(__dirname, 'src/modules/Projects Section'),
-      
-      '@sections': path.resolve(__dirname, 'src/components/Sections'),
+      '@perks': path.resolve(__dirname, 'src/components/Main/Perks Section'),
+      '@profile': path.resolve(__dirname, 'src/components/Main/Profile Section'),
+      '@projects': path.resolve(__dirname, 'src/components/Main/Projects Section'),
+
+      '@sections': path.resolve(__dirname, 'src/components/Main'),
     }
   },
 })

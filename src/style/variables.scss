@@ -14,11 +14,12 @@
 // Variables -------------------------------------------------------------------------
 
 
-$mobile: 435px; //360px
-$tablet: 840px; //1200px
-$tabletLandscape: 1200px; //1200px
-$small-desktop: 1600px;
-$large-desktop: 2140px;
+$mobile: 360px;
+$tablet: 768px;
+$tabletLandscape: 1024px;
+$small-desktop: 1200px;
+$mid-desktop: 1550px;
+$desktop: 1825px;
 
 $purple: #7e55dd;
 $black: #414141;
@@ -33,56 +34,51 @@ $backgroundTransitionTime: 0.3s;
 // Media Queries -------------------------------------------------------------------------
 
 
-@mixin allTablets {
-  @media screen and (min-width: #{$mobile}) and (max-width: #{$tabletLandscape}) {
-    @content;
-  }}
-
 @mixin mobile {
-  @media screen and (max-width: #{$mobile}) {
+  @media screen and (max-width: #{$tablet}) {
     @content;
   }
 }
 
 @mixin tablet {
-  @media screen and (min-width: #{$mobile}) and (max-width: #{$tablet}) {
-    @content;
-  }
-}
-
-@mixin tabletLandscape {
   @media screen and (min-width: #{$tablet}) and (max-width: #{$tabletLandscape}) {
     @content;
   }
 }
 
-@mixin allMobileDevices {
-  @media screen and (min-width: 0px) and (max-width: #{$tabletLandscape}) {
+@mixin tabletLandscape {
+  @media screen and (min-width: #{$tabletLandscape}) and (max-width: #{$small-desktop}) {
+    @content;
+  }
+}
+
+@mixin allMobile {
+  @media screen and (min-width: 0px) and (max-width: #{$small-desktop}) {
     @content;
   }
 }
 
 
 @mixin smallDesktop {
-  @media screen and (min-width: #{$tabletLandscape}) and (max-width: #{$small-desktop}) {
-    @content;
-  }
-}
-
-@mixin desktop {
   @media screen and (min-width: #{$small-desktop}) {
     @content;
   }
 }
 
-@mixin largeDesktop {
-  @media screen and (min-width: #{$large-desktop}) {
+@mixin midDesktop {
+  @media screen and (min-width: #{$mid-desktop}) {
     @content;
   }
 }
 
-@mixin allDesktops {
-  @media screen and (min-width: #{$tabletLandscape}) {
+@mixin desktop {
+  @media screen and (min-width: #{$desktop}) {
+    @content;
+  }
+}
+
+@mixin allDesktop {
+  @media screen and (min-width: #{$small-desktop}) {
     @content;
   }
 }
@@ -133,12 +129,13 @@ $backgroundTransitionTime: 0.3s;
   transform: rotateX(#{$angleX}deg) rotateY(#{$angleY}deg) rotateZ(#{$angleZ}deg);
 }
 
-@mixin threeDElement($depth: 25, $color: $purple) {
+@mixin threeDElement($depth: 25, $color: $purple, $direction: right) {
   $shadows: ();
+  $dirSign: if($direction == left, -1, 1);
 
   @for $i from 1 through $depth {
     $darkness: if($i <= 5, $i * 10%, 50%);
-    $shadow: #{$i}px #{-$i}px 0 color.adjust($color, $lightness: -$darkness);
+    $shadow: #{($i * $dirSign)}px #{-$i}px 0 color.adjust($color, $lightness: -$darkness);
     $shadows: list.append($shadows, $shadow, $separator: comma);
   }
   
@@ -158,7 +155,17 @@ $backgroundTransitionTime: 0.3s;
   align-items: $string2;
 }
 
+@mixin boxShadow($shadow, $legacyPrefixes: false) {
+  @if $legacyPrefixes {
+    -webkit-box-shadow: $shadow;
+    -khtml-box-shadow: $shadow;
+    -moz-box-shadow: $shadow;
+    -ms-box-shadow: $shadow;
+    -o-box-shadow: $shadow;
+  }
 
+  box-shadow: $shadow;
+}
 
 @mixin animationPopIn($duration: 0.2s) {
     animation: popIn $duration forwards;
@@ -167,7 +174,6 @@ $backgroundTransitionTime: 0.3s;
 @mixin animationPopOut($duration: 0.2s) {
     animation: popOut $duration forwards;
 }
-
 
 // Keyframes ------------------------------------------------------------
 
