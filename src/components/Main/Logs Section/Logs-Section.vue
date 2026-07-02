@@ -17,7 +17,7 @@
   const logsLabels: { text: string; pos: CSSProperties; wrap?: boolean }[] = [
     { text: 'CRAFTED\nWITH INTENT', pos: { top: '8%', left: '20%' } },
     { text: 'BUILT TO\nCAPTIVATE',       pos: { top: '8%', right: '10%', textAlign: 'right' } },
-    { text: 'EXPERIENCE DESIGN', pos: { bottom: '2%', left: '15%' }, wrap: true },
+    { text: 'EXPERIENCE DESIGN', pos: { bottom: '8%', left: '15%' }, wrap: true },
   ];
 </script>
 

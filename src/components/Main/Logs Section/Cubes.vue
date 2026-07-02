@@ -83,11 +83,40 @@
   const BUILD_STAGGER = 0.22;  // gap between successive cubes starting to build
   const FACE_STAGGER = 0.06;   // gap between faces of the same cube
 
+  // ── Quaternion helpers ──
+  // World-space (extrinsic) rotations: pre-multiply so each drag increment
+  // rotates around the screen axes, not the cube's local axes. This means
+  // "drag right always spins right" regardless of current orientation.
+  interface Q { w: number; x: number; y: number; z: number }
+  const qMul = (a: Q, b: Q): Q => ({
+    w: a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z,
+    x: a.w*b.x + a.x*b.w + a.y*b.z - a.z*b.y,
+    y: a.w*b.y - a.x*b.z + a.y*b.w + a.z*b.x,
+    z: a.w*b.z + a.x*b.y - a.y*b.x + a.z*b.w,
+  });
+  const qNorm = (q: Q): Q => {
+    const l = Math.sqrt(q.w**2 + q.x**2 + q.y**2 + q.z**2) || 1;
+    return { w: q.w/l, x: q.x/l, y: q.y/l, z: q.z/l };
+  };
+  const qFromAxis = (ax: number, ay: number, az: number, deg: number): Q => {
+    const h = deg * Math.PI / 360;
+    const s = Math.sin(h);
+    return { w: Math.cos(h), x: ax*s, y: ay*s, z: az*s };
+  };
+  // Column-major matrix3d for CSS — perspective on .pc-scene still applies.
+  const qToCSS = ({ w, x, y, z }: Q) =>
+    `matrix3d(${1-2*(y*y+z*z)},${2*(x*y+z*w)},${2*(x*z-y*w)},0,` +
+    `${2*(x*y-z*w)},${1-2*(x*x+z*z)},${2*(y*z+x*w)},0,` +
+    `${2*(x*z+y*w)},${2*(y*z-x*w)},${1-2*(x*x+y*y)},0,0,0,0,1)`;
+  // Initial orientation: CSS rotateX(-20deg) rotateY(-28deg)
+  // = extrinsic qY(-28) * qX(-20) (right-to-left world order).
+  const Q0 = () => qNorm(qMul(qFromAxis(0,1,0,-28), qFromAxis(1,0,0,-20)));
+
   interface CubeState {
     el: HTMLElement;
-    rx: number; ry: number;
-    vx: number; vy: number;
-    idleVx: number; idleVy: number;
+    q: Q;
+    vX: number; vY: number;       // angular velocity (deg/frame) around world X / Y
+    idleVX: number; idleVY: number;
     dragging: boolean;
     building: boolean;
   }
@@ -109,9 +138,9 @@
     nameEls = [...root.value.querySelectorAll<HTMLElement>('.pc-name')];
 
     states = cubeEls.map(el => {
-      const idleVx = gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.07);
-      const idleVy = gsap.utils.random([-1, 1]) * gsap.utils.random(0.08, 0.2);
-      return { el, rx: -20, ry: -28, vx: idleVx, vy: idleVy, idleVx, idleVy, dragging: false, building: false };
+      const idleVX = gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.07);
+      const idleVY = gsap.utils.random([-1, 1]) * gsap.utils.random(0.08, 0.2);
+      return { el, q: Q0(), vX: idleVX, vY: idleVY, idleVX, idleVY, dragging: false, building: false };
     });
 
     cubeEls.forEach((cube, i) => attachDrag(cube.closest('.pc-scene') as HTMLElement, states[i]));
@@ -133,13 +162,12 @@
 
   function spinStep() {
     for (const c of states) {
-      if (c.building) { c.el.style.transform = `rotateX(${c.rx}deg) rotateY(${c.ry}deg)`; continue; }
-      if (!c.dragging) {
-        c.rx += c.vx; c.ry += c.vy;
-        c.vx += (c.idleVx - c.vx) * 0.02;
-        c.vy += (c.idleVy - c.vy) * 0.02;
+      if (!c.dragging && !c.building) {
+        c.q = qNorm(qMul(qFromAxis(0,1,0, c.vY), qMul(qFromAxis(1,0,0, c.vX), c.q)));
+        c.vX += (c.idleVX - c.vX) * 0.02;
+        c.vY += (c.idleVY - c.vY) * 0.02;
       }
-      c.el.style.transform = `rotateX(${c.rx}deg) rotateY(${c.ry}deg)`;
+      c.el.style.transform = qToCSS(c.q);
     }
   }
 
@@ -148,8 +176,8 @@
     const move = (e: PointerEvent) => {
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
       lastX = e.clientX; lastY = e.clientY;
-      cube.ry += dx * 0.5; cube.rx += -dy * 0.5;
-      cube.vx = -dy * 0.5; cube.vy = dx * 0.5;
+      cube.q = qNorm(qMul(qFromAxis(0,1,0, dx * 0.5), qMul(qFromAxis(1,0,0, -dy * 0.5), cube.q)));
+      cube.vX = -dy * 0.5; cube.vY = dx * 0.5;
     };
     const up = () => {
       cube.dragging = false; scene.style.cursor = 'grab';
@@ -243,11 +271,12 @@
     const state = states.find(c => c.el === cube);
     if (state) {
       state.building = true;
-      state.rx = gsap.utils.random(-40, 20);
-      state.ry = gsap.utils.random(-360, 360);
-      state.idleVx = gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.08);
-      state.idleVy = gsap.utils.random([-1, 1]) * gsap.utils.random(0.07, 0.22);
-      state.vx = state.idleVx; state.vy = state.idleVy;
+      const rxDeg = gsap.utils.random(-40, 20);
+      const ryDeg = gsap.utils.random(-360, 360);
+      state.q = qNorm(qMul(qFromAxis(0,1,0, ryDeg), qFromAxis(1,0,0, rxDeg)));
+      state.idleVX = gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.08);
+      state.idleVY = gsap.utils.random([-1, 1]) * gsap.utils.random(0.07, 0.22);
+      state.vX = state.idleVX; state.vY = state.idleVY;
     }
     gsap.killTweensOf(faces);
     const rect = cube.getBoundingClientRect();
@@ -380,6 +409,7 @@
   .pc-name {
     position: relative;
     pointer-events: none;
+      bottom: -15%;
 
     .pc-label-inner {
       position: relative;

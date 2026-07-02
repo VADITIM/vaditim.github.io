@@ -16,6 +16,7 @@
 
 <script setup lang="ts">
   import { onMounted, onBeforeUnmount, ref } from 'vue';
+  import { gsap } from 'gsap';
 
   const props = withDefaults(defineProps<{
     label?: string;
@@ -23,16 +24,20 @@
     labelOver?: boolean;    // label floats above overlay content (z-index, no pointer events)
     staticVisible?: boolean; // skip the default opacity:0 — use when content reveals itself internally rather than via a container-level enter tween
     caption?: string;       // optional hint line pinned to the bottom centre of the box
+    animateHeight?: boolean; // smoothly tween the box height when its content's natural height changes (e.g. text re-wrapping) instead of snapping
   }>(), {
     label: '',
     accent: '#5bfd5b',
     labelOver: false,
     staticVisible: false,
     caption: '',
+    animateHeight: true,
   });
 
   const root = ref<HTMLElement | null>(null);
   const listeners: Array<() => void> = [];
+  let resizeObserver: ResizeObserver | null = null;
+  let prevHeight: number | null = null;
 
   defineExpose({ get el() { return root.value; } });
 
@@ -40,22 +45,56 @@
     if (!root.value) return;
     const el = root.value;
     const glow = el.querySelector<HTMLElement>('.module-display-hue');
-    if (!glow) return;
-    const onMove = (e: MouseEvent) => {
-      const r = el.getBoundingClientRect();
-      glow.style.setProperty('--mx', `${e.clientX - r.left}px`);
-      glow.style.setProperty('--my', `${e.clientY - r.top}px`);
-      glow.style.opacity = '1';
-    };
-    const onLeave = () => { glow.style.opacity = '0'; };
-    el.addEventListener('mousemove', onMove);
-    el.addEventListener('mouseleave', onLeave);
-    listeners.push(() => el.removeEventListener('mousemove', onMove), () => el.removeEventListener('mouseleave', onLeave));
+    if (glow) {
+      const onMove = (e: MouseEvent) => {
+        const r = el.getBoundingClientRect();
+        glow.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        glow.style.setProperty('--my', `${e.clientY - r.top}px`);
+        glow.style.opacity = '1';
+      };
+      const onLeave = () => { glow.style.opacity = '0'; };
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('mouseleave', onLeave);
+      listeners.push(() => el.removeEventListener('mousemove', onMove), () => el.removeEventListener('mouseleave', onLeave));
+    }
+
+    // ── height scaling transition ──
+    // Content whose natural height changes (e.g. Projects' description
+    // re-wrapping when the centred card changes) would otherwise snap the box
+    // to its new size. Watch for that and tween height instead — a no-op for
+    // modules whose height is pinned by a parent grid track (Sandbox/Extra),
+    // since those never report a size change here.
+    if (props.animateHeight) {
+      prevHeight = el.offsetHeight;
+      resizeObserver = new ResizeObserver(() => {
+        if (!root.value) return;
+        const newHeight = root.value.offsetHeight;
+        if (prevHeight === null) { prevHeight = newHeight; return; }
+        if (Math.abs(newHeight - prevHeight) < 1) return;
+        const from = prevHeight;
+        prevHeight = newHeight;
+        resizeObserver?.unobserve(root.value);
+        gsap.fromTo(root.value, { height: from }, {
+          height: newHeight,
+          duration: 0.45,
+          ease: 'power3.out',
+          overwrite: 'auto',
+          onComplete: () => {
+            if (!root.value) return;
+            root.value.style.height = '';
+            resizeObserver?.observe(root.value);
+          },
+        });
+      });
+      resizeObserver.observe(el);
+    }
   });
 
   onBeforeUnmount(() => {
     listeners.forEach((off) => off());
     listeners.length = 0;
+    resizeObserver?.disconnect();
+    resizeObserver = null;
   });
 </script>
 

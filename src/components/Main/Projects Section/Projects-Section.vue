@@ -1,58 +1,78 @@
 <template>
   <div class="projects-section">
 
-    <!-- rotating helix backdrop -->
-    <div ref="helixRef" class="proj-helix"></div>
-
-    <!-- heading -->
-    <div class="proj-head">
-      <div class="proj-kicker-clip">
-        <div ref="kickerRef" class="proj-kicker">FEATURED&nbsp;·&nbsp;SELECTED&nbsp;WORK</div>
-      </div>
-      <div class="proj-h-wrap">
-        <div class="proj-h-inner">
-          <div ref="headingRef" class="proj-h">{{ currentProjectName }}</div>
-          <div ref="headingBarRef" class="proj-h-bar"></div>
-        </div>
-      </div>
-      <div class="proj-sub-wrap">
-        <div class="proj-sub-inner">
-          <div ref="descRef" class="proj-sub proj-sub-desc">{{ currentProjectDescription }}</div>
-          <div ref="descBarRef" class="proj-sub-bar"></div>
-        </div>
-      </div>
-      <div class="proj-sub-wrap">
-        <div class="proj-sub-inner">
-          <div ref="yearRef" class="proj-sub proj-sub-year">{{ currentProjectYear }}</div>
-          <div ref="yearBarRef" class="proj-sub-bar"></div>
-        </div>
-      </div>
+    <!-- centred eyebrow (design-standard header) -->
+    <div class="proj-header">
+      <div ref="eyebrowRef" class="proj-eyebrow">FEATURED WORK</div>
     </div>
 
-    <!-- fanned card feed -->
+    <!-- corner labels (system-wide label-reveal pattern) -->
+    <LabelSet :labels="PROJECT_LABELS" section-id="projects" accent="#dc143c" />
+
+    <!-- fanned card feed — each card is a numbered module frame; the centred
+         card alone narrows its image and reveals a tech-icon module beside it -->
     <div ref="fanRef" class="proj-fan">
       <div
         v-for="(project, i) in projects"
         :key="project.name"
         ref="cardRefs"
         class="proj-card"
+        :class="{ 'proj-card--active': fanOffset(i) === 0 }"
         :data-i="i"
         @click="onCardClick(i)"
       >
-        <div class="proj-card-media">
-          <div class="proj-card-img" :style="{ backgroundImage: `url(${project.img})` }"></div>
-          <div class="proj-card-grad"></div>
-        </div>
-        <div class="proj-card-label">
-          <div class="proj-card-meta">{{ String(project.year).toUpperCase() }}</div>
-          <div class="proj-card-name">{{ project.name }}</div>
-        </div>
+        <!-- static-visible on every nested module: their opacity is governed by
+             the outer .proj-card's own GSAP-driven fan opacity, not by
+             ModuleDisplay's own default container-tween reveal. -->
+        <ModuleDisplay :label="`${String(i + 1).padStart(2, '0')} · PROJECT`" accent="#dc143c" :animate-height="false" static-visible class="proj-card-module">
+          <div class="proj-card-body">
+            <ModuleDisplay label="" :animate-height="false" static-visible class="proj-card-image">
+              <div class="proj-card-img" :style="{ backgroundImage: `url(${project.img})` }"></div>
+            </ModuleDisplay>
+            <ModuleDisplay label="" :animate-height="false" static-visible class="proj-card-tech">
+              <div class="proj-card-tech-inner">
+                <div class="proj-card-tech-icon"><img :src="project.engine" alt="" /></div>
+                <div class="proj-card-tech-icon"><img :src="project.language" alt="" /></div>
+                <div class="proj-card-tech-icon"><img :src="project.platform" alt="" /></div>
+              </div>
+            </ModuleDisplay>
+          </div>
+        </ModuleDisplay>
       </div>
     </div>
 
+    <!-- info window — name / description / year for the centred card.
+         The panel enter/leave (container fade) is animated on our own plain
+         DOM ref (infoPanelRef), not on ModuleDisplay's internal exposed el —
+         so the panel's own tween can never gate or interfere with the name's
+         independent label-reveal animation underneath. -->
+    <div ref="infoPanelRef" class="proj-info">
+      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false">
+        <template #label>01 · NOW SHOWING</template>
+        <div class="proj-info-body">
+          <div class="proj-h-wrap">
+            <div class="proj-h-inner">
+              <div ref="headingRef" class="proj-h">{{ currentProjectName }}</div>
+              <div ref="headingBarRef" class="proj-h-bar"></div>
+            </div>
+          </div>
+          <div class="proj-sub-wrap">
+            <div class="proj-sub-inner">
+              <div ref="descRef" class="proj-sub proj-sub-desc">{{ currentProjectDescription }}</div>
+              <div ref="descBarRef" class="proj-sub-bar"></div>
+            </div>
+          </div>
+          <div class="proj-sub-wrap">
+            <div class="proj-sub-inner">
+              <div ref="yearRef" class="proj-sub proj-sub-year">{{ currentProjectYear }}</div>
+              <div ref="yearBarRef" class="proj-sub-bar"></div>
+            </div>
+          </div>
+        </div>
+      </ModuleDisplay>
+    </div>
+
     <!-- controls -->
-    <div class="proj-prev" @click="feedPrev">◂</div>
-    <div class="proj-next" @click="feedNext">▸</div>
     <div class="proj-dots">
       <div
         v-for="(project, i) in projects"
@@ -74,6 +94,8 @@
   import { gsap } from 'gsap'
   import { projects, activeProjectIndex } from '@modules/sectionsProjects'
   import ProjectDetailWindow from '@components/Main/Projects Section/Project-Detail-Window.vue'
+  import LabelSet from '@components/Misc/Label-Set.vue'
+  import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import { currentSection } from '@modules/sectionsCore'
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
@@ -82,8 +104,13 @@
   const N = projects.length
   const projectsIndex = getSectionIndexById('projects')
 
-  const helixRef = ref<HTMLElement | null>(null)
-  const kickerRef = ref<HTMLElement | null>(null)
+  const PROJECT_LABELS = [
+    { text: 'PORTFOLIO', pos: { top: '5%', left: '4%' } },
+    { text: 'DRAG · OR · ARROWS', pos: { top: '6%', right: '4%' } },
+  ]
+
+  const eyebrowRef = ref<HTMLElement | null>(null)
+  const infoPanelRef = ref<HTMLElement | null>(null)
   const headingRef = ref<HTMLElement | null>(null)
   const headingBarRef = ref<HTMLElement | null>(null)
   const descRef = ref<HTMLElement | null>(null)
@@ -118,7 +145,10 @@
   // ── fan geometry ──
   function fanDims() {
     const h = window.innerHeight
-    return { SX: Math.max(96, h * 0.16), DY: h * 0.03 }
+    // Fixed slot spacing, not a fan spread — only the centre ± one neighbour
+    // are ever visible (see reference image), so this is just the gap between
+    // those three flat slots, proportional to viewport width.
+    return { SX: window.innerWidth * 0.27 }
   }
 
   function fanOffset(k: number) {
@@ -128,26 +158,28 @@
     return d
   }
 
+  // Three flat, evenly-sized slots (left / centre / right) — no rotation,
+  // no scale falloff, no vertical cascade. Anything beyond the immediate
+  // neighbours is fully hidden off-slot, not faded into a deep fan.
   function fanTarget(o: number) {
     const ao = Math.abs(o)
     return {
       xPercent: -50,
       yPercent: -50,
       x: o * fanDims().SX,
-      y: ao * fanDims().DY,
-      rotation: o * 8,
-      scale: 1 - ao * 0.07,
-      opacity: ao > 3 ? 0 : 1,
+      y: 0,
+      rotation: 0,
+      scale: 1,
+      opacity: ao > 1 ? 0 : 1,
     }
   }
 
   function fanStyle(card: HTMLElement, o: number) {
     const ao = Math.abs(o)
-    card.style.zIndex = String(100 - ao * 10 + (o <= 0 ? 1 : 0))
-    card.style.borderColor = ao < 0.5 ? '#DC143C' : 'transparent'
-    card.style.boxShadow = ao < 0.5 ? '0 30px 72px rgba(220,20,60,0.42)' : '0 22px 56px rgba(0,0,0,0.55)'
-    const label = card.querySelector<HTMLElement>('.proj-card-label')
-    if (label) label.style.opacity = ao < 1.5 ? '1' : '0'
+    card.style.zIndex = String(100 - ao * 10)
+    card.style.borderColor = ao === 0 ? '#DC143C' : 'transparent'
+    card.style.boxShadow = ao === 0 ? '0 30px 72px rgba(220,20,60,0.42)' : '0 22px 56px rgba(0,0,0,0.55)'
+    card.style.pointerEvents = ao > 1 ? 'none' : 'auto'
   }
 
   function layoutFan(animate: boolean) {
@@ -218,9 +250,18 @@
   }
 
   function centerOn(i: number) {
-    fanCenter.value = ((i % N) + N) % N
+    const next = ((i % N) + N) % N
+    if (next === fanCenter.value) return
+    // Cards move the instant the switch is triggered — the fan is the primary
+    // motion and must never wait on the info text. Text leave/reveal run as a
+    // short, independent overlap alongside it instead of gating the fan.
+    playHeadingLeave()
+    playSubLeave()
+    fanCenter.value = next
     layoutFan(true)
-    nextTick(() => { playHeadingReveal(0); playSubReveal(0.1) })
+    nextTick(() => {
+      gsap.delayedCall(0.12, () => { playHeadingReveal(0); playSubReveal(0.08) })
+    })
   }
   function feedNext() { centerOn(fanCenter.value + 1) }
   function feedPrev() { centerOn(fanCenter.value - 1) }
@@ -249,52 +290,28 @@
     activeProjectIndex.value = i
   }
 
-  // ── helix backdrop ──
-  function buildHelix() {
-    const wrap = helixRef.value
-    if (!wrap || wrap.childElementCount) return
-    const spacing = 22
-    const count = Math.ceil(window.innerHeight / spacing) + 1
-    for (let i = 0; i < count; i++) {
-      const s = document.createElement('div')
-      s.className = 'proj-strand'
-      s.style.top = i * spacing + 'px'
-      s.style.animationDelay = -0.34 * i + 's'
-      const d1 = document.createElement('div')
-      d1.className = 'proj-strand-dot'
-      const d2 = d1.cloneNode() as HTMLElement
-      d2.style.left = 'auto'
-      d2.style.right = '-13px'
-      s.appendChild(d1)
-      s.appendChild(d2)
-      wrap.appendChild(s)
-    }
-  }
-
   // ── enter reveal (adapted from the design's playFeed) ──
   function playFeed() {
-    const kicker = kickerRef.value
+    const eyebrow = eyebrowRef.value
+    const panel = infoPanelRef.value
     const cards = cardRefs.value
-    const strands = gsap.utils.toArray<HTMLElement>(helixRef.value?.querySelectorAll('.proj-strand') ?? [])
 
     fanCenter.value = Math.floor(N / 2)
 
     feedTl?.kill()
-    gsap.killTweensOf([kicker, ...cards, ...strands])
-    gsap.set(kicker, { yPercent: 110, skewY: 3 })
+    gsap.killTweensOf([eyebrow, panel, ...cards])
+    gsap.set(eyebrow, { y: -20, opacity: 0 })
+    gsap.set(panel, { opacity: 0, y: 40, scale: 0.96 })
     gsap.set(cards, { xPercent: -50, yPercent: -50, x: 0, y: 180, opacity: 0, scale: 0.7, rotation: 0, rotationX: 0, rotationY: 0 })
-    gsap.set(strands, { opacity: 0 })
 
     // Wait for the section-cut curtain to fully close before fanning the feed in,
     // so the reveal happens behind the curtain rather than alongside it.
     const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
     feedTl = tl
-    strands.forEach((s, i) => {
-      tl.to(s, { opacity: 1, duration: 0.22, ease: 'power2.out' }, i * 0.03)
-    })
-    tl.to(kicker, { yPercent: 0, skewY: 0, duration: 0.55, ease: 'expo.out' }, 0.1)
-    tl.add(() => playHeadingReveal(0), 0.22)
-    tl.add(() => playSubReveal(0.1), 0.22)
+    tl.to(eyebrow, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
+    tl.to(panel, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.6)' }, 0.18)
+    tl.add(() => playHeadingReveal(0), 0.32)
+    tl.add(() => playSubReveal(0.1), 0.32)
     tl.add(() => {
       const ordered = cards.slice().sort(
         (a, b) => Math.abs(fanOffset(Number(a.getAttribute('data-i')))) - Math.abs(fanOffset(Number(b.getAttribute('data-i'))))
@@ -308,22 +325,20 @@
   }
 
   function playLeave() {
-    const kicker = kickerRef.value
+    const eyebrow = eyebrowRef.value
+    const panel = infoPanelRef.value
     const cards = cardRefs.value
-    const strands = gsap.utils.toArray<HTMLElement>(helixRef.value?.querySelectorAll('.proj-strand') ?? [])
 
     // Cancel a still-pending enter timeline first — its deferred callback would
     // otherwise re-spawn card/heading tweens after this leave has run.
     feedTl?.kill()
     feedTl = null
-    gsap.killTweensOf([kicker, ...cards, ...strands])
+    gsap.killTweensOf([eyebrow, panel, ...cards])
     playHeadingLeave()
     playSubLeave()
-    gsap.to(kicker, { yPercent: -110, skewY: -2, duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
+    gsap.to(eyebrow, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
+    gsap.to(panel, { opacity: 0, y: 40, scale: 0.96, duration: 0.24, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(cards, { opacity: 0, y: 180, scale: 0.7, duration: 0.18, ease: 'power3.in', overwrite: 'auto' })
-    strands.forEach((s, i) => {
-      gsap.to(s, { opacity: 0, duration: 0.12, ease: 'power2.in', delay: i * 0.008, overwrite: 'auto' })
-    })
   }
 
   // ── interactions ──
@@ -356,7 +371,6 @@
   }
 
   onMounted(() => {
-    buildHelix()
     layoutFan(false)
     initDrag()
     initCardTilt()
@@ -397,72 +411,47 @@
     overflow: hidden;
   }
 
-  // ── helix backdrop ──
-  .proj-helix {
+  // ── centred eyebrow header (design-standard) ──
+  .proj-header {
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
-    perspective: 1000px;
-    opacity: 0.2;
-    z-index: 0;
-    overflow: visible;
-    pointer-events: none;
-  }
-
-  :deep(.proj-strand) {
-    position: absolute;
-    left: 50%;
-    width: 180px;
-    height: 2px;
-    margin-left: -90px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.55);
-    transform-style: preserve-3d;
-    animation: projHelixRot 9s linear infinite;
-    will-change: transform;
-  }
-
-  :deep(.proj-strand-dot) {
-    position: absolute;
-    top: -5px;
-    left: -13px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #dc143c;
-    box-shadow: 0 0 16px #dc143c;
-    opacity: 0.9;
-  }
-
-  @keyframes projHelixRot {
-    from { transform: rotateY(0deg); }
-    to { transform: rotateY(360deg); }
-  }
-
-  // ── heading ──
-  .proj-head {
-    position: absolute;
-    top: 5%;
-    left: 4%;
+    top: 4%;
+    left: 0;
+    right: 0;
+    text-align: center;
     z-index: 6;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
   }
 
-  .proj-kicker-clip {
-    overflow: hidden;
-    padding: 2px 0;
-  }
-
-  .proj-kicker {
+  .proj-eyebrow {
     font-family: 'Audiowide';
     font-size: 11px;
     letter-spacing: 5px;
     color: #ff506e;
+    will-change: transform, opacity;
+  }
+
+  // ── info window (ModuleDisplay) ──
+  .proj-info {
+    position: absolute;
+    left: 4%;
+    top: 20%;
+    width: min(40vw, 570px);
+    z-index: 6;
+
+    :deep(.module-display-content) {
+      padding: 60px 24px 24px;
+    }
+
+    :deep(.module-display-label) {
+      font-size: 12px;
+      padding: 18px 20px;
+    }
+  }
+
+  .proj-info-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 
   // ── heading label reveal (system-wide label-reveal pattern) ──
@@ -479,7 +468,7 @@
 
   .proj-h {
     font-family: 'Wosker';
-    font-size: clamp(42px, 6vw, 72px);
+    font-size: clamp(38px, 4.2vw, 62px);
     line-height: 1;
     color: #fff;
     will-change: transform;
@@ -521,12 +510,12 @@
   }
 
   .proj-sub-desc {
-    font-size: clamp(13px, 1.1vw, 16px);
-    max-width: 44vw;
+    font-size: clamp(14px, 1.2vw, 18px);
+    max-width: 36vw;
   }
 
   .proj-sub-year {
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 3px;
     color: #ff7588;
   }
@@ -549,8 +538,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 22%;
-    bottom: 10%;
+    bottom: 30%;
     z-index: 5;
     perspective: 1400px;
   }
@@ -559,98 +547,132 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 26vh;
-    height: 39vh;
-    min-width: 160px;
-    min-height: 240px;
+    // Landscape module-frame proportions (reference image), not a portrait
+    // poster — width grows further still for the centred/active card to make
+    // room for the tech-icon module beside its (now narrower) image.
+    width: clamp(320px, 25vw, 430px);
+    height: clamp(240px, 19vw, 340px);
     border-radius: 18px;
     background: #1b1012;
     border: 2px solid transparent;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
     cursor: pointer;
     will-change: transform;
+    transition: width 0.4s ease;
     // 3D stage for the pointer-tilt — children pop at different depths (parallax).
     // No overflow:hidden here, as it would flatten the 3D children.
     transform-style: preserve-3d;
   }
 
-  // Clipping layer: rounds the image to the card corners without flattening the
-  // card's 3D space (it sits flush at depth 0).
-  .proj-card-media {
+  .proj-card--active {
+    width: clamp(410px, 33vw, 560px);
+  }
+
+  // ── card module frame — fills the card, supplies the numbered "0X · PROJECT"
+  // chrome shared with every other window in the app ──
+  .proj-card-module {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    overflow: hidden;
+
+    :deep(.module-display-content) {
+      padding: 32px 8px 8px;
+    }
+
+    :deep(.module-display-label) {
+      font-size: 9px;
+      padding: 10px 12px;
+    }
+  }
+
+  .proj-card-body {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    gap: 8px;
+  }
+
+  // Image nested module — full width until the card becomes centred, then
+  // narrows to make room for the tech-icon module beside it.
+  .proj-card-image {
+    flex: 1 1 100%;
+    min-width: 0;
+    transition: flex-basis 0.4s ease;
+
+    :deep(.module-display-content) {
+      padding: 0;
+    }
   }
 
   .proj-card-img {
-    position: absolute;
-    inset: 0;
+    width: 100%;
+    height: 100%;
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    border-radius: 6px;
   }
 
-  .proj-card-grad {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 48%;
-    background: linear-gradient(transparent, rgba(10, 3, 5, 0.92));
-    pointer-events: none;
+  // Tech-icon nested module — collapsed to nothing for off-centre cards,
+  // revealed only for the centred (active) one. The module itself is
+  // static-visible (always opacity:1 via inline style), so width/flex-basis
+  // do the actual hiding here; the icon fade lives on the inner wrapper below.
+  .proj-card-tech {
+    flex: 0 0 0%;
+    width: 0;
+    overflow: hidden;
+    transition: flex-basis 0.4s ease, width 0.4s ease;
+
+    :deep(.module-display-content) {
+      padding: 8px;
+    }
   }
 
-  .proj-card-label {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 14px 16px;
-    pointer-events: none;
-    // Floats above the image so the tilt reveals genuine parallax depth.
-    transform: translateZ(45px);
+  .proj-card-tech-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
   }
 
-  .proj-card-meta {
-    font-family: 'Audiowide';
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: #ff7588;
+  .proj-card--active {
+    .proj-card-image {
+      flex-basis: 64%;
+    }
+
+    .proj-card-tech {
+      flex: 0 0 32%;
+      width: auto;
+    }
+
+    .proj-card-tech-inner {
+      opacity: 1;
+      transition-delay: 0.15s;
+    }
   }
 
-  .proj-card-name {
-    font-family: 'Wosker';
-    font-size: 22px;
-    color: #fff;
-    margin-top: 4px;
-    line-height: 1;
-  }
-
-  // ── controls ──
-  .proj-prev,
-  .proj-next {
-    position: absolute;
-    top: calc(50% + 14px);
-    transform: translateY(-50%);
-    width: 52px;
-    height: 52px;
+  .proj-card-tech-icon {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    border: 1px solid #6a2c38;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid #3a3a3a;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    cursor: pointer;
-    font-size: 20px;
-    background: rgba(20, 8, 11, 0.55);
-    backdrop-filter: blur(4px);
-    z-index: 7;
+    padding: 5px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
   }
 
-  .proj-prev { left: 4%; }
-  .proj-next { right: 4%; }
-
+  // ── controls ──
   .proj-dots {
     position: absolute;
     bottom: 4%;

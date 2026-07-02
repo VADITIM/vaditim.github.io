@@ -95,6 +95,8 @@ function playProjectsEnterDesktop() {
     tl.to('.projects-back', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
     tl.to('.projects-front', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
+  gsap.killTweensOf('.proj-strand')
+  gsap.to('.proj-strand', { opacity: 1, duration: 0.22, ease: 'power2.out', stagger: 0.006, overwrite: 'auto', delay: SECTION_ENTER_DELAY })
 }
 
 function playProjectsLeaveDesktop() {
@@ -103,6 +105,8 @@ function playProjectsLeaveDesktop() {
     tl.to('.projects-back', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
     tl.to('.projects-front', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
+  gsap.killTweensOf('.proj-strand')
+  gsap.to('.proj-strand', { opacity: 0, duration: 0.12, ease: 'power2.in', stagger: 0.004, overwrite: 'auto' })
 }
 
 function playExtraEnterDesktop() {
@@ -338,6 +342,7 @@ export function ScrollBackgroundSections() {
     gsap.set('.logs-front', { left: '-30%', top: '0%' })
     gsap.set('.projects-back', { right: '-40%', top: '0%' })
     gsap.set('.projects-front', { right: '-40%', top: '0%' })
+    gsap.set('.proj-strand', { opacity: 0 })
     gsap.set('.extra-tr', { top: CORNER_HIDDEN })
     gsap.set('.extra-bl', { bottom: CORNER_HIDDEN })
     gsap.set(['.sandbox-tl', '.sandbox-tr'], { top: CORNER_HIDDEN })

@@ -5,6 +5,9 @@
       <div class="logs-back" :style="GetBackgroundStyle('logs-back')"></div>
       <div class="logs-front" :style="GetBackgroundStyle('logs-front')"></div>
       <div class="projects-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
+      <!-- Sits between the two slices in DOM order (all three share z-index 4)
+           so it renders in front of the back slice but behind the front one. -->
+      <div ref="projHelixRef" class="proj-helix"></div>
       <div class="projects-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
       <div class="extra-tr"></div>
       <div class="extra-bl"></div>
@@ -16,13 +19,42 @@
 </template>
 
 <script setup lang="ts" >
-  import { onBeforeUnmount, watch, ref, computed } from 'vue';
+  import { onBeforeUnmount, onMounted, watch, ref, computed } from 'vue';
   import { ScrollBackgroundSections } from '@modules/sectionCoverSlices';
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { finished } from '@modules/sectionsStateMachine';
   import { dragOffset, dragDirection, isDragging, thresholdReached, consumeLastDragOffsetY } from '@modules/miscMobileDragNavigation';
   import { isMobile } from '@modules/miscIsMobile';
   import { currentSection, previousSection, isTransitioning } from '@modules/sectionsCore';
+
+  const projHelixRef = ref<HTMLElement | null>(null);
+
+  // Horizontal DNA-strand backdrop for Projects, sandwiched between the
+  // back/front slices above — built once, purely decorative (see CLAUDE.md
+  // "Section Backgrounds"). Strand count/centring derives from the element's
+  // own (130vw) width, not the viewport, so it self-centres regardless of size.
+  function buildProjectsHelix() {
+    const wrap = projHelixRef.value;
+    if (!wrap || wrap.childElementCount) return;
+    const spacing = 22;
+    const count = Math.ceil(wrap.getBoundingClientRect().width / spacing) + 1;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      s.className = 'proj-strand';
+      s.style.left = i * spacing + 'px';
+      s.style.animationDelay = -0.34 * i + 's';
+      const d1 = document.createElement('div');
+      d1.className = 'proj-strand-dot';
+      const d2 = d1.cloneNode() as HTMLElement;
+      d2.style.top = 'auto';
+      d2.style.bottom = '-13px';
+      s.appendChild(d1);
+      s.appendChild(d2);
+      wrap.appendChild(s);
+    }
+  }
+
+  onMounted(buildProjectsHelix);
 
   let CleanupBackgroundAnimations: (() => void) | null = null;
   const isReturning = ref(false);
@@ -267,6 +299,57 @@
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
 
     }
+  }
+
+  // ── horizontal DNA-strand backdrop (Projects) ──
+  // Centred on the viewport and overspilling both edges so the rotating
+  // strands never show a hard clip at the section's sides.
+  .proj-helix {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130vw;
+    height: 100%;
+    perspective: 1000px;
+    opacity: 0.2;
+    z-index: 4;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .proj-strand {
+    position: absolute;
+    top: 50%;
+    width: 2px;
+    height: 280px;
+    margin-top: -140px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.55);
+    transform-style: preserve-3d;
+    animation: projHelixRot 9s linear infinite;
+    will-change: transform;
+    // Hidden by default (not just via JS) — JS only sets opacity on section
+    // enter/leave, which doesn't run until after the intro finishes, so
+    // without this the freshly-built strands flash visible on initial load.
+    opacity: 0;
+  }
+
+  .proj-strand-dot {
+    position: absolute;
+    left: -5px;
+    top: -13px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dc143c;
+    box-shadow: 0 0 16px #dc143c;
+    opacity: 0.9;
+  }
+
+  @keyframes projHelixRot {
+    from { transform: rotateX(0deg); }
+    to { transform: rotateX(360deg); }
   }
 
   // Corner slices — top-right drops in from the top, bottom-left rises from

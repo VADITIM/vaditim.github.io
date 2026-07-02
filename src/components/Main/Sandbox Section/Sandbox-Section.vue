@@ -20,19 +20,17 @@
     <div class="sb-grid">
 
       <!-- WINDOW 1 · magnetic button -->
-      <ModuleDisplay caption="move toward it ◂▸ then click · how big can you get it?">
-        <template #label>01 · MAGNETIC&nbsp;+&nbsp;IMPACT</template>
+      <ModuleDisplay caption="how big can you get it?">
+        <template #label>01 · MAGNETIC IMPACT</template>
         <div class="sb-win-body">
           <div ref="magCountRef" class="mi-mag-count">{{ magClicks }}</div>
-          <MagneticButton ref="magBtnCompRef" class="mi-mag-btn-wrap" :zone="60" :strength="0.4" @click="onHitMeClick">
-            HIT&nbsp;ME
-          </MagneticButton>
+          <MagneticButton ref="magBtnCompRef" class="mi-mag-btn-wrap" :zone="60" :strength="0.4" @click="onHitMeClick">HIT ME!</MagneticButton>
         </div>
       </ModuleDisplay>
 
       <!-- WINDOW 2 · hover-focus list -->
       <ModuleDisplay>
-        <template #label>02 · HOVER&nbsp;FOCUS&nbsp;·&nbsp;LIST</template>
+        <template #label>02 · HOVER - FOCUS - LIST</template>
         <div class="sb-win-body sb-list-body">
           <div
             v-for="label in LIST_ITEMS"
@@ -47,8 +45,8 @@
       </ModuleDisplay>
 
       <!-- WINDOW 3 · zero-g space -->
-      <ModuleDisplay label-over caption="drift in zero-g · hold to pull · release to burst">
-        <template #label>03 · ZERO-G&nbsp;SPACE</template>
+      <ModuleDisplay label-over caption="hold and release a force!">
+        <template #label>03 · SPACE</template>
         <div ref="gravRef" class="sb-grav"></div>
         <div class="sb-grav-controls">
           <MagneticButton type="button" class="sb-grav-btn-wrap" :zone="10" :strength="0.3" @click="addParticle">+</MagneticButton>
@@ -58,13 +56,13 @@
 
       <!-- WINDOW 4 · tilt parallax -->
       <ModuleDisplay label-over>
-        <template #label>04 · TILT&nbsp;PARALLAX</template>
+        <template #label>04 · PARALLAX TILT</template>
         <div ref="tiltWrapRef" class="sb-tilt-wrap">
           <div ref="tiltRef" class="sb-tilt">
             <div class="sb-tilt-frame"></div>
             <img :src="qrSrc" class="sb-tilt-qr" alt="Scan me" draggable="false" />
             <div class="sb-tilt-chip">2026</div>
-            <div class="sb-tilt-name">SCAN&nbsp;ME</div>
+            <div class="sb-tilt-name">SCAN ME?</div>
           </div>
         </div>
       </ModuleDisplay>

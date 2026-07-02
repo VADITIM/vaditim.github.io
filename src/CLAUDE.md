@@ -368,21 +368,42 @@ endpoint, a serverless function or a BaaS (Supabase/Firebase — DB + API bundle
 less infrastructure to run than an always-on server, though proof-of-work verification
 logic still needs to live somewhere server-side either way.
 
+#### Perks Section overhaul
+For the Perks on the left side we will develop a interactive node graph like in obsidian the graph view. Each main perk can be clicked on and will reveal its children as new nodes. Each perk will get its own Module-Display.
+Change the Perks as following:
+- C# Developer > C#
+  - Will feature C# related skills
+- Vue & Typescript > Web
+  - Vue
+  - Angular
+  - Typescript
+  - mySQL
+- UI/UX Aimator > UI/UX
+- Game Designer > [REMOVE]
+- Techinal Designer > [REMOVE]
+The Module-Displays wwill be alinged in a vertical grid. dynamic scalling.
+
+Name-Display will be replaced for Name.
+current name "vadim niedental" will be changed to VADITIM. vadim niedental will be shown underneath the main name as a little suffix/notice.
+Enter and Leave animations feature an overhaul.
+VADITIM and vadim niedental will feature a typewriter animation. The Typewriter animation should be a standalone API like the Label-Set, with configurable delays, speed, etc.
+Typewriter API bar (the normal bar you see flashing in a text editor when typing) color is sections main color, just as the text. Also the Label should display 3D labels. Old setup overlaps multiple copies and borders, create real 3D for these labels. 
+
+
+# IMPORTANT
+- DO NEVER RUN A PREVIEW EVAL
+- OUTPUT LESS TEXT, COMPACT EVERYTHING AT THE END
 
 
 
-
-
+# Current Ideas
+- Project-Section. When switching between projects the helix should ripple itself from a random position on its strang in all directions.
+- Landing-Section. While there have an even-listener running for keypress "S". If it is pressed  twice the whole Loading-Section will be skipped, only its leave animation is played, no matter how far each element is in their timelime, they will be stopped. (This will make debugging easier and without needing to wait for landing-page to finish)
 
 
 # KNOWN ISSUES
-
-- Project-Section projectname leave animation — Need to trace how project switching is driven, find where the name element is animated, and add a fast leave (power3.in, no delay) that mirrors the section-leave style. More surface to understand before writing a line.
-
-- Impressum as a proper draggable bottom-sheet — Largest scope: new generic draggable-sheet component, pointer-capture drag tracking, spring/snap physics on release, replace the entire liquid-blob mechanic. New component API, DOM attachment pattern, edge-case handling (velocity on release, scroll lock). Hardest by a clear margin.
-
-
-
-
-
-
+- Project-Section, Module-Displays in Module-Display-Projects are not parallax. 
+- Project-Section, Module-Displays in Module-Display-Projects border hover should be section main color 
+- Project-Section, Project-Name in Module-Display-Project-Info doesnt properly play its leave animation, before showing new content. Uncouple Module-Display-Projects animation from Project-Name leave animation. They should be two seperate animation and handle their data differently. Projects-Name will always play its leave animation, before showing new content, no matter how fast projects are cycled. To ensure the wrong name is not shown, before playing enter animation check whats the current project now and paste their data in, to not play animations in queue, if there are any.
+- Landing-Page & Section-Cover-Slices should not use border-radius.
+- Landing-Page. Greetings User should be shown first. it stays for one second and then plays its leave animation. after Greetings User leave animation, wait .35s and Explore your experience plays and stays also for 1s. Both labels are positioned within the same position, basically cycled. Proceed with normal animation timeline.

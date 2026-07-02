@@ -81,8 +81,8 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 2rem;
-		padding: 1rem 2rem;
+		gap: 1rem;
+		padding: 1rem;
 		text-align: center;
 	}
 

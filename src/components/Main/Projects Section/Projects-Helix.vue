@@ -198,8 +198,6 @@
 }
 
 .helix-container {
-	position: absolute;
-	display: flex;
 	right: 0;
 	align-items: center;
 	width: 100%;

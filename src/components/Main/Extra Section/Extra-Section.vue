@@ -50,31 +50,59 @@
 
     </div>
 
-    <!-- Liquid Impressum tab — fused with the bottom edge, pull it up -->
-    <div ref="liquidRef" class="ex-liquid">
-      <svg
-        ref="liquidSvgRef"
-        class="ex-liquid-svg"
-        viewBox="0 0 400 130"
-        preserveAspectRatio="none"
-        @pointerdown="onLiquidDown"
-      >
-        <path ref="liquidPathRef" fill="#f09b3a" :d="blobPath(0)" />
-      </svg>
-      <div class="ex-liquid-hint">IMPRESSUM&nbsp;▲</div>
-    </div>
+    <!-- Impressum bottom-sheet — drag the handle up to reveal -->
+    <DraggableSheet ref="sheetRef" v-model="impressumOpen" accent="#f09b3a">
+      <template #hint>IMPRESSUM&nbsp;▲</template>
+      <MagneticButton type="button" class="ex-impressum-close-wrap" :zone="14" @click="impressumOpen = false">✕</MagneticButton>
 
-    <!-- Impressum panel revealed by pulling the liquid tab -->
-    <div ref="impressumRef" class="ex-impressum">
-      <MagneticButton type="button" class="ex-impressum-close-wrap" :zone="14" @click="closeImpressum">✕</MagneticButton>
       <div class="ex-impressum-title">IMPRESSUM</div>
+
       <div class="ex-impressum-body">
-        <p>Vadim Niedental</p>
-        <p>Musterstraße 1 · 00000 Musterstadt</p>
-        <p>vadim.niedental@gmail.com</p>
-        <p class="ex-impressum-note">— placeholder, to be filled in —</p>
+
+        <section class="imp-block">
+          <h3 class="imp-section-label">Angaben gemäß § 5 TMG</h3>
+          <p>Vadim Niedental</p>
+          <p>Musterstraße 1</p>
+          <p>00000 Musterstadt</p>
+          <p>Deutschland</p>
+        </section>
+
+        <section class="imp-block">
+          <h3 class="imp-section-label">Kontakt</h3>
+          <p>E-Mail: <a class="imp-link" href="mailto:vadim.niedental@gmail.com">vadim.niedental@gmail.com</a></p>
+        </section>
+
+        <section class="imp-block">
+          <h3 class="imp-section-label">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h3>
+          <p>Vadim Niedental</p>
+          <p>Musterstraße 1</p>
+          <p>00000 Musterstadt</p>
+        </section>
+
+        <section class="imp-block">
+          <h3 class="imp-section-label">Haftungsausschluss</h3>
+          <p class="imp-paragraph">
+            Die Inhalte dieser Website wurden mit größtmöglicher Sorgfalt erstellt.
+            Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann
+            jedoch keine Gewähr übernommen werden.
+          </p>
+        </section>
+
+        <section class="imp-block">
+          <h3 class="imp-section-label">Urheberrecht</h3>
+          <p class="imp-paragraph">
+            Die durch den Seitenbetreiber erstellten Inhalte und Werke auf diesen
+            Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung,
+            Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der
+            Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des
+            jeweiligen Autors bzw. Erstellers.
+          </p>
+        </section>
+
+        <p class="ex-impressum-note">— Adresse und weitere Angaben werden noch ergänzt —</p>
+
       </div>
-    </div>
+    </DraggableSheet>
 
   </div>
 </template>
@@ -90,10 +118,10 @@
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import LogsContact from '@components/Main/Logs Section/Contact.vue'
+  import DraggableSheet from '@components/Misc/Draggable-Sheet.vue'
 
   const EXTRA_LABELS = [
-    { text: 'IMPRESSED?', pos: { top: '5%', left: '4%' } },
-    { text: 'SAY HI!', pos: { top: '5%', left: '20%' } },
+    { text: 'IMPRESSED? SAY HI!', pos: { top: '5%', left: '4%' }, stretch: true },
     { text: 'LEGAL BELOW', pos: { bottom: '5%', right: '4%' } },
   ]
 
@@ -107,132 +135,45 @@
   const eyebrowRef = ref<HTMLElement | null>(null)
   const commentsPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
   const contactPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
-  const liquidRef = ref<HTMLElement | null>(null)
-  const liquidSvgRef = ref<SVGSVGElement | null>(null)
-  const liquidPathRef = ref<SVGPathElement | null>(null)
-  const impressumRef = ref<HTMLElement | null>(null)
+  const sheetRef = ref<InstanceType<typeof DraggableSheet> | null>(null)
+  const impressumOpen = ref(false)
 
   const extraIndex = getSectionIndexById('extra')
-
-  // ── liquid tab physics ──
-  // The blob is a bump fused with the bottom edge; pulling stretches its apex
-  // upward. Past PULL_THRESHOLD on release the Impressum slides up, otherwise
-  // the blob snaps back elastically.
-  const BLOB_REST = 26          // apex height at rest (viewBox units)
-  const PULL_MAX = 78           // max additional lift while dragging
-  const PULL_THRESHOLD = 48     // release past this → open Impressum
-  const pull = { v: 0 }
-  let draggingLiquid = false
-  let dragStartY = 0
-  let impressumOpen = false
-
-  function blobPath(p: number): string {
-    const lift = BLOB_REST + p
-    const apex = 130 - lift
-    const shoulder = 130 - lift * 0.32
-    return `M0,130 C90,${shoulder} 135,${apex} 200,${apex} C265,${apex} 310,${shoulder} 400,130 Z`
-  }
-
-  function drawBlob() {
-    liquidPathRef.value?.setAttribute('d', blobPath(pull.v))
-  }
-
-  function onLiquidDown(e: PointerEvent) {
-    if (impressumOpen) return
-    draggingLiquid = true
-    dragStartY = e.clientY
-    gsap.killTweensOf(pull)
-    liquidSvgRef.value?.setPointerCapture(e.pointerId)
-  }
-
-  function onLiquidMove(e: PointerEvent) {
-    if (!draggingLiquid) return
-    pull.v = Math.max(0, Math.min(dragStartY - e.clientY, PULL_MAX))
-    drawBlob()
-  }
-
-  function onLiquidUp() {
-    if (!draggingLiquid) return
-    draggingLiquid = false
-    if (pull.v >= PULL_THRESHOLD) openImpressum()
-    else settleBlob()
-  }
-
-  function settleBlob() {
-    gsap.to(pull, { v: 0, duration: 0.9, ease: 'elastic.out(1, 0.4)', onUpdate: drawBlob })
-  }
-
-  function openImpressum() {
-    impressumOpen = true
-    gsap.to(pull, { v: 0, duration: 0.3, ease: 'power2.out', onUpdate: drawBlob })
-    gsap.to(liquidRef.value, { opacity: 0, duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
-    // fromTo (not set+to): the global immediateRender:false default means a bare
-    // gsap.set() never renders — fromTo captures the hidden state at tween start.
-    gsap.fromTo(impressumRef.value,
-      { xPercent: -50, yPercent: 100 },
-      { xPercent: -50, yPercent: 0, duration: 0.55, ease: 'power3.out', overwrite: 'auto' })
-  }
-
-  function closeImpressum() {
-    if (!impressumOpen) return
-    impressumOpen = false
-    gsap.to(impressumRef.value, { xPercent: -50, yPercent: 100, duration: 0.4, ease: 'power3.in', overwrite: 'auto' })
-    gsap.to(liquidRef.value, { opacity: 1, duration: 0.3, ease: 'power2.out', delay: 0.25, overwrite: 'auto' })
-  }
 
   // ── enter / leave ──
   function playReveal() {
     const commentsEl = commentsPanelRef.value?.el, contactEl = contactPanelRef.value?.el
-    gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl, liquidRef.value])
+    gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl])
 
-    // fromTo throughout — the global immediateRender:false default means a bare
-    // gsap.set() never renders, so seed the hidden state at each tween's start.
     const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
     tl.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    // Both panels start near center and repel outward — comments pushes left, contact pushes right.
     tl.fromTo(commentsEl, { x: '28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
     tl.fromTo(contactEl, { x: '-28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
-    tl.fromTo(liquidRef.value, { y: '18vh' }, { y: 0, opacity: impressumOpen ? 0 : 1, duration: 0.5, ease: 'back.out(1.6)' }, 0.45)
+    sheetRef.value?.reveal(SECTION_ENTER_DELAY + 0.35)
   }
 
   function playLeave() {
     const commentsEl = commentsPanelRef.value?.el, contactEl = contactPanelRef.value?.el
-    gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl, liquidRef.value])
-    if (impressumOpen) closeImpressum()
+    gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl])
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     gsap.to(commentsEl, { x: '28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(contactEl, { x: '-28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
-    gsap.to(liquidRef.value, { y: '18vh', duration: 0.24, ease: 'power2.in', overwrite: 'auto' })
+    sheetRef.value?.hide()
   }
 
   let stopSectionWatch: (() => void) | null = null
-  const listeners: Array<() => void> = []
-
-  function on(target: Window, type: string, handler: EventListenerOrEventListenerObject) {
-    target.addEventListener(type, handler)
-    listeners.push(() => target.removeEventListener(type, handler))
-  }
 
   onMounted(() => {
-    drawBlob()
-
-    on(window, 'pointermove', onLiquidMove as EventListener)
-    on(window, 'pointerup', onLiquidUp as EventListener)
-
     stopSectionWatch = onSectionStatesChange((meta) => {
       if (meta.isLeavingSection(extraIndex)) playLeave()
       else if (meta.isEnteringSection(extraIndex)) playReveal()
     })
-
     if (currentSection.value === extraIndex) playReveal()
   })
 
   onBeforeUnmount(() => {
     stopSectionWatch?.()
     stopSectionWatch = null
-    listeners.forEach((off) => off())
-    listeners.length = 0
-    gsap.killTweensOf(pull)
   })
 </script>
 
@@ -404,67 +345,7 @@
     }
   }
 
-  // ── liquid Impressum tab ──
-  // Centered, spanning ~17% outwards in both directions from centre.
-  .ex-liquid {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transform: translateX(-50%);
-    width: 34vw;
-    height: 13vh;
-    z-index: 5;
-    will-change: transform, opacity;
-
-    @include allMobile {
-      width: 70vw;
-    }
-  }
-
-  .ex-liquid-svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    cursor: grab;
-    touch-action: none;
-
-    &:active { cursor: grabbing; }
-
-    path {
-      filter: drop-shadow(0 0 18px rgba(240, 155, 58, 0.45));
-    }
-  }
-
-  .ex-liquid-hint {
-    position: absolute;
-    left: 50%;
-    bottom: 6px;
-    transform: translateX(-50%);
-    font-family: 'Mono';
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: #161616;
-    pointer-events: none;
-  }
-
-  // ── impressum panel ──
-  .ex-impressum {
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    // Hidden at rest below the viewport edge; GSAP takes over with
-    // xPercent/yPercent on open/close.
-    transform: translate(-50%, 100%);
-    width: min(560px, 90vw);
-    padding: 26px 30px 30px;
-    background: #f09b3a;
-    color: #161616;
-    border-radius: 16px 16px 0 0;
-    z-index: 6;
-    will-change: transform;
-  }
-
+  // ── impressum content (inside DraggableSheet slot) ──
   .ex-impressum-close-wrap {
     position: absolute;
     top: 12px;
@@ -486,21 +367,56 @@
 
   .ex-impressum-title {
     font-family: 'Audiowide';
-    font-size: 14px;
-    letter-spacing: 4px;
-    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    margin-bottom: 24px;
   }
 
   .ex-impressum-body {
     font-family: 'Mono';
-    font-size: 12px;
-    line-height: 1.7;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.8;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 
     p { margin: 0; }
   }
 
+  .imp-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .imp-section-label {
+    font-family: 'Audiowide';
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(22, 22, 22, 0.5);
+    margin: 0 0 8px;
+  }
+
+  .imp-paragraph {
+    font-size: 13px;
+    line-height: 1.9;
+    color: rgba(22, 22, 22, 0.75);
+  }
+
+  .imp-link {
+    color: #161616;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .ex-impressum-note {
-    margin-top: 10px !important;
-    opacity: 0.55;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.45;
   }
 </style>
