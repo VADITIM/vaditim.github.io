@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div ref="rootRef" class="extra-section">
 
     <div class="ex-header">
@@ -14,8 +14,8 @@
     <div class="ex-grid">
 
       <!-- LEFT · comments layout (skeleton, no backend yet) -->
-      <div ref="commentsPanelRef" class="ex-panel ex-comments">
-        <div class="ex-panel-label">01 · COMMENTS</div>
+      <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments">
+        <template #label>01 · COMMENTS</template>
         <div class="ex-comment-list">
           <div v-for="c in PLACEHOLDER_COMMENTS" :key="c.name" class="ex-comment">
             <div class="ex-comment-avatar">{{ c.name.charAt(0) }}</div>
@@ -39,15 +39,15 @@
           <button type="button" class="ex-send" disabled>SEND</button>
         </div>
         <div class="ex-caption">one message per visitor · stored for everyone</div>
-      </div>
+      </ModuleDisplay>
 
       <!-- RIGHT · contacts (existing container, repositioned into the panel) -->
-      <div ref="contactPanelRef" class="ex-panel ex-contact">
-        <div class="ex-panel-label">02 · CONTACT</div>
+      <ModuleDisplay ref="contactPanelRef" accent="#f09b3a" class="ex-contact">
+        <template #label>02 · CONTACT</template>
         <div class="ex-contact-host">
           <ProfileContact />
         </div>
-      </div>
+      </ModuleDisplay>
 
     </div>
 
@@ -88,6 +88,7 @@
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
   import LabelSet from '@components/Misc/Label-Set.vue'
+  import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import ProfileContact from '@components/Main/Profile Section/Contact.vue'
 
   const EXTRA_LABELS = [
@@ -104,8 +105,8 @@
 
   const rootRef = ref<HTMLElement | null>(null)
   const eyebrowRef = ref<HTMLElement | null>(null)
-  const commentsPanelRef = ref<HTMLElement | null>(null)
-  const contactPanelRef = ref<HTMLElement | null>(null)
+  const commentsPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
+  const contactPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
   const liquidRef = ref<HTMLElement | null>(null)
   const liquidSvgRef = ref<SVGSVGElement | null>(null)
   const liquidPathRef = ref<SVGPathElement | null>(null)
@@ -181,25 +182,25 @@
 
   // ── enter / leave ──
   function playReveal() {
-    const panels = [commentsPanelRef.value, contactPanelRef.value]
-    gsap.killTweensOf([eyebrowRef.value, ...panels, liquidRef.value])
+    const commentsEl = commentsPanelRef.value?.el, contactEl = contactPanelRef.value?.el
+    gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl, liquidRef.value])
 
     // fromTo throughout — the global immediateRender:false default means a bare
     // gsap.set() never renders, so seed the hidden state at each tween's start.
     const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
     tl.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    tl.fromTo(commentsPanelRef.value, { x: '-60vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.15)
-    tl.fromTo(contactPanelRef.value, { x: '60vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.25)
+    tl.fromTo(commentsEl, { x: '-60vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.15)
+    tl.fromTo(contactEl, { x: '60vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' }, 0.25)
     tl.fromTo(liquidRef.value, { y: '18vh' }, { y: 0, opacity: impressumOpen ? 0 : 1, duration: 0.5, ease: 'back.out(1.6)' }, 0.45)
   }
 
   function playLeave() {
-    const panels = [commentsPanelRef.value, contactPanelRef.value]
-    gsap.killTweensOf([eyebrowRef.value, ...panels, liquidRef.value])
+    const commentsEl = commentsPanelRef.value?.el, contactEl = contactPanelRef.value?.el
+    gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl, liquidRef.value])
     if (impressumOpen) closeImpressum()
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
-    gsap.to(commentsPanelRef.value, { x: '-60vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
-    gsap.to(contactPanelRef.value, { x: '60vw', opacity: 0, duration: 0.28, ease: 'power2.in', delay: 0.05, overwrite: 'auto' })
+    gsap.to(commentsEl, { x: '-60vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
+    gsap.to(contactEl, { x: '60vw', opacity: 0, duration: 0.28, ease: 'power2.in', delay: 0.05, overwrite: 'auto' })
     gsap.to(liquidRef.value, { y: '18vh', duration: 0.24, ease: 'power2.in', overwrite: 'auto' })
   }
 
@@ -246,7 +247,9 @@
     // Section wrappers collapse to 0 height and stack below the full-height Perks
     // wrapper, landing one viewport down — pull back up to fill the viewport.
     transform: translateY(-100vh);
-    background: #161616;
+    // Transparent so the animated orange section-background slices (rendered
+    // behind by Section-Cover-Slice) remain visible behind the content.
+    background: transparent;
     overflow: hidden;
   }
 
@@ -283,26 +286,6 @@
       grid-template-columns: 1fr;
       grid-template-rows: 1.2fr 1fr;
     }
-  }
-
-  .ex-panel {
-    position: relative;
-    border: 1px solid #262626;
-    border-radius: 12px;
-    background: #121212;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    will-change: transform, opacity;
-  }
-
-  .ex-panel-label {
-    font-family: 'Mono';
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: #5f5f5f;
-    padding: 13px 16px;
   }
 
   // ── comments skeleton ──

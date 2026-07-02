@@ -1,12 +1,17 @@
 <template>
     <div class="section-background-layer">
-      <div class="perks-section-background" :style="GetBackgroundStyle('perks')"></div>
+      <div class="perks-section-background-back" :style="GetBackgroundStyle('perks-back')"></div>
+      <div class="perks-section-background-front" :style="GetBackgroundStyle('perks-front')"></div>
       <div class="profile-section-background-back" :style="GetBackgroundStyle('profile-back')"></div>
       <div class="profile-section-background-front" :style="GetBackgroundStyle('profile-front')"></div>
       <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
       <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
-      <div class="extra-section-background-back"></div>
-      <div class="extra-section-background-front"></div>
+      <div class="extra-section-background-topright"></div>
+      <div class="extra-section-background-bottomleft"></div>
+      <div class="sandbox-corner-tl"></div>
+      <div class="sandbox-corner-tr"></div>
+      <div class="sandbox-corner-bl"></div>
+      <div class="sandbox-corner-br"></div>
     </div>
 </template>
 
@@ -30,8 +35,8 @@
   const GetBackgroundStyle = (type: string) => {
     const activeSectionIndex = isTransitioning.value ? previousSection.value : currentSection.value;
     
-    const isInteractiveSection = 
-      (type === 'perks' && activeSectionIndex === 0) ||
+    const isInteractiveSection =
+      ((type === 'perks-back' || type === 'perks-front') && activeSectionIndex === 0) ||
       ((type === 'profile-back' || type === 'profile-front') && activeSectionIndex === 1) ||
       ((type === 'projects-back' || type === 'projects-front') && activeSectionIndex === 2)
 
@@ -101,17 +106,15 @@
     pointer-events: none;
   }
 
-  .perks-section-background {
+  .perks-section-background-front {
     position: absolute;
     top: 0;
     left: -30%;
     width: 30%;
     height: 100vh;
-    background-color: rgb(255, 221, 28);
-    background: #FFDD1B;
     background: linear-gradient(180deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
     clip-path: polygon(0 0, 100% 0, 10% 100%, 0% 100%);
-    z-index: 1;
+    z-index: 2;
 
     @include allMobile {
       left: 0;
@@ -120,6 +123,27 @@
       height: 150dvh;
       background: linear-gradient(360deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 68%);
+      border-radius: 30px 30px 0 0;
+    }
+  }
+
+  .perks-section-background-back {
+    position: absolute;
+    top: 0;
+    left: -30%;
+    width: 30%;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(153, 132, 16, 1) 15%, rgba(255, 221, 27, 1) 85%);
+    clip-path: polygon(0 0, 19% 0, 83% 100%, 0 100%);
+    z-index: 1;
+
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100vw;
+      height: 150dvh;
+      background: linear-gradient(360deg, rgba(153, 132, 16, 1) 15%, rgba(255, 221, 27, 1) 85%);
+      clip-path: polygon(0 0, 100% 0, 100% 54%, 0 80%);
       border-radius: 30px 30px 0 0;
     }
   }
@@ -245,17 +269,22 @@
     }
   }
 
-  .extra-section-background-back {
+  // Corner slices — top-right drops in from the top, bottom-left rises from
+  // the bottom (see CLAUDE.md Current Task 6).
+  .extra-section-background-topright {
     position: absolute;
-    right: -40%;
-    width: 25%;
-    height: 100vh;
-    background: linear-gradient(180deg, rgba(74, 43, 8, 1) 21%, rgba(140, 82, 20, 1) 80%, rgba(178, 104, 24, 1) 100%);
-    clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
+    top: -40%;
+    right: 0;
+    width: 15vw;
+    height: 36vh;
+    background: linear-gradient(160deg, rgba(240, 155, 58, 1) 0%, rgba(74, 43, 8, 1) 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
     z-index: 4;
+    will-change: top;
 
     @include allMobile {
       left: 0;
+      right: auto;
       top: 100%;
       width: 100vw;
       height: 150dvh;
@@ -265,23 +294,96 @@
     }
   }
 
-  .extra-section-background-front {
+  .extra-section-background-bottomleft {
     position: absolute;
-    right: -40%;
-    width: 25%;
-    height: 100vh;
-    background: linear-gradient(180deg, rgba(120, 70, 16, 1) 21%, rgba(190, 115, 30, 1) 55%, rgba(240, 155, 58, 1) 100%);
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
+    bottom: -40%;
+    left: 0;
+    width: 15vw;
+    height: 30vh;
+    background: linear-gradient(-20deg, rgba(240, 155, 58, 1) 0%, rgba(74, 43, 8, 1) 100%);
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
     z-index: 4;
+    will-change: bottom;
 
     @include allMobile {
       left: 0;
       top: 100%;
+      bottom: auto;
       width: 100vw;
       height: 150dvh;
       background: linear-gradient(180deg, rgba(120, 70, 16, 1) 15%, rgba(240, 155, 58, 1) 85%);
       border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
+    }
+  }
+
+  // Sandbox corner accents — top corners drop from the top, bottom corners
+  // rise from the bottom, same rule as the extra slices above.
+  .sandbox-corner-tl {
+    position: absolute;
+    top: -40%;
+    left: 0;
+    width: 10vw;
+    height: 32vh;
+    background: linear-gradient(200deg, rgba(91, 253, 91, 1) 0%, rgba(30, 90, 30, 1) 100%);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    z-index: 4;
+    will-change: top;
+
+    @include allMobile {
+      width: 16vw;
+      height: 18vh;
+    }
+  }
+
+  .sandbox-corner-tr {
+    position: absolute;
+    top: -40%;
+    right: 0;
+    width: 15vw;
+    height: 36vh;
+    background: linear-gradient(200deg, rgba(91, 253, 91, 1) 0%, rgba(30, 90, 30, 1) 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    z-index: 4;
+    will-change: top;
+
+    @include allMobile {
+      width: 22vw;
+      height: 20vh;
+    }
+  }
+
+  .sandbox-corner-bl {
+    position: absolute;
+    bottom: -40%;
+    left: 0;
+    width: 15vw;
+    height: 30vh;
+    background: linear-gradient(-20deg, rgba(91, 253, 91, 1) 0%, rgba(30, 90, 30, 1) 100%);
+    clip-path: polygon(0 0, 0 100%, 100% 100%);
+    z-index: 4;
+    will-change: bottom;
+
+    @include allMobile {
+      width: 22vw;
+      height: 17vh;
+    }
+  }
+
+  .sandbox-corner-br {
+    position: absolute;
+    bottom: -40%;
+    right: 0;
+    width: 11vw;
+    height: 20vh;
+    background: linear-gradient(20deg, rgba(91, 253, 91, 1) 0%, rgba(30, 90, 30, 1) 100%);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    z-index: 4;
+    will-change: bottom;
+
+    @include allMobile {
+      width: 16vw;
+      height: 12vh;
     }
   }
 </style>

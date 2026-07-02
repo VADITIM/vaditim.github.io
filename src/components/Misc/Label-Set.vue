@@ -13,6 +13,13 @@
           </div>
         </div>
       </template>
+      <!-- stretch: words laid out side by side, each its own reveal unit. -->
+      <div v-else-if="label.stretch" class="pc-label-row">
+        <div v-for="(word, w) in label.text.split(/\s+/)" :key="'word-' + w" class="pc-label-inner">
+          <div class="pc-label-text" :style="{ color: textColor }">{{ word }}</div>
+          <div class="pc-label-bar" :style="{ background: accent, boxShadow: `0 0 26px ${accent}` }"></div>
+        </div>
+      </div>
       <div v-else class="pc-label-inner">
         <div class="pc-label-text" :style="{ color: textColor }">{{ label.text }}</div>
         <div class="pc-label-bar" :style="{ background: accent, boxShadow: `0 0 26px ${accent}` }"></div>
@@ -33,7 +40,7 @@
   gsap.defaults({ immediateRender: false });
 
   const props = withDefaults(defineProps<{
-    labels: { text: string; pos: CSSProperties; wrap?: boolean }[];
+    labels: { text: string; pos: CSSProperties; wrap?: boolean; stretch?: boolean }[];
     sectionId: string;
     accent: string;
     textColor?: string;
@@ -94,6 +101,13 @@
     + .pc-label-line {
       margin-top: 0.18em;
     }
+  }
+
+  // Stretch labels: words laid out side by side, each an independent reveal unit.
+  .pc-label-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.4em;
   }
 
   .pc-label-inner {

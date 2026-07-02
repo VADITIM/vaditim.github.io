@@ -1,10 +1,11 @@
-<template>
+﻿<template>
   <!-- Desktop-only wireframe cubes. Hidden below smallDesktop (see <style>). -->
   <div ref="root" class="profile-cubes">
     <!-- Cubes, centered -->
     <div class="pc-stage">
       <div class="pc-row">
-        <div v-for="(cube, ci) in cubes" :key="'cube-' + ci" class="pc-cell">
+        <ModuleDisplay v-for="(cube, ci) in cubes" :key="'cube-' + ci" class="pc-cell" :accent="cube.color">
+          <template #label>{{ String(ci + 1).padStart(2, '0') }} · {{ cube.name }}</template>
           <div class="pc-scene">
             <div class="pc-cube" :data-cube="ci">
               <div v-for="(face, fi) in cube.faces" :key="'face-' + fi" class="pc-face-anim">
@@ -21,7 +22,7 @@
               <div class="pc-label-bar" :style="{ background: cube.color, boxShadow: `0 0 22px ${cube.color}` }"></div>
             </div>
           </div>
-        </div>
+        </ModuleDisplay>
       </div>
     </div>
   </div>
@@ -35,10 +36,11 @@
   import { currentSection } from '@modules/sectionsCore';
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition';
   import { hideLabels, playLabelReveals, playLabelLeave } from '@modules/miscLabelReveal';
+  import ModuleDisplay from '@components/Misc/Module-Display.vue';
 
   gsap.defaults({ immediateRender: false });
 
-  const FACE_HALF = 110;  // half the 220px cube edge (see .pc-scene) — how far each face is pushed out
+  const FACE_HALF = 105;  // half the 300px cube edge (see .pc-scene) — how far each face is pushed out
 
   interface FaceDef { tf: string; token: string }
   interface CubeDef { name: string; color: string; bg: string; faces: FaceDef[] }
@@ -205,9 +207,20 @@
     });
   }
 
-  // Build the cubes. Enter waits for the section-cut curtain to clear (SECTION_ENTER_DELAY).
+  const BOX_REVEAL_DURATION = 0.6;
+  const BOX_REVEAL_STAGGER = 0.08;
+
+  // Boxes reveal first (same choreography as the Sandbox module windows), then
+  // the cubes build on top of them once they've landed.
   function playAll() {
-    const done = buildAll(SECTION_ENTER_DELAY);
+    const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module-display')) : [];
+    gsap.killTweensOf(boxes);
+    gsap.fromTo(boxes,
+      { opacity: 0, y: 36, scale: 0.96 },
+      { opacity: 1, y: 0, scale: 1, duration: BOX_REVEAL_DURATION, stagger: BOX_REVEAL_STAGGER, ease: 'back.out(1.6)', delay: SECTION_ENTER_DELAY });
+
+    const boxesDone = SECTION_ENTER_DELAY + BOX_REVEAL_DURATION + Math.max(0, boxes.length - 1) * BOX_REVEAL_STAGGER;
+    const done = buildAll(boxesDone);
     // Names sweep in once the builds are mostly settled; positional stagger in
     // playLabelReveals handles the left-to-right cascade across the row.
     playLabelReveals(nameEls, done - 0.35);
@@ -264,85 +277,20 @@
     return last;
   }
 
-  const BASE_RX = -20, BASE_RY = -28;
-  const ROTATE_RESET_DURATION = 0.22;
-
-  // Returns an angle equivalent to `current` (mod 360) that lies within 180deg
-  // of `target`, so tweening to `target` takes the short way round instead of
-  // unwinding whatever multiple of 360 the idle spin/drag accumulated.
-  function shortestAngle(current: number, target: number) {
-    let diff = (current - target) % 360;
-    if (diff > 180) diff -= 360;
-    if (diff < -180) diff += 360;
-    return target + diff;
-  }
-
-  // Leave fires immediately (no delay) and mirrors the build in reverse: the
-  // rotation settles to its resting orientation *while* the faces peel off in
-  // shuffled order and fly back up where they rained down from, with the same
-  // random x-drift and rotationZ scatter as the enter. Every element revealed
-  // on enter is animated out.
+  // Leave fires immediately (no delay) — mirrors the Sandbox module windows:
+  // the whole box slides down off screen and fades, carrying the cube with it.
+  // No separate per-face fly-out on leave (that's an enter-only flourish now).
   function playLeave() {
-    // Shadows and names exit immediately alongside the cubes.
+    const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module-display')) : [];
+    gsap.killTweensOf(boxes);
+    gsap.to(boxes, { y: '60vh', opacity: 0, duration: 0.22, stagger: 0.035, ease: 'power3.in', overwrite: 'auto' });
+
     gsap.killTweensOf(shadowEls);
-    gsap.to(shadowEls, { opacity: 0, scaleX: 0.5, duration: 0.3, ease: 'power2.in', overwrite: 'auto' });
+    gsap.to(shadowEls, { opacity: 0, scaleX: 0.5, duration: 0.22, ease: 'power2.in', overwrite: 'auto' });
     playLabelLeave(nameEls);
 
-    const cubeOrder = gsap.utils.shuffle(cubeEls.map((_, i) => i));
-    cubeOrder.forEach((cubeIndex, slot) => {
-      const cube = cubeEls[cubeIndex];
-      const state = states.find(c => c.el === cube);
-      const faces = cube.querySelectorAll<HTMLElement>('.pc-face-anim');
-      gsap.killTweensOf(faces);
-
-      // Quick concurrent settle so "up" reads as screen-up while faces travel —
-      // no waiting: faces start leaving while the rotation is still fixing.
-      if (state) {
-        gsap.killTweensOf(state);
-        state.building = true;
-        state.rx = shortestAngle(state.rx, BASE_RX);
-        state.ry = shortestAngle(state.ry, BASE_RY);
-        gsap.to(state, {
-          rx: BASE_RX,
-          ry: BASE_RY,
-          duration: ROTATE_RESET_DURATION,
-          ease: 'power2.inOut',
-          overwrite: 'auto',
-        });
-      }
-
-      const rect = cube.getBoundingClientRect();
-      const toTop = -(rect.top + rect.height + 80);
-      const cubeDelay = slot * 0.04;
-      const order = gsap.utils.shuffle([...faces].map((_, i) => i));
-      let last = 0;
-      order.forEach((fi, step) => {
-        const f = faces[fi];
-        const start = cubeDelay + step * (FACE_STAGGER * 0.5) + gsap.utils.random(0, FACE_STAGGER * 0.4);
-        const dur = gsap.utils.random(0.24, 0.34);
-        last = Math.max(last, start + dur);
-        const tl = gsap.timeline({ delay: start });
-        tl.to(f, {
-            y: toTop,
-            x: gsap.utils.random(-40, 40),
-            rotationZ: gsap.utils.random(-14, 14),
-            duration: dur,
-            ease: 'power3.in',
-            overwrite: 'auto',
-          }, 0)
-          // Fade only in the last stretch of travel so the face visibly flies
-          // away rather than vanishing in place.
-          .to(f, { opacity: 0, duration: 0.12, ease: 'none' }, dur - 0.12);
-      });
-
-      if (state) {
-        gsap.delayedCall(last + 0.05, () => {
-          state.building = false;
-          state.vx = state.idleVx;
-          state.vy = state.idleVy;
-        });
-      }
-    });
+    cubeEls.forEach(cube => gsap.killTweensOf(cube.querySelectorAll('.pc-face-anim')));
+    states.forEach(state => { state.building = false; });
   }
 
   onMounted(setup);
@@ -383,35 +331,41 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(48px, 6vw, 110px);
-    flex-wrap: nowrap;
+    gap: clamp(24px, 3vw, 60px);
+    flex-wrap: wrap;
   }
 
+  // Overrides the base .module-display: a fixed 1:1 square (border-box, so padding
+  // can't skew the ratio), enlarged to properly contain the bigger cube, and
+  // centered/padded content.
   .pc-cell {
-    display: flex;
-    flex-direction: column;
+    width: 430px;
+    height: 430px;
+    box-sizing: border-box;
     align-items: center;
-    gap: 34px;
+    justify-content: center;
+    gap: 12px;
+    padding: 0 16px 16px;
   }
 
   .pc-scene {
-    width: 220px;
-    height: 220px;
+    width: 210px;
+    height: 210px;
     perspective: 1100px;
     cursor: grab;
     pointer-events: auto;
   }
 
   // Elliptical glow floor under each cube — colour injected inline per cube.
-  .pc-shadow {
-    width: 240px;
-    height: 34px;
-    margin-top: 18px;
-    border-radius: 50%;
-    opacity: 0;
-    filter: brightness(1);
-    pointer-events: none;
-  }
+  // .pc-shadow {
+  //   width: 320px;
+  //   height: 32px;
+  //   margin-top: 8px;
+  //   border-radius: 50%;
+  //   opacity: 0;
+  //   filter: brightness(1);
+  //   pointer-events: none;
+  // }
 
   .pc-name {
     position: relative;

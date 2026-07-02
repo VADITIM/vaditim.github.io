@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div ref="rootRef" class="playground-section">
 
     <div class="pg-header">
@@ -20,9 +20,8 @@
     <div class="pg-grid">
 
       <!-- WINDOW 1 · magnetic button -->
-      <div class="pg-win">
-        <div class="pg-win-hue"></div>
-        <div class="pg-win-label">01 · MAGNETIC&nbsp;+&nbsp;IMPACT</div>
+      <ModuleDisplay hue>
+        <template #label>01 · MAGNETIC&nbsp;+&nbsp;IMPACT</template>
         <div class="pg-win-body">
           <div ref="magCountRef" class="mi-mag-count">{{ magClicks }}</div>
           <div ref="magWrapRef" class="mi-mag-wrap">
@@ -30,12 +29,11 @@
           </div>
           <div class="pg-caption">move toward it ◂▸ then click · how big can you get it?</div>
         </div>
-      </div>
+      </ModuleDisplay>
 
       <!-- WINDOW 2 · hover-focus list -->
-      <div class="pg-win">
-        <div class="pg-win-hue"></div>
-        <div class="pg-win-label">02 · HOVER&nbsp;FOCUS&nbsp;·&nbsp;LIST</div>
+      <ModuleDisplay hue>
+        <template #label>02 · HOVER&nbsp;FOCUS&nbsp;·&nbsp;LIST</template>
         <div class="pg-win-body pg-list-body">
           <div
             v-for="label in LIST_ITEMS"
@@ -47,24 +45,22 @@
             <div class="mi-ul"></div>
           </div>
         </div>
-      </div>
+      </ModuleDisplay>
 
       <!-- WINDOW 3 · zero-g space -->
-      <div class="pg-win">
-        <div class="pg-win-hue"></div>
-        <div class="pg-win-label pg-win-label--over">03 · ZERO-G&nbsp;SPACE</div>
+      <ModuleDisplay hue label-over>
+        <template #label>03 · ZERO-G&nbsp;SPACE</template>
         <div ref="gravRef" class="pg-grav"></div>
         <div class="pg-grav-controls">
           <button type="button" class="pg-grav-btn" @click="addParticle">+</button>
           <button type="button" class="pg-grav-btn" @click="removeParticle">−</button>
         </div>
         <div class="pg-caption pg-caption--over">drift in zero-g · hold to pull · release to burst</div>
-      </div>
+      </ModuleDisplay>
 
       <!-- WINDOW 4 · tilt parallax -->
-      <div class="pg-win">
-        <div class="pg-win-hue"></div>
-        <div class="pg-win-label pg-win-label--over">04 · TILT&nbsp;PARALLAX</div>
+      <ModuleDisplay hue label-over>
+        <template #label>04 · TILT&nbsp;PARALLAX</template>
         <div ref="tiltWrapRef" class="pg-tilt-wrap">
           <div ref="tiltRef" class="pg-tilt">
             <div class="pg-tilt-frame"></div>
@@ -73,7 +69,7 @@
             <div class="pg-tilt-name">SCAN&nbsp;ME</div>
           </div>
         </div>
-      </div>
+      </ModuleDisplay>
 
     </div>
   </div>
@@ -86,6 +82,7 @@
   import { getSectionIndexById } from '@modules/sectionsRegistry'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
+  import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import qrSrc from '@assets/images/rickroll-qr.png'
 
   const LIST_ITEMS = ['NEBULA UI', 'HELIX', 'PULSE', 'ARCADE']
@@ -249,25 +246,6 @@
       gsap.to(card, { rotationY: px * 16, rotationX: -py * 16, duration: 0.4, ease: 'power3.out', transformPerspective: 900 })
     })
     on(wrap, 'mouseleave', () => gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1,0.4)' }))
-  }
-
-  // ── cursor-following border hue (green glow tracing the edge of each window) ──
-  // Each window owns a masked `.pg-win-hue` ring; we feed the pointer position
-  // (relative to that window) into its CSS vars and reveal it only while hovered.
-  function initHue() {
-    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.pg-win')) : []
-    wins.forEach((win) => {
-      const hue = win.querySelector<HTMLElement>('.pg-win-hue')
-      if (!hue) return
-      on(win, 'mousemove', (e) => {
-        const ev = e as MouseEvent
-        const r = win.getBoundingClientRect()
-        hue.style.setProperty('--mx', `${ev.clientX - r.left}px`)
-        hue.style.setProperty('--my', `${ev.clientY - r.top}px`)
-        hue.style.opacity = '1'
-      })
-      on(win, 'mouseleave', () => { hue.style.opacity = '0' })
-    })
   }
 
   // ── zero-g particles ──
@@ -476,8 +454,8 @@
     if (!sec || !rootRef.value) return
     // The zero-g window (module 03) is intentionally NOT a wall — letters can fly
     // into it, get tugged by its black hole, and bump the floating shapes.
-    const gravWin = gravRef.value?.closest('.pg-win') ?? null
-    glyphBoxes = Array.from(rootRef.value.querySelectorAll<HTMLElement>('.pg-win'))
+    const gravWin = gravRef.value?.closest('.module-display') ?? null
+    glyphBoxes = Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display'))
       .filter((w) => w !== gravWin)
       .map((w) => {
         const r = w.getBoundingClientRect()
@@ -641,7 +619,7 @@
     // from wherever they currently sit.
     glyphsReleased = false
     const eyebrow = eyebrowRef.value
-    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.pg-win')) : []
+    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
     gsap.killTweensOf([eyebrow, ...wins, ...glyphs.map((g) => g.el)])
     glyphs.forEach((g, i) => {
       gsap.set(g.el, { x: g.x, y: g.y, rotation: g.rot })   // seed GSAP with the live physics position + spin
@@ -656,7 +634,7 @@
   // ── enter reveal (adapted from the design's playMicro) ──
   function playReveal() {
     const eyebrow = eyebrowRef.value
-    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.pg-win')) : []
+    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
     const items = listItemRefs.value
     const btn = magBtnRef.value
     const chars = glyphs.map((g) => g.el)
@@ -700,7 +678,6 @@
     initMagnetic()
     initList()
     initTilt()
-    initHue()
     initParticles()
     initGlyphs()
     refreshGlyphBounds()
@@ -782,7 +759,9 @@
     // Section wrappers collapse to 0 height and stack below the full-height Perks
     // wrapper, landing one viewport down — pull back up to fill the viewport.
     transform: translateY(-100vh);
-    background: #161616;
+    // Transparent so the section background (once built — see CLAUDE.md Current
+    // Task 7) remains visible behind the content, matching every other section.
+    background: transparent;
     overflow: hidden;
   }
 
@@ -838,56 +817,6 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 18px;
-  }
-
-  .pg-win {
-    position: relative;
-    border: 1px solid #262626;
-    border-radius: 12px;
-    background: #121212;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    will-change: transform, opacity;
-  }
-
-  // Cursor-following green glow, masked to only show on the window's border ring.
-  // `--mx` / `--my` are updated per-window from the pointer in initHue.
-  .pg-win-hue {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1.5px;
-    pointer-events: none;
-    z-index: 4;
-    background: radial-gradient(
-      150px circle at var(--mx, 50%) var(--my, 50%),
-      rgba(91, 253, 91, 0.65),
-      rgba(91, 253, 91, 0) 70%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-            mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    will-change: opacity;
-  }
-
-  .pg-win-label {
-    font-family: 'Mono';
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: #5f5f5f;
-    padding: 13px 16px;
-
-    &--over {
-      position: relative;
-      z-index: 4;
-      pointer-events: none;
-    }
   }
 
   .pg-win-body {

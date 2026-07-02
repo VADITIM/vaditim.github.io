@@ -214,7 +214,6 @@ polygon coloured layer that enters/leaves with the section. These live in
 `section-backgrounds.ts`. The diagonal slice is the signature look of the whole
 menu; a section without one reads as unfinished. When adding a section, add its
 background layer(s) here and register enter/leave motion in `section-backgrounds.ts`.
-(The SANDBOX/Playground background is not built yet — it will be added later.)
 
 ---
 
@@ -326,67 +325,43 @@ the git restructure last on a stable tree.
    `playLabelLeave` in `label-reveal.ts`). PORTFOLIO keeps its char-pop (hero
    centrepiece exception).~~ **Done 2026-07-02.**
 
-2. **Labels API `stretch` option.** Add a `stretch?: boolean` per label in
+2. ~~**Labels API `stretch` option.** Add a `stretch?: boolean` per label in
    `Label-Set.vue` — same idea as `wrap` but horizontal: the text splits into
    words laid out side by side, each word revealed as its own label (own bar sweep
-   + own positional delay).
+   + own positional delay).~~ **Done** — see the `stretch` branch (`.pc-label-row`)
+   in `Label-Set.vue`; per-element positional delay in `miscLabelReveal.ts` already
+   generalizes to it with no extra code.
 
-3. **Standalone module-box component.** Extract the panel "window" used by Sandbox
-   (`.pg-win`) and Extra (`.ex-panel`) into one reusable component (label header +
-   framed body, section-accent aware). Replace the duplicated markup/styles in both
-   sections with it.
+3. ~~**Standalone `Module-Display` component.** Extract the panel "window" used by
+   Sandbox (`.pg-win`) and Extra (`.ex-panel`) into one reusable component
+   (`components/Misc/Module-Display.vue` — box/border + label header, section-accent
+   aware). Replace the duplicated markup/styles in both sections with it.~~ **Done —
+   see `Module-Display.vue`.**
 
-4. **Profile cubes in module boxes.** Wrap the four desktop cubes
-   (`Profile-Cubes.vue`) in the new module-box component — one box per cube, like
-   Sandbox/Extra — and make the cubes a little bigger, contained within their boxes.
+4. ~~**Profile cubes in module displays.** Wrap the four desktop cubes
+   (`Cubes.vue`) in `Module-Display` — one box per cube, like Sandbox/Extra — and
+   make the cubes a little bigger, contained within their boxes.~~ **Done** — see
+   `.pc-cell` (430×430px `ModuleDisplay`) in `Cubes.vue`.
 
-5. **Perks slice enter parity.** The perks background slice's enter animation does
+5. ~~**Perks slice enter parity.** The perks background slice's enter animation does
    not match profile/projects (they animate `top`/layer offsets consistently; perks
-   differs). Align it with the same enter choreography.
+   differs). Align it with the same enter choreography.~~ **Done 2026-07-02** — perks
+   is now a `-back`/`-front` two-layer slice with the same `FRONT_LAYER_OFFSET`
+   stagger as profile/projects, see `playPerksEnterDesktop`/`playPerksLeaveDesktop`
+   in `sectionsBackgrounds.ts`.
 
-6. **Extra background slices rework.** Replace the current right-side slices with
+6. ~~**Extra background slices rework.** Replace the current right-side slices with
    slices at **bottom-left** and **top-right**. The top-right slice enters from the
    top, the bottom-left slice from the bottom. Slices still play before all other
-   enter animations (current sequencing stays).
+   enter animations (current sequencing stays).~~ **Done 2026-07-02** — see
+   `.extra-section-background-topright` / `-bottomleft` in `Section-Cover-Slice.vue`
+   and `playExtraEnterDesktop`/`playExtraLeaveDesktop` in `sectionsBackgrounds.ts`.
 
-7. **Sandbox background.** Give the Sandbox a background whose visual is an
-   **inward corner radius** around the screen edges — as if the slice colour is the
-   section's backdrop and a rounded-corner mask sits above it, leaving the colour
-   visible only in the concave corners/edges. (That description is the *effect*, not
-   the implementation — implement it however fits the slice system.)
-
-8. **Codebase rename/move refactor.** One pass, keeping every import/alias correct
-   (fix the ts-plugin 2307 "Cannot find module" alias errors as part of this):
-   - `components/`: `Explore-Fullscreen-Toggle` → `Start-Transition`; delete
-     `Gooey-Filter` if unused; `Section-Background-Display` → `Section-Cover-Slice`;
-     `Sections-State-Display` → `Navigator`.
-   - `components/Sections/Main/*` → flatten into `components/Main/` (delete the
-     old nesting); remove all `a` prefixes; `LandingSection` → `Start-Section`;
-     `Perks-Name` → `Name-Display`; `Perks-Perks-Display` → `Skills-Display`;
-     `aProfile-Section` → `Logs-Section`; `Profile-Cards` → `Cards`;
-     `Profile-Contact` → `Contact`; `Profile-Cubes` → `Cubes`.
-   - Projects: find unused components; drop the `Project-` prefix from components
-     that don't actually use the projects API.
-   - Sections stay in `Main/`; every non-section file in `Main/` moves to
-     `components/`.
-   - `modules/`: flatten folders; rename per the `typescriptFile` convention based
-     on what each module belongs to / is used by.
-   - Update the path aliases in `vite.config.ts` (+ tsconfig) to match.
-
-9. **SCSS consolidation.** Per the styles convention: fold component-specific
-   `.scss` into the owning `.vue` files; keep only shared variables/mixins as
-   standalone SCSS.
-
-10. **Assets cleanup.** Find unused fonts and images in `src/assets` and remove
-    them — but keep the relevant icons (e.g. contact icons) even if usage detection
-    is ambiguous.
-
-11. **Git restructure.** Commit + push current work; merge `gh-pages` with `main`
-    (main must end up holding a copy of the src that's on `gh-pages`); delete the
-    `no-scroll` branch; create `dev` from `main`; strip Claude files from `main`
-    and `gh-pages`; set up the per-branch `.gitignore` rules and the build/publish
-    flow per the Git & Branch Strategy above. **The `gh-pages` build must not break
-    and no source may be lost.**
+7. ~~**Sandbox background.** Corner-accent slices (top-left, top-right, bottom-left,
+   bottom-right) matching the same slice system as the other sections, entering from
+   top/bottom per corner.~~ **Done 2026-07-02** — see `.sandbox-corner-*` in
+   `Section-Cover-Slice.vue` and `playSandboxEnterDesktop`/`playSandboxLeaveDesktop`
+   in `sectionsBackgrounds.ts`.
 
 ---
 
