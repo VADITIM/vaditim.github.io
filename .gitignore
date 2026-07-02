@@ -44,4 +44,5 @@ types/generated/
 
 # Local assistant/config folders
 /.github/
-/.claude/
+/CLAUDE.md
+.claude/
