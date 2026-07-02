@@ -11,6 +11,27 @@ export function hideLabels(labelEls: HTMLElement[]) {
   });
 }
 
+// Build the 4-step bar-sweep reveal for a single label (expects .pc-label-text
+// and .pc-label-bar children). The hidden state is applied immediately; the
+// returned timeline plays the sweep. Used by playLabelReveals below and by
+// one-off choreographies (e.g. the landing page) that sequence labels inside a
+// master timeline instead of via the positional stagger.
+export function buildLabelReveal(label: HTMLElement): gsap.core.Timeline {
+  const tl = gsap.timeline();
+  const text = label.querySelector('.pc-label-text');
+  const bar = label.querySelector('.pc-label-bar');
+  if (!text || !bar) return tl;
+  gsap.killTweensOf([text, bar]);
+  gsap.set(text, { clipPath: 'inset(0 100% 0 0)' });
+  gsap.set(bar, { scaleX: 0, x: '0%', opacity: 1, transformOrigin: 'left center' });
+  tl.to(bar, { scaleX: 1, duration: 0.42, ease: 'power3.inOut' })
+    .set(text, { clipPath: 'inset(0 0% 0 0)' })
+    .set(bar, { transformOrigin: 'right center' })
+    .to(bar, { scaleX: 0, duration: 0.5, ease: 'power3.inOut' })
+    .set(bar, { opacity: 0 });
+  return tl;
+}
+
 // Each label: a thin bar grows to the right to cover the text, then slides out
 // to the right — leaving the text behind. Delay scales with distance from the
 // top-left corner (top-left first, bottom-right last) — see "Label Reveal
@@ -19,12 +40,6 @@ export function playLabelReveals(labelEls: HTMLElement[], startAt: number) {
   const vh = window.innerHeight;
   const vw = window.innerWidth;
   labelEls.forEach(label => {
-    const text = label.querySelector('.pc-label-text');
-    const bar = label.querySelector('.pc-label-bar');
-    gsap.killTweensOf([text, bar]);
-    gsap.set(text, { clipPath: 'inset(0 100% 0 0)' });
-    gsap.set(bar, { scaleX: 0, x: '0%', opacity: 1, transformOrigin: 'left center' });
-
     const rect = label.getBoundingClientRect();
     const yFrac = rect.top / vh;    // 0 (top) → ~1 (bottom)
     const xFrac = rect.left / vw;   // 0 (left) → ~1 (right)
@@ -33,12 +48,7 @@ export function playLabelReveals(labelEls: HTMLElement[], startAt: number) {
     // on the same row so the more left-aligned one always animates first.
     const delay = startAt + yFrac * 1.1 + xFrac * 0.4;
 
-    const tl = gsap.timeline({ delay });
-    tl.to(bar, { scaleX: 1, duration: 0.42, ease: 'power3.inOut' })
-      .set(text, { clipPath: 'inset(0 0% 0 0)' })
-      .set(bar, { transformOrigin: 'right center' })
-      .to(bar, { scaleX: 0, duration: 0.5, ease: 'power3.inOut' })
-      .set(bar, { opacity: 0 });
+    buildLabelReveal(label).delay(delay);
   });
 }
 

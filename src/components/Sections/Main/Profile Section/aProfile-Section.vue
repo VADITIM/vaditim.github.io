@@ -16,8 +16,8 @@
 
   const profileLabels: { text: string; pos: CSSProperties; wrap?: boolean }[] = [
     { text: 'CRAFTED\nWITH INTENT', pos: { top: '8%', left: '20%' } },
-    { text: 'BUILT TO\nLAST',       pos: { top: '8%', right: '10%', textAlign: 'right' } },
-    { text: 'EXPERIENCE IS WHAT WE REMEMBER', pos: { bottom: '2%', left: '15%' }, wrap: true },
+    { text: 'BUILT TO\nCAPTIVATE',       pos: { top: '8%', right: '10%', textAlign: 'right' } },
+    { text: 'EXPERIENCE DESIGN', pos: { bottom: '2%', left: '15%' }, wrap: true },
   ];
 </script>
 

@@ -5,15 +5,15 @@
 
 		<div class="landing-greeting">
 			<div class="greet-line greet-1">
-				<div class="greet-inner">
-					<div class="greet-text">Greetings User.</div>
-					<div class="greet-bar"></div>
+				<div class="pc-label-inner">
+					<div class="pc-label-text">Greetings User.</div>
+					<div class="pc-label-bar"></div>
 				</div>
 			</div>
 			<div class="greet-line greet-2">
-				<div class="greet-inner">
-					<div class="greet-text">Enjoy your experience!</div>
-					<div class="greet-bar"></div>
+				<div class="pc-label-inner">
+					<div class="pc-label-text">Enjoy your experience!</div>
+					<div class="pc-label-bar"></div>
 				</div>
 			</div>
 		</div>
@@ -24,13 +24,28 @@
 			</div>
 
 			<div class="rv-subtitle">
-				<div class="rv-line-clip"><div class="rv-l1">CREATIVE&nbsp;DEVELOPER&nbsp;·&nbsp;DESIGNER</div></div>
-				<div class="rv-line-clip"><div class="rv-l2">BRINGING&nbsp;IDEAS&nbsp;TO&nbsp;LIFE</div></div>
+				<div class="rv-line rv-1">
+					<div class="pc-label-inner">
+						<div class="pc-label-text">CREATIVE&nbsp;DEVELOPER&nbsp;·&nbsp;DESIGNER</div>
+						<div class="pc-label-bar"></div>
+					</div>
+				</div>
+				<div class="rv-line rv-2">
+					<div class="pc-label-inner">
+						<div class="pc-label-text">BRINGING&nbsp;IDEAS&nbsp;TO&nbsp;LIFE</div>
+						<div class="pc-label-bar"></div>
+					</div>
+				</div>
 				<div class="rv-ul"></div>
 			</div>
 		</div>
 
-		<div class="landing-credit">/ created by VADITIM</div>
+		<div class="landing-credit">
+			<div class="pc-label-inner">
+				<div class="pc-label-text">/ created by VADITIM</div>
+				<div class="pc-label-bar"></div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -41,6 +56,7 @@
 	import { ChangeSection } from '@modules/Sections/sections';
 	import { getSectionIndexById } from '@modules/Sections/section-registry';
 	import { isMobile } from '@modules/Misc/is-mobile';
+	import { buildLabelReveal, playLabelLeave } from '@modules/Misc/label-reveal';
 
 	const loadingContainer = ref<HTMLElement | null>(null);
 

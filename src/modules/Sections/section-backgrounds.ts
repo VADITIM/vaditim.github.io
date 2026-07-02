@@ -27,6 +27,8 @@ const BACKGROUND_TARGETS = [
   '.profile-section-background-front',
   '.projects-section-background-back',
   '.projects-section-background-front',
+  '.extra-section-background-back',
+  '.extra-section-background-front',
 ]
 
 function DragTransition(buildTimeline: (timeline: gsap.core.Timeline) => void) {
@@ -90,6 +92,22 @@ function playProjectsLeaveDesktop() {
   })
 }
 
+function playExtraEnterDesktop() {
+  gsap.killTweensOf(['.extra-section-background-back', '.extra-section-background-front'])
+  DragTransition((tl) => {
+    tl.to('.extra-section-background-back', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    tl.to('.extra-section-background-front', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
+  })
+}
+
+function playExtraLeaveDesktop() {
+  gsap.killTweensOf(['.extra-section-background-back', '.extra-section-background-front'])
+  DragTransition((tl) => {
+    tl.to('.extra-section-background-back', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    tl.to('.extra-section-background-front', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
+  })
+}
+
 // -------------------- Mobile animations (<= smallDesktop) --------------------
 
 const MOBILE_DURATION = 0.95
@@ -107,6 +125,8 @@ function initMobileBackgroundState() {
   gsap.set('.profile-section-background-front', { top: MOBILE_BOTTOM_HIDDEN })
   gsap.set('.projects-section-background-back', { top: MOBILE_BOTTOM_HIDDEN })
   gsap.set('.projects-section-background-front', { top: MOBILE_BOTTOM_HIDDEN })
+  gsap.set('.extra-section-background-back', { top: MOBILE_BOTTOM_HIDDEN })
+  gsap.set('.extra-section-background-front', { top: MOBILE_BOTTOM_HIDDEN })
 }
 
 function playPerksEnterMobile() {
@@ -134,11 +154,21 @@ function playProjectsEnterMobile() {
   })
 }
 
+function playExtraEnterMobile() {
+  DragTransition((tl) => {
+    tl.set('.extra-section-background-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    tl.set('.extra-section-background-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    tl.to('.extra-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    tl.to('.extra-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+  })
+}
+
 function playMobileBackgroundTransition(
   meta: SectionTransitionMeta,
   perksIdx: number,
   profileIdx: number,
-  projectsIdx: number
+  projectsIdx: number,
+  extraIdx: number
 ) {
   const enterAt = SECTION_ENTER_DELAY
 
@@ -191,6 +221,19 @@ function playMobileBackgroundTransition(
       tl.to('.projects-section-background-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
       tl.to('.projects-section-background-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
+
+    // EXTRA
+    if (meta.isEnteringSection(extraIdx)) {
+      tl.set('.extra-section-background-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      tl.set('.extra-section-background-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      tl.to('.extra-section-background-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      tl.to('.extra-section-background-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    }
+
+    if (meta.isLeavingSection(extraIdx)) {
+      tl.to('.extra-section-background-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      tl.to('.extra-section-background-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    }
   })
 }
 
@@ -198,6 +241,7 @@ export function ScrollBackgroundSections() {
   const perksIdx    = getSectionIndexById('perks')
   const profileIdx  = getSectionIndexById('profile')
   const projectsIdx = getSectionIndexById('projects')
+  const extraIdx    = getSectionIndexById('extra')
 
   const isPerksEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(perksIdx)
   const isPerksLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(perksIdx)
@@ -205,6 +249,8 @@ export function ScrollBackgroundSections() {
   const isProfileLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(profileIdx)
   const isProjectsEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(projectsIdx)
   const isProjectsLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(projectsIdx)
+  const isExtraEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(extraIdx)
+  const isExtraLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(extraIdx)
 
   const MatchMedia = gsap.matchMedia()
 
@@ -216,6 +262,8 @@ export function ScrollBackgroundSections() {
     gsap.set('.profile-section-background-front', { left: '-30%', top: '0%' })
     gsap.set('.projects-section-background-back', { right: '-40%', top: '0%' })
     gsap.set('.projects-section-background-front', { right: '-40%', top: '0%' })
+    gsap.set('.extra-section-background-back', { right: '-40%', top: '0%' })
+    gsap.set('.extra-section-background-front', { right: '-40%', top: '0%' })
 
     const cleanupPerks = onSectionEnterLeaveAnimation({
       isEnter: isPerksEnter,
@@ -241,10 +289,19 @@ export function ScrollBackgroundSections() {
       initialSection: projectsIdx,
     })
 
+    const cleanupExtra = onSectionEnterLeaveAnimation({
+      isEnter: isExtraEnter,
+      isLeave: isExtraLeave,
+      onEnter: playExtraEnterDesktop,
+      onLeave: playExtraLeaveDesktop,
+      initialSection: extraIdx,
+    })
+
     return () => {
       cleanupPerks()
       cleanupProfile()
       cleanupProjects()
+      cleanupExtra()
     }
   })
 
@@ -260,9 +317,10 @@ export function ScrollBackgroundSections() {
     if (currentSection.value === perksIdx) playPerksEnterMobile()
     else if (currentSection.value === profileIdx) playProfileEnterMobile()
     else if (currentSection.value === projectsIdx) playProjectsEnterMobile()
+    else if (currentSection.value === extraIdx) playExtraEnterMobile()
 
     const cleanupMobile = onSectionStatesChange((meta) => {
-      playMobileBackgroundTransition(meta, perksIdx, profileIdx, projectsIdx)
+      playMobileBackgroundTransition(meta, perksIdx, profileIdx, projectsIdx, extraIdx)
     })
 
     return () => {

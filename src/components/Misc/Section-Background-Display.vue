@@ -5,6 +5,8 @@
       <div class="profile-section-background-front" :style="GetBackgroundStyle('profile-front')"></div>
       <div class="projects-section-background-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
       <div class="projects-section-background-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
+      <div class="extra-section-background-back"></div>
+      <div class="extra-section-background-front"></div>
     </div>
 </template>
 
@@ -240,6 +242,46 @@
       border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
 
+    }
+  }
+
+  .extra-section-background-back {
+    position: absolute;
+    right: -40%;
+    width: 25%;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(74, 43, 8, 1) 21%, rgba(140, 82, 20, 1) 80%, rgba(178, 104, 24, 1) 100%);
+    clip-path: polygon(100% 0, 100% 0, 100% 100%, 0 100%);
+    z-index: 4;
+
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100vw;
+      height: 150dvh;
+      background: linear-gradient(180deg, rgb(92, 55, 12) 15%, rgba(178, 104, 24, 1) 85%);
+      border-radius: 30px 30px 0 0;
+      clip-path: polygon(0 0, 100% 0, 100% 33%, 0 80%);
+    }
+  }
+
+  .extra-section-background-front {
+    position: absolute;
+    right: -40%;
+    width: 25%;
+    height: 100vh;
+    background: linear-gradient(180deg, rgba(120, 70, 16, 1) 21%, rgba(190, 115, 30, 1) 55%, rgba(240, 155, 58, 1) 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 81% 100%);
+    z-index: 4;
+
+    @include allMobile {
+      left: 0;
+      top: 100%;
+      width: 100vw;
+      height: 150dvh;
+      background: linear-gradient(180deg, rgba(120, 70, 16, 1) 15%, rgba(240, 155, 58, 1) 85%);
+      border-radius: 30px 30px 0 0;
+      clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
     }
   }
 </style>
