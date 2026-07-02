@@ -42,7 +42,5 @@ vite.config.timestamp*
 # Generated files
 types/generated/
 
-# Local assistant/config folders
-/.github/
-/CLAUDE.md
-.claude/
+# Build output (dev builds locally; only gh-pages tracks the published docs/)
+/docs/
