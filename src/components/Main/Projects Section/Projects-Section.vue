@@ -105,8 +105,7 @@
   const projectsIndex = getSectionIndexById('projects')
 
   const PROJECT_LABELS = [
-    { text: 'PORTFOLIO', pos: { top: '5%', left: '4%' } },
-    { text: 'DRAG · OR · ARROWS', pos: { top: '6%', right: '4%' } },
+    { text: 'DRAG · OR · ARROWS', pos: { top: '92%', left: '10%' } },
   ]
 
   const eyebrowRef = ref<HTMLElement | null>(null)
@@ -433,7 +432,7 @@
   .proj-info {
     position: absolute;
     left: 4%;
-    top: 20%;
+    top: 15%;
     width: min(40vw, 570px);
     z-index: 6;
 
@@ -655,8 +654,8 @@
 
   .proj-card-tech-icon {
     flex: 0 0 auto;
-    width: 26px;
-    height: 26px;
+    width: clamp(38px, 4.2vw, 62px);
+    height: clamp(38px, 4.2vw, 62px);
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid #3a3a3a;

@@ -384,8 +384,8 @@
   }
 
   .pdw-tech-ico {
-    width: clamp(40px, 4vw, 58px);
-    height: clamp(40px, 4vw, 58px);
+    width: 90px;
+    height: 90px;
     border-radius: 12px;
     border: 1px solid #2a151a;
     background-color: #0a0506;

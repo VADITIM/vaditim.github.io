@@ -15,8 +15,8 @@
   import type { CSSProperties } from 'vue';
 
   const logsLabels: { text: string; pos: CSSProperties; wrap?: boolean }[] = [
-    { text: 'CRAFTED\nWITH INTENT', pos: { top: '8%', left: '20%' } },
-    { text: 'BUILT TO\nCAPTIVATE',       pos: { top: '8%', right: '10%', textAlign: 'right' } },
+    { text: 'CRAFTED WITH INTENT', pos: { top: '8%', left: '20%' }, wrap: true },
+    { text: 'BUILT TO CAPTIVATE',       pos: { top: '8%', right: '10%', textAlign: 'right' }, wrap: true },
     { text: 'EXPERIENCE DESIGN', pos: { bottom: '8%', left: '15%' }, wrap: true },
   ];
 </script>
