@@ -14,7 +14,7 @@
 - Files: `Vue-File` convention for components (PascalCase words separated by hyphens: `Label-Set.vue`), camelCase for TypeScript modules (`sectionsRegistry.ts`), kebab-case for SCSS (`variables.scss`). See `.claude/rules/architecture.md`.
 - Booleans: `is` / `has` / `should` / `can` prefix. Functions: verb-first (`getUser`). Handlers: `handle*` internal, `on*` as props.
 - Factories: `create*`. Converters: `to*`. Predicates: `is*` / `has*`. Constants: `SCREAMING_SNAKE`.
-- Abbreviations only when universally known (`id`, `url`, `api`, `db`, `auth`). Acronyms as words: `userId`, not `userID`.
+- **No abbreviations — always write full names**, including locals and callback params: `button` not `btn`, `event` not `e`/`evt`, `element` not `el`, `index` not `idx`/`i` (loop counters included), `timeline` not `tl`, `previous` not `prev`. Only exception: acronyms that are words in their own right (`id`, `url`, `api`, `db`, `auth`). Acronyms as words: `userId`, not `userID`. Applies to new and rewritten code — don't mass-rename untouched code just to comply.
 
 ## Code Markers
 

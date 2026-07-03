@@ -74,3 +74,8 @@ Name-Display replaced by Name: "vadim niedental" becomes **VADITIM**, with "vadi
 - Projects section: Project-Name in Module-Display-Project-Info doesn't properly play its leave animation before showing new content. Uncouple Module-Display-Projects animation from Project-Name leave animation — two separate animations handling their data differently. Project-Name always plays its leave animation before showing new content, no matter how fast projects are cycled; before playing enter, check the current project and use its data (don't queue animations).
 - Landing page & Section-Cover-Slices should not use border-radius.
 - Landing page: "Greetings User" shows first, stays 1s, plays its leave animation; wait 0.35s, then "Explore your experience" plays and stays 1s. Both labels share the same position (cycled). Then proceed with the normal timeline.
+
+
+
+## Code Inconsistencies
+Scan the entire codebase and replace all abbreviations with full names.
