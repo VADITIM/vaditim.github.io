@@ -1,6 +1,6 @@
 import { gsap } from 'gsap'
 import { currentSection } from '@modules/sectionsCore'
-import { onSectionStatesChange, type SectionIndex } from './sectionsStateMachine'
+import { onSectionStatesChange } from './sectionsStateMachine'
 
 gsap.defaults({ immediateRender: false })
 
@@ -8,7 +8,7 @@ export function createFloatingAnimation(selector: string, options: {
   amplitude?: number,
   duration?: number,
   delay?: number,
-  section?: SectionIndex
+  section?: number
 } = {}) {
   const {
     amplitude = 20, 
@@ -57,10 +57,10 @@ export function createFloatingAnimation(selector: string, options: {
 
   syncSectionPlayback(currentSection.value === section)
 
-  onSectionStatesChange((_, { current, previous }) => {
-    if (current === section) {
+  onSectionStatesChange((meta) => {
+    if (meta.current === section) {
       syncSectionPlayback(true)
-    } else if (previous === section) {
+    } else if (meta.previous === section) {
       syncSectionPlayback(false)
     }
   })

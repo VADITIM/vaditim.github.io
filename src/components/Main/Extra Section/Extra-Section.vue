@@ -142,7 +142,7 @@
 
   // ── enter / leave ──
   function playReveal() {
-    const commentsEl = commentsPanelRef.value?.el, contactEl = contactPanelRef.value?.el
+    const commentsEl = commentsPanelRef.value?.el ?? null, contactEl = contactPanelRef.value?.el ?? null
     gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl])
 
     const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
@@ -153,7 +153,7 @@
   }
 
   function playLeave() {
-    const commentsEl = commentsPanelRef.value?.el, contactEl = contactPanelRef.value?.el
+    const commentsEl = commentsPanelRef.value?.el ?? null, contactEl = contactPanelRef.value?.el ?? null
     gsap.killTweensOf([eyebrowRef.value, commentsEl, contactEl])
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     gsap.to(commentsEl, { x: '28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })

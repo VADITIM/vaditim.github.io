@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Recurse 'C:\\\\Users\\\\sila\\\\.claude\\\\plugins\\\\cache\\\\dotclaude\\\\setupdotclaude\\\\2.1.0' -File | Where-Object { $_.Length -lt 200 -and \\(Get-Content $_.FullName -Raw -ErrorAction SilentlyContinue\\) -match '^\\\\.\\\\./' } | Select-Object FullName, Length; ls 'C:\\\\Users\\\\sila\\\\.claude\\\\plugins\\\\marketplaces\\\\dotclaude\\\\skills\\\\setupdotclaude')",
+      "PowerShell(winget install *)",
+      "Bash(command -v jq)",
+      "Bash(jq --version)",
+      "Bash(grep -cv '^[[:space:]]*$' CLAUDE.md)",
+      "Bash(chmod +x .claude/hooks/*.sh)",
+      "Bash(DOTCLAUDE_FINGERPRINT=1 .claude/hooks/session-start.sh)",
+      "Bash(echo \"exit=$?\")"
+    ]
+  }
+}

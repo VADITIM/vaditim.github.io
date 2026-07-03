@@ -8,7 +8,7 @@
       "@modules/*": ["modules/*"],
       "@assets/*": ["assets/*"],
       "@perks/*": ["components/Main/Perks Section/*"],
-      "@profile/*": ["components/Main/Profile Section/*"],
+      "@logs/*": ["components/Main/Logs Section/*"],
       "@projects/*": ["components/Main/Projects Section/*"],
       "@sections/*": ["components/Main/*"]
     },

@@ -1,6 +1,8 @@
 import { ref, onMounted } from 'vue';
 import { createFloatingAnimation } from '@modules/animationFloatingElements';
-import { SECTION_INDEX } from '@modules/sectionsStateMachine';
+import { getSectionIndexById } from '@modules/sectionLookup';
+
+const perksIndex = getSectionIndexById('perks');
 
 export const firstNameRef = ref<HTMLElement>();
 export const lastNameRef = ref<HTMLElement>();
@@ -14,13 +16,13 @@ export const InitializeFloatingElements = () => {
 	onMounted(() => {
 		if (window.innerWidth > 1050) 
 		{
-				createFloatingAnimation(".first-name", { amplitude: 15, section: SECTION_INDEX.PERKS })
-				createFloatingAnimation(".last-name", { amplitude: 15, section: SECTION_INDEX.PERKS })
+				createFloatingAnimation(".first-name", { amplitude: 15, section: perksIndex })
+				createFloatingAnimation(".last-name", { amplitude: 15, section: perksIndex })
 		} 
 		else 
 		{
-				createFloatingAnimation(".first-name", { amplitude: 5, section: SECTION_INDEX.PERKS })
-				createFloatingAnimation(".last-name", { amplitude: 5, section: SECTION_INDEX.PERKS })
+				createFloatingAnimation(".first-name", { amplitude: 5, section: perksIndex })
+				createFloatingAnimation(".last-name", { amplitude: 5, section: perksIndex })
 		}
 	})
 }
