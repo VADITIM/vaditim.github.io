@@ -49,6 +49,42 @@ app.MapDelete("/comments/{id}", async (Guid id, string token, CommentsDb db) =>
 
 Hosting caveat: GitHub Pages can't run the API — host it separately (Azure App Service free tier, Azure Container Apps, Fly.io, Render) with a hosted DB (Azure SQL free tier, or Postgres on Neon/Supabase); local SQLite resets on ephemeral filesystems. Trade-off: Minimal API is right if C# is preferred; a serverless function or BaaS (Supabase/Firebase) is less infrastructure, though PoW verification must live server-side either way.
 
+### Secret Section — QR code unlock (realtime)
+
+A hidden section unlocked by scanning a QR code displayed on the desktop page. The scan happens on the visitor's phone; the desktop page updates **live** — no refresh — via a realtime push from the backend. The payoff: the visitor scans, and the game menu grows a new entry in front of them.
+
+**Backend: shared with the Comments Section.** Same host/API as the comments backend (candidate: ASP.NET Core Minimal API) — no second service. Separate concerns inside it: own endpoints and, if needed, its own table/store. Realtime channel via **SignalR** (native to ASP.NET Core; free tier of Azure SignalR if hosted serverless). No persistence strictly required — unlock sessions can live in memory/cache with a TTL — but a table works too if we want unlock stats.
+
+**Flow:**
+
+1. **Session setup (desktop):** on load, the client generates a random high-entropy session ID, connects to the realtime hub, and subscribes to a group keyed by that session ID. It renders a QR code encoding `https://<site>/?unlock=<sessionId>` (client-side QR generation, no API call needed for the image).
+2. **Scan (phone):** the phone opens the URL; the page detects the `unlock` query param and calls `POST /unlock/{sessionId}` on the backend. The phone view shows a minimal confirmation splash (keep it trivial — mobile is frozen; no full experience needed).
+3. **Push (backend):** the endpoint validates the session ID (exists, not expired, not already used) and broadcasts an `unlocked` event to that session's group.
+4. **Unlock module (desktop):** on receiving the event, a new module pops up — `position: absolute`, centered on screen — reading **"Secret Section — UNLOCKED"** with a confirm button. Full enter animation (and matching leave, per animation rules).
+5. **Confirm:** clicking the button dismisses the module (leave animation), then:
+   - the secret section registers/activates in the section registry (resolved via `getSectionIndexById`, never a hardcoded index),
+   - the nav updates itself: a new label display appends **at the bottom of the nav list** — the label **slides in from the right (from outside the screen)** and the nav **flexes to fit the new element** (the existing labels reflow as it lands).
+
+**Client architecture notes:**
+
+- The secret section component stays mounted like every other section (GSAP needs persistent DOM targets); "locked" is state, not absence. Locked sections are excluded from nav and scroll-intent cycling until unlocked.
+- Unlock state persists in `localStorage` so a returning visitor keeps the section without rescanning.
+- The unlock module is a standalone overlay component, not tied to any section's timeline — it can fire regardless of which section is currently active.
+- QR code rendered client-side (small lib or hand-rolled); style it to match the game-menu aesthetic (section color, scanline/frame treatment).
+
+**Backend/security notes:**
+
+- Session IDs: high-entropy, short TTL (e.g. 15 min), single-use — prevents replaying someone else's unlock or unlocking strangers' sessions by guessing IDs.
+- Rate-limit `POST /unlock/*` (cheap; no proof-of-work needed — worst case someone unlocks their own easter egg).
+- If the realtime connection drops, resubscribe on reconnect with the same session ID; if the session expired, silently mint a new one and re-render the QR.
+- Phone hitting a stale/used session ID gets a friendly "session expired — reload the page on the big screen" message.
+
+**Open questions:**
+
+- What lives *inside* the secret section (content TBD — this task covers the unlock mechanic).
+- Whether unlock also triggers anything ambient (background shift, sound, nav glint) beyond the module + new entry.
+- SignalR vs. plain WebSockets/SSE if the comments backend ends up not being ASP.NET.
+
 ### Perks Section overhaul
 
 Interactive node graph on the left (like Obsidian's graph view). Each main perk is clickable and reveals its children as new nodes. Each perk gets its own Module-Display. Module-Displays aligned in a vertical grid, dynamic scaling.
