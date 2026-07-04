@@ -6,48 +6,73 @@ Migrated from `src/CLAUDE.md`. This file is not auto-loaded by Claude — point 
 
 ### Comments Section (backed by a database)
 
-Build a comments feature backed by a database so visitors can leave a message that persists and is shown to future visitors.
+Build a comments feature backed by a database so visitors can leave a message that persists and is shown to future visitors. **One comment per visitor, no real authentication** — enforced by layering several weak identity signals instead of one strong one, sized for a small portfolio (deter casual double-posting, flag the determined cases for manual review; not social-media-grade security).
 
-- **Storage:** a database holding each comment with its text, timestamp, an owner token hash, and a like count.
-- **Visitor identity — crypto token / proof-of-work, not IP.** IP-based identity was rejected (shared/NAT'd IPs, VPNs, changing IPs make it leaky and unreliable). Instead, a web3-style local identity:
-  - On first visit the client generates a keypair (or random high-entropy secret) entirely client-side, stored in `localStorage`. This is the visitor's **owner token** — nothing server-generated, nothing tied to IP.
-  - Before a comment is accepted, the client completes a small **proof-of-work** challenge (server sends nonce/difficulty; client hashes `token + nonce + text` until the hash meets the target). This replaces IP rate-limiting as the anti-spam gate.
-  - The server stores only a **hash of the owner token** against the comment row. One comment per identity: reject if that token hash already owns one.
-  - **Edit/delete:** client resends the token; server re-hashes and compares before allowing `PATCH`/`DELETE`. Losing `localStorage` means losing edit/delete (acceptable trade-off, no accounts).
-- **Likes:** any visitor can like a comment, keyed by their own owner token (one like per visitor per comment). Likes don't require proof-of-work — only creation does.
-- **Display:** a later-built Comments section renders stored comments, like counts, and edit/delete controls (shown only when the local token matches the stored hash).
+**Backend: ASP.NET Core Minimal API** (shared host with the Secret Section unlock — see that task).
 
-Open questions:
-- Needs a backend/API (currently a static SPA on GitHub Pages) — hosted DB + serverless endpoint.
-- Abuse protection before display: length limits, sanitization/escaping, profanity/spam filtering, in addition to proof-of-work.
-- Proof-of-work difficulty tunable server-side, no client redeploy.
+**Identity layers (defense in depth, each cheap to bypass alone):**
 
-**Candidate backend: ASP.NET Core Minimal API.** A handful of endpoints; store only `Sha256(ownerToken)`; verify ownership by re-hashing tokens sent with edit/delete/like. Sketch:
+1. **Cookie (primary):** on first comment `POST`, the server issues a `visitorId` (random GUID) as an `HttpOnly`, `Secure`, `SameSite=None` persistent cookie (~1 year). The comment row stores this ID. Strongest ownership signal — also what authorizes edit/delete later.
+2. **Browser fingerprint (secondary):** client computes a fingerprint hash (canvas/WebGL renderer string, screen metrics, timezone, language, hardware concurrency — a small hand-rolled hash is fine, no need for FingerprintJS Pro) and sends it with the request. Server stores `Sha256(fingerprint)`.
+3. **IP address (corroborating, never blocking alone):** server captures the request IP and stores a **salted hash** only — the site has a German Impressum, so treat IP as personal data under GDPR; hashed IP is enough for correlation and avoids storing the raw address. Shared/NAT IPs mean IP alone must never reject a comment.
+
+**Acceptance rule for `POST /comments`:**
+
+- Cookie `visitorId` already owns a comment → **reject** (409, "you already have a comment").
+- No cookie, but **fingerprint hash matches** an existing comment → **reject** (same browser, cleared cookies).
+- Cookie and fingerprint both new, but **IP hash matches** an existing comment with a *different* fingerprint → **accept, but flag** (`FlagReason: SameIpDifferentFingerprint`). This is the VPN/incognito case: let it through, surface it for manual review.
+- All three new → accept clean.
+
+**Moderation (manual opt-out):**
+
+- Comment row carries `IsFlagged`, `FlagReason`, `IsHidden`. Flagged comments still display publicly until acted on (or start hidden — decide during build).
+- A minimal admin surface: `GET /admin/comments?flagged=true` and `PATCH /admin/comments/{id}` (hide/unhide/delete), protected by a single static admin API key from configuration — no auth system for one admin.
+- Correlation view: list comments grouped by IP hash so same-IP-different-fingerprint clusters are visible at a glance.
+
+**Rate limiting (anti-spam, not anti-adversary):**
+
+- ASP.NET's built-in rate limiter middleware, partitioned by IP: strict on `POST /comments` (e.g. 3 attempts / 10 min), loose on reads. Tunable via configuration, no redeploy.
+- Plus input guards before storage: max length (~280 chars), trim, HTML-escape on render (never render raw), optional basic profanity list.
+
+**Edit/delete:** authorized by the `visitorId` cookie matching the comment row — no tokens to manage client-side. Losing the cookie loses edit/delete (acceptable; the fingerprint match will still block a duplicate from that browser).
+
+**Likes:** any visitor can like a comment, keyed by their `visitorId` cookie (one like per visitor per comment; issue the cookie on first like if absent).
+
+Sketch:
 
 ```csharp
-app.MapPost("/comments", async (CommentInput input, CommentsDb db) =>
+app.MapPost("/comments", async (CommentInput input, HttpContext http, CommentsDb db) =>
 {
-    if (!ProofOfWork.Verify(input.Token, input.Nonce, input.Text, difficulty: 20))
-        return Results.BadRequest("Invalid proof of work.");
-    var tokenHash = Sha256(input.Token);
-    if (await db.Comments.AnyAsync(c => c.OwnerTokenHash == tokenHash))
+    var visitorId = http.GetOrIssueVisitorCookie();
+    var fingerprintHash = Sha256(input.Fingerprint);
+    var ipHash = Sha256(http.Connection.RemoteIpAddress + salt);
+
+    if (await db.Comments.AnyAsync(c => c.VisitorId == visitorId || c.FingerprintHash == fingerprintHash))
         return Results.Conflict("You've already posted a comment.");
-    db.Comments.Add(new Comment { Text = input.Text.Trim(), OwnerTokenHash = tokenHash, CreatedAt = DateTime.UtcNow });
+
+    var sameIpOtherFingerprint = await db.Comments.AnyAsync(c => c.IpHash == ipHash && c.FingerprintHash != fingerprintHash);
+
+    db.Comments.Add(new Comment
+    {
+        Text = input.Text.Trim(),
+        VisitorId = visitorId,
+        FingerprintHash = fingerprintHash,
+        IpHash = ipHash,
+        IsFlagged = sameIpOtherFingerprint,
+        FlagReason = sameIpOtherFingerprint ? FlagReason.SameIpDifferentFingerprint : null,
+        CreatedAt = DateTime.UtcNow,
+    });
     await db.SaveChangesAsync();
     return Results.Created(...);
 });
-
-app.MapDelete("/comments/{id}", async (Guid id, string token, CommentsDb db) =>
-{
-    var comment = await db.Comments.FindAsync(id);
-    if (comment is null || comment.OwnerTokenHash != Sha256(token)) return Results.Forbid();
-    db.Comments.Remove(comment);
-    await db.SaveChangesAsync();
-    return Results.NoContent();
-});
 ```
 
-Hosting caveat: GitHub Pages can't run the API — host it separately (Azure App Service free tier, Azure Container Apps, Fly.io, Render) with a hosted DB (Azure SQL free tier, or Postgres on Neon/Supabase); local SQLite resets on ephemeral filesystems. Trade-off: Minimal API is right if C# is preferred; a serverless function or BaaS (Supabase/Firebase) is less infrastructure, though PoW verification must live server-side either way.
+**Known accepted gaps** (fine for a portfolio): VPN + incognito + different machine posts twice (gets flagged only if IP repeats); two genuine visitors behind the same NAT with odd setups may get flagged (manual review resolves it); fingerprints drift with browser updates (worst case: a duplicate slips through and is visible to you anyway).
+
+Open questions:
+- Hosting: GitHub Pages can't run the API — host it separately (Azure App Service free tier, Fly.io, Render) with a hosted DB (Azure SQL free tier, Postgres on Neon/Supabase); local SQLite resets on ephemeral filesystems. Cross-site cookies (gh-pages frontend → API domain) require `SameSite=None; Secure` and exact CORS origin configuration — verify early, it's the most likely integration headache.
+- Whether flagged comments start hidden or visible.
+- Admin surface: bare endpoints + REST client is enough, or a tiny hidden admin page.
 
 ### Secret Section — QR code unlock (realtime)
 
