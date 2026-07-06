@@ -8,7 +8,7 @@ Migrated from `src/CLAUDE.md`. This file is not auto-loaded by Claude — point 
 
 Build a comments feature backed by a database so visitors can leave a message that persists and is shown to future visitors. **One comment per visitor, no real authentication** — enforced by layering several weak identity signals instead of one strong one, sized for a small portfolio (deter casual double-posting, flag the determined cases for manual review; not social-media-grade security).
 
-**Backend: ASP.NET Core Minimal API** (shared host with the Secret Section unlock — see that task).
+**Backend: ASP.NET Core Minimal API** (shared host with the Classified Section unlock — see that task).
 
 **Identity layers (defense in depth, each cheap to bypass alone):**
 
@@ -74,7 +74,9 @@ Open questions:
 - Whether flagged comments start hidden or visible.
 - Admin surface: bare endpoints + REST client is enough, or a tiny hidden admin page.
 
-### Secret Section — QR code unlock (realtime)
+### Classified Section — QR code unlock (realtime)
+
+**Backend hosting progress:** Azure chosen as host (shared with Comments backend). Azure CLI installed locally, logged in, subscription active (`Azure subscription 1`), resource group `portfolio-rg` created (westeurope). App Service plan creation is **blocked**: new subscriptions start with a 0 VM quota (fraud-prevention hold) — `az appservice plan create` fails with `Operation cannot be completed without additional quota` regardless of region (tried westeurope, northeurope) or OS (Linux, Windows). Also note: westeurope itself separately rejected new App Service customers ("region not accepting new customers"). **Next step:** retry `az appservice plan create --name portfolio-plan --resource-group portfolio-rg --sku F1 --is-linux --location northeurope` after a few hours (quota usually clears automatically), or request a compute quota increase via Azure Portal → Quotas → Compute if it's still blocked after ~24h. Frontend work (this task) proceeds independently in the meantime.
 
 A hidden section unlocked by scanning a QR code displayed on the desktop page. The scan happens on the visitor's phone; the desktop page updates **live** — no refresh — via a realtime push from the backend. The payoff: the visitor scans, and the game menu grows a new entry in front of them.
 
@@ -85,14 +87,14 @@ A hidden section unlocked by scanning a QR code displayed on the desktop page. T
 1. **Session setup (desktop):** on load, the client generates a random high-entropy session ID, connects to the realtime hub, and subscribes to a group keyed by that session ID. It renders a QR code encoding `https://<site>/?unlock=<sessionId>` (client-side QR generation, no API call needed for the image).
 2. **Scan (phone):** the phone opens the URL; the page detects the `unlock` query param and calls `POST /unlock/{sessionId}` on the backend. The phone view shows a minimal confirmation splash (keep it trivial — mobile is frozen; no full experience needed).
 3. **Push (backend):** the endpoint validates the session ID (exists, not expired, not already used) and broadcasts an `unlocked` event to that session's group.
-4. **Unlock module (desktop):** on receiving the event, a new module pops up — `position: absolute`, centered on screen — reading **"Secret Section — UNLOCKED"** with a confirm button. Full enter animation (and matching leave, per animation rules).
+4. **Unlock module (desktop):** on receiving the event, a new module pops up — `position: absolute`, centered on screen — reading **"Classified Section — UNLOCKED"** with a confirm button. Full enter animation (and matching leave, per animation rules).
 5. **Confirm:** clicking the button dismisses the module (leave animation), then:
-   - the secret section registers/activates in the section registry (resolved via `getSectionIndexById`, never a hardcoded index),
+   - the classified section registers/activates in the section registry (resolved via `getSectionIndexById`, never a hardcoded index),
    - the nav updates itself: a new label display appends **at the bottom of the nav list** — the label **slides in from the right (from outside the screen)** and the nav **flexes to fit the new element** (the existing labels reflow as it lands).
 
 **Client architecture notes:**
 
-- The secret section component stays mounted like every other section (GSAP needs persistent DOM targets); "locked" is state, not absence. Locked sections are excluded from nav and scroll-intent cycling until unlocked.
+- The classified section component stays mounted like every other section (GSAP needs persistent DOM targets); "locked" is state, not absence. Locked sections are excluded from nav and scroll-intent cycling until unlocked.
 - Unlock state persists in `localStorage` so a returning visitor keeps the section without rescanning.
 - The unlock module is a standalone overlay component, not tied to any section's timeline — it can fire regardless of which section is currently active.
 - QR code rendered client-side (small lib or hand-rolled); style it to match the game-menu aesthetic (section color, scanline/frame treatment).
@@ -106,9 +108,20 @@ A hidden section unlocked by scanning a QR code displayed on the desktop page. T
 
 **Open questions:**
 
-- What lives *inside* the secret section (content TBD — this task covers the unlock mechanic).
+- What lives *inside* the classified section (content TBD — this task covers the unlock mechanic).
 - Whether unlock also triggers anything ambient (background shift, sound, nav glint) beyond the module + new entry.
 - SignalR vs. plain WebSockets/SSE if the comments backend ends up not being ASP.NET.
+
+### `prefers-reduced-motion` support
+
+Site-wide reduced-motion mode, gated on the `prefers-reduced-motion: reduce` media query. When active:
+
+- The section transitioner (the game-menu section enter/leave choreography driven by `sectionsStateMachine.ts`/`animationHandler.ts`) does **not** play — section switches happen without its slide/cover-slice motion.
+- Every other animation across the site is reduced/skipped **except**:
+  - The Perks Info Module animation (`Name.vue`'s typewriter reveal).
+  - The Projects modules 1-3 enter and leave animation.
+
+Needs a shared helper (e.g. a `prefersReducedMotion` ref/matchMedia listener in a misc module) that animation handlers can branch on, rather than each handler re-querying the media feature ad hoc. Ties into the existing "respect `prefers-reduced-motion`" accessibility guideline in `.claude/rules/frontend.md` — this task is the concrete implementation of that guideline.
 
 ### Perks Section overhaul
 

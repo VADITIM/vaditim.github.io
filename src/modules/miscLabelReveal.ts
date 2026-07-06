@@ -1,9 +1,9 @@
-// Shared "bar sweep" reveal animation for corner/edge labels — see "Label Reveal
+// Shared "bar sweep" reveal animation for corner/edge labels; see "Label Reveal
 // Pattern" in CLAUDE.md. Used by any component rendering a set of `.pc-label`
 // elements (structure: .pc-label > .pc-label-inner > .pc-label-text, .pc-label-bar).
 import { gsap } from 'gsap';
 
-// Initial hidden state — bar collapsed, text clipped away.
+// Initial hidden state; bar collapsed, text clipped away.
 export function hideLabels(labelEls: HTMLElement[]) {
   labelEls.forEach(label => {
     gsap.set(label.querySelector('.pc-label-text'), { clipPath: 'inset(0 100% 0 0)' });
@@ -33,8 +33,8 @@ export function buildLabelReveal(label: HTMLElement): gsap.core.Timeline {
 }
 
 // Each label: a thin bar grows to the right to cover the text, then slides out
-// to the right — leaving the text behind. Delay scales with distance from the
-// top-left corner (top-left first, bottom-right last) — see "Label Reveal
+// to the right; leaving the text behind. Delay scales with distance from the
+// top-left corner (top-left first, bottom-right last); see "Label Reveal
 // Pattern" in CLAUDE.md.
 export function playLabelReveals(labelEls: HTMLElement[], startAt: number) {
   const vh = window.innerHeight;
@@ -52,7 +52,7 @@ export function playLabelReveals(labelEls: HTMLElement[], startAt: number) {
   });
 }
 
-// Leave fires immediately (no delay), snappier than enter — labels re-collapse
+// Leave fires immediately (no delay), snappier than enter; labels re-collapse
 // without re-running the positional stagger.
 export function playLabelLeave(labelEls: HTMLElement[]) {
   labelEls.forEach(label => {

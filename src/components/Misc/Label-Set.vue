@@ -1,7 +1,7 @@
 <template>
-  <!-- Reusable corner/edge label set — see "Label Reveal Pattern" in CLAUDE.md.
+  <!-- Reusable corner/edge label set; see "Label Reveal Pattern" in CLAUDE.md.
        Any section can drop this in with its own labels/accent/sectionId. -->
-  <div ref="root" class="label-set">
+  <div ref="root" class="label-set" :class="{ 'label-set--glitch': glitch }">
     <div v-for="(label, i) in labels" :key="'label-' + i" class="pc-label" :style="label.pos">
       <!-- wrap: each word becomes its own stacked line, revealed as an
            independent label (own bar sweep + own positional delay). -->
@@ -45,9 +45,11 @@
     accent: string;
     textColor?: string;
     delay?: number; // extra delay on top of SECTION_ENTER_DELAY, relative to section enter
+    glitch?: boolean; // continuous RGB-split glitch flicker on the revealed text
   }>(), {
     textColor: '#fff',
     delay: 0.2,
+    glitch: false,
   });
 
   const root = ref<HTMLElement | null>(null);
@@ -133,5 +135,46 @@
     border-radius: 0;
     transform-origin: left center;
     transform: scaleX(0);
+  }
+
+  // Opt-in glitch: brief RGB-split + horizontal jitter that fires a few times
+  // across the cycle rather than continuously, so the text mostly reads clean
+  // and only "breaks up" in bursts. Each label offsets its timing so they don't
+  // glitch in unison.
+  .label-set--glitch .pc-label-text {
+    animation: sc-label-glitch 3.6s steps(1, end) infinite;
+  }
+
+  .label-set--glitch .pc-label:nth-child(2) .pc-label-text { animation-delay: -0.9s; animation-duration: 4.2s; }
+  .label-set--glitch .pc-label:nth-child(3) .pc-label-text { animation-delay: -2.1s; animation-duration: 3.1s; }
+  .label-set--glitch .pc-label:nth-child(4) .pc-label-text { animation-delay: -1.5s; animation-duration: 4.7s; }
+
+  @keyframes sc-label-glitch {
+    0%, 90%, 100% {
+      text-shadow: none;
+      transform: translateX(0);
+    }
+    91% {
+      text-shadow: -2px 0 #ff2e88, 2px 0 #2ee6ff;
+      transform: translateX(1px);
+    }
+    93% {
+      text-shadow: 2px 0 #ff2e88, -2px 0 #2ee6ff;
+      transform: translateX(-2px);
+    }
+    95% {
+      text-shadow: -1px 0 #ff2e88, 1px 0 #2ee6ff;
+      transform: translateX(1px);
+    }
+    97% {
+      text-shadow: none;
+      transform: translateX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .label-set--glitch .pc-label-text {
+      animation: none;
+    }
   }
 </style>

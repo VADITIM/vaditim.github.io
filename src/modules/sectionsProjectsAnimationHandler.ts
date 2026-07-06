@@ -10,5 +10,5 @@
  * (`registerAnimations`).
  */
 export function registerProjectsAnimations() {
-  // Intentionally empty — see component for the self-managed fan feed reveal.
+  // Intentionally empty; see component for the self-managed fan feed reveal.
 }

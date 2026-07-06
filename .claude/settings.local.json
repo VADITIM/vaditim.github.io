@@ -8,7 +8,9 @@
       "Bash(grep -cv '^[[:space:]]*$' CLAUDE.md)",
       "Bash(chmod +x .claude/hooks/*.sh)",
       "Bash(DOTCLAUDE_FINGERPRINT=1 .claude/hooks/session-start.sh)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "PowerShell(jq *)",
+      "PowerShell(npm run typecheck)"
     ]
   }
 }

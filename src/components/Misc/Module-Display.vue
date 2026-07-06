@@ -1,6 +1,6 @@
 <template>
   <!-- Reusable panel "window": a box/border frame with a label header,
-       section-accent aware. Shared by Sandbox, Extra, and the Logs cubes —
+       section-accent aware. Shared by Sandbox, Extra, and the Logs cubes -
        see CLAUDE.md Current Task 3. -->
   <div ref="root" class="module-display" :style="staticVisible ? { '--accent': accent, opacity: 1 } : { '--accent': accent }">
     <div class="module-display-hue"></div>
@@ -22,7 +22,7 @@
     label?: string;
     accent?: string;
     labelOver?: boolean;    // label floats above overlay content (z-index, no pointer events)
-    staticVisible?: boolean; // skip the default opacity:0 — use when content reveals itself internally rather than via a container-level enter tween
+    staticVisible?: boolean; // skip the default opacity:0; use when content reveals itself internally rather than via a container-level enter tween
     caption?: string;       // optional hint line pinned to the bottom centre of the box
     animateHeight?: boolean; // smoothly tween the box height when its content's natural height changes (e.g. text re-wrapping) instead of snapping
   }>(), {
@@ -61,7 +61,7 @@
     // ── height scaling transition ──
     // Content whose natural height changes (e.g. Projects' description
     // re-wrapping when the centred card changes) would otherwise snap the box
-    // to its new size. Watch for that and tween height instead — a no-op for
+    // to its new size. Watch for that and tween height instead; a no-op for
     // modules whose height is pinned by a parent grid track (Sandbox/Extra),
     // since those never report a size change here.
     if (props.animateHeight) {
@@ -123,7 +123,7 @@
     z-index: 4;
     background: radial-gradient(
       150px circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(in srgb, var(--accent) 65%, transparent),
+      color-mix(in srgb, var(--accent) 85%, transparent),
       transparent 70%
     );
     -webkit-mask:
@@ -136,7 +136,7 @@
     will-change: opacity;
   }
 
-  // Predetermined top-left position — absolute so it never shifts when a
+  // Predetermined top-left position; absolute so it never shifts when a
   // consumer overrides the box's own padding (e.g. Cubes.vue's `.pc-cell`).
   .module-display-label {
     position: absolute;

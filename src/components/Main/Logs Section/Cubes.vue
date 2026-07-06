@@ -42,7 +42,7 @@
 
   gsap.defaults({ immediateRender: false });
 
-  const FACE_HALF = 105;  // half the 300px cube edge (see .pc-scene) — how far each face is pushed out
+  const FACE_HALF = 105;  // half the 300px cube edge (see .pc-scene); how far each face is pushed out
 
   interface FaceDef { tf: string; token: string }
   interface CubeDef { name: string; color: string; bg: string; faces: FaceDef[] }
@@ -103,7 +103,7 @@
     const s = Math.sin(h);
     return { w: Math.cos(h), x: ax*s, y: ay*s, z: az*s };
   };
-  // Column-major matrix3d for CSS — perspective on .pc-scene still applies.
+  // Column-major matrix3d for CSS; perspective on .pc-scene still applies.
   const qToCSS = ({ w, x, y, z }: Q) =>
     `matrix3d(${1-2*(y*y+z*z)},${2*(x*y+z*w)},${2*(x*z-y*w)},0,` +
     `${2*(x*y-z*w)},${1-2*(x*x+z*z)},${2*(y*z+x*w)},0,` +
@@ -214,14 +214,14 @@
     });
   }
 
-  // Initial hidden state — faces invisible, shadows collapsed, names clipped.
+  // Initial hidden state; faces invisible, shadows collapsed, names clipped.
   function hideAll() {
     cubeEls.forEach(cube => gsap.set(cube.querySelectorAll('.pc-face-anim'), { opacity: 0 }));
     gsap.set(shadowEls, { opacity: 0, scaleX: 0.5 });
     hideLabels(nameEls);
   }
 
-  // Gentle perpetual float — each scene bobs on its own rhythm so the row never
+  // Gentle perpetual float; each scene bobs on its own rhythm so the row never
   // reads as mechanically synced. Runs for the component's whole life.
   function startIdleBob() {
     if (!root.value) return;
@@ -294,7 +294,7 @@
         .to(f, { y: 0, x: 0, rotationZ: 0, duration: dur, ease: 'power4.out' }, 0);
     });
     // Shadow blooms while the faces rain down, then pulses once the last face
-    // lands — sells the impact of the completed cube.
+    // lands; sells the impact of the completed cube.
     const shadow = shadowEls[cubeEls.indexOf(cube)];
     if (shadow) {
       gsap.killTweensOf(shadow);
@@ -308,7 +308,7 @@
     return last;
   }
 
-  // Leave fires immediately (no delay) — mirrors the Sandbox module windows:
+  // Leave fires immediately (no delay); mirrors the Sandbox module windows:
   // the whole box slides down off screen and fades, carrying the cube with it.
   // No separate per-face fly-out on leave (that's an enter-only flourish now).
   function playLeave() {
@@ -395,7 +395,7 @@
     pointer-events: auto;
   }
 
-  // Elliptical glow floor under each cube — colour injected inline per cube.
+  // Elliptical glow floor under each cube; colour injected inline per cube.
   // .pc-shadow {
   //   width: 320px;
   //   height: 32px;
@@ -462,7 +462,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    // Faint blueprint grid + edge vignette on top of the translucent fill —
+    // Faint blueprint grid + edge vignette on top of the translucent fill -
     // keeps the wireframe/HUD look without adding any DOM.
     background:
       radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%),

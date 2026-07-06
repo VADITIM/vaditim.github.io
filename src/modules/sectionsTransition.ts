@@ -11,7 +11,7 @@ import { SECTIONS } from '@modules/sectionsRegistry'
  * the incoming section's kicker + name flash on it, then the bars sweep open to
  * reveal the now-settled section.
  *
- * This is purely an overlay — it does NOT drive section state. The existing
+ * This is purely an overlay; it does NOT drive section state. The existing
  * per-section enter/leave animations still run underneath; the cut is appended
  * *in between* them. Leave fires at t=0, the curtain is fully closed ~0.42-0.9s
  * (so the swap is masked), and the incoming section's enter waits for ENTER_DELAY
@@ -43,7 +43,7 @@ function desaturate(hex: string, amount: number): string {
 }
 
 /**
- * Curtain phase timing — mirrors the tween positions in `play()` and the
+ * Curtain phase timing; mirrors the tween positions in `play()` and the
  * `BAR_COUNT` in `Section-Transition.vue`. Kept here so `SECTION_ENTER_DELAY`
  * below stays exact if the curtain choreography is retuned.
  */
@@ -62,7 +62,7 @@ const MAX_BAR_STAGGER = 0.3
 /**
  * Minimum spacing between any two bars' start times. Without this, two random
  * offsets can land within a few ms of each other and the bars read as moving in
- * lockstep — defeating the point of randomising. We reject candidates that fall
+ * lockstep; defeating the point of randomising. We reject candidates that fall
  * within MIN_BAR_GAP of an already-chosen offset.
  */
 const MIN_BAR_GAP = 0.045
@@ -100,12 +100,12 @@ export const SECTION_CUT_DURATION =
  * The section-cut is a *sequencing gate*, not an overlap: leave animations fire
  * immediately at the hook (and finish while the curtain is shut), the curtain
  * plays its full close → hold → open cycle, and only once it has completely
- * finished — revealing the now-empty incoming section — do that section's enter
+ * finished; revealing the now-empty incoming section; do that section's enter
  * reveals start. Every enter handler reads this (live) at the moment it fires;
  * leave handlers never use it.
  *
  * It is `0` until the first real navigation, because the initial section is
- * revealed on cold mount with no curtain in play — gating it would leave the
+ * revealed on cold mount with no curtain in play; gating it would leave the
  * first section blank for a full curtain's length. `activateSectionEnterGate()`
  * (called from `ChangeSection`) raises it once the user actually navigates.
  *
@@ -113,7 +113,7 @@ export const SECTION_CUT_DURATION =
  * `SECTION_CUT_DURATION` (1.72s). The bars' random staggers mean the curtain
  * usually finishes opening well before its worst case, so 1.4s lands after the
  * bulk of the sweep has cleared without leaving a long dead gap. Every section's
- * enter animations fire together at this one instant — not too early (mid-sweep),
+ * enter animations fire together at this one instant; not too early (mid-sweep),
  * not too late (staring at an empty section).
  */
 const SECTION_ENTER_GATE = 1.4
@@ -128,7 +128,7 @@ let activeTimeline: gsap.core.Timeline | null = null
 
 function play(meta: SectionTransitionMeta) {
   // The handoff out of the loading page comes in as previous === -1 (no real
-  // outgoing section). Don't play the curtain there — the loading exit already
+  // outgoing section). Don't play the curtain there; the loading exit already
   // covers that moment; the first section should just appear.
   if (meta.previous === -1) return
 
@@ -159,7 +159,7 @@ function play(meta: SectionTransitionMeta) {
   })
   gsap.set([kicker, heading], { opacity: 0 })
 
-  // Middle bar index — the label sits over whatever bar is at screen centre.
+  // Middle bar index; the label sits over whatever bar is at screen centre.
   const midBarIndex = Math.floor(BAR_COUNT / 2)
   const midBarColor = midBarIndex % 2 === 0 ? accent : accentMuted
   const labelColor = midBarColor === accent ? textColorOnAccent : textColorOnMuted
@@ -179,7 +179,7 @@ function play(meta: SectionTransitionMeta) {
     },
   })
 
-  // Close — sweep the bars across the screen to fully cover the swap.
+  // Close; sweep the bars across the screen to fully cover the swap.
   const closeStaggers = makeBarStaggers()
   tl.to(shutters, { scaleX: 1, duration: CLOSE_DURATION, stagger: (i) => closeStaggers[i], ease: 'power3.in' }, 0)
 

@@ -24,6 +24,7 @@ A Vue 3 + TypeScript + GSAP single-page portfolio that behaves like a game menu.
 ## Don'ts
 
 - Never run a preview eval (`npm run preview`).
+- Never use the `preview_eval` / browser-preview tools to verify changes (clicking through, dispatching events, screenshotting, etc.) — the user does the visual evaluation. Write/fix the code and stop there unless explicitly asked to drive the browser.
 - Never edit `docs/` by hand — it's generated build output.
 - Task backlog and known issues live in `TASKS.md`, not here.
 

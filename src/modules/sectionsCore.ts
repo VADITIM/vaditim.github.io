@@ -1,8 +1,14 @@
 import { ref } from 'vue'
-import { getVirtualSectionHeightPx } from './miscVirtualScroll'
+import {
+  getVirtualSectionHeightPx,
+  lockVirtualScrollForSectionTransition,
+  releaseVirtualScrollAfterSectionTransition,
+  syncVirtualScrollToSection,
+} from './miscVirtualScroll'
 import { isMobile } from './miscIsMobile'
 import { navigationLockRef, setNavigationLock } from './miscNavigationLock'
 import { activateSectionEnterGate } from './sectionsTransition'
+import { isSectionLocked } from './sectionLookup'
 
 let totalSections = 3;
 export function setSectionCount(count: number) { totalSections = count; }
@@ -18,10 +24,14 @@ const LockTransition = () => {
 
   isTransitioning.value = true
   setNavigationLock(true, 'section-transition')
+  lockVirtualScrollForSectionTransition()
   transitionLockTimer = window.setTimeout(() => {
     isTransitioning.value = false
     setNavigationLock(false, 'section-transition')
     transitionLockTimer = null
+    // Release after the navigation lock clears so the scroll layer can
+    // realign to the settled section and finish its motion.
+    releaseVirtualScrollAfterSectionTransition(currentSection.value)
   }, SECTION_TRANSITION_LOCK_MS)
 }
 
@@ -44,6 +54,8 @@ export function resetSectionStateToPerks() {
     window.clearTimeout(transitionLockTimer)
     transitionLockTimer = null
   }
+
+  releaseVirtualScrollAfterSectionTransition(0)
 }
 
 
@@ -82,10 +94,17 @@ function UpdateSection() {
   const progressInSection = (scrollY % sectionHeight) / sectionHeight
   
   let newSection = currentSectionIndex
-  if (progressInSection >= 0.6 && currentSectionIndex < totalSections - 1) {
+  if (progressInSection >= 0.6 && currentSectionIndex < totalSections - 1 && !isSectionLocked(currentSectionIndex + 1)) {
     newSection = currentSectionIndex + 1
   }
-  
+
+  // Scroll-driven changes may never skip sections, no matter how far the
+  // scroll position lands — clamp to one step from the current section.
+  newSection = Math.min(
+    Math.max(newSection, currentSection.value - 1),
+    currentSection.value + 1
+  )
+
   if (newSection !== currentSection.value) {
     LockTransition()
 
@@ -101,6 +120,7 @@ function UpdateSection() {
 export function ChangeToSectionID(sectionIndex: number) {
   if (sectionIndex === currentSection.value) return
   if (sectionIndex < 0 || sectionIndex >= totalSections) return
+  if (isSectionLocked(sectionIndex)) return
   if (navigationLockRef.value) return
 
   // Keep the current transition; ignore new ones.
@@ -118,6 +138,9 @@ export function ChangeToSectionID(sectionIndex: number) {
     const sectionHeight = getVirtualSectionHeightPx()
     const targetScroll = sectionIndex * sectionHeight
     window.scrollTo({ top: targetScroll, behavior: 'auto' })
+    // The jump bypasses the stroke system; keep the scroll layer's section
+    // tracker and target aligned so the next stroke steps from here.
+    syncVirtualScrollToSection(sectionIndex)
   }
 
 }

@@ -7,7 +7,7 @@
       <div class="projects-back" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-back')"></div>
       <!-- Sits between the two slices in DOM order (all three share z-index 4)
            so it renders in front of the back slice but behind the front one. -->
-      <div ref="projHelixRef" class="proj-helix"></div>
+      <canvas ref="projHelixRef" class="proj-helix"></canvas>
       <div class="projects-front" :class="{active: activeProjectIndex !== null, 'no-transition': isProjectsTransitioning}" :style="GetBackgroundStyle('projects-front')"></div>
       <div class="extra-tr"></div>
       <div class="extra-bl"></div>
@@ -15,6 +15,8 @@
       <div class="sandbox-tr"></div>
       <div class="sandbox-bl"></div>
       <div class="sandbox-br"></div>
+      <div class="classified-tl"></div>
+      <div class="classified-br"></div>
     </div>
 </template>
 
@@ -26,35 +28,19 @@
   import { dragOffset, dragDirection, isDragging, thresholdReached, consumeLastDragOffsetY } from '@modules/miscMobileDragNavigation';
   import { isMobile } from '@modules/miscIsMobile';
   import { currentSection, previousSection, isTransitioning } from '@modules/sectionsCore';
+  import { initializeProjectHelixCanvas } from '@modules/miscProjectHelixCanvas';
 
-  const projHelixRef = ref<HTMLElement | null>(null);
+  const projHelixRef = ref<HTMLCanvasElement | null>(null);
 
   // Horizontal DNA-strand backdrop for Projects, sandwiched between the
-  // back/front slices above — built once, purely decorative (see CLAUDE.md
-  // "Section Backgrounds"). Strand count/centring derives from the element's
-  // own (130vw) width, not the viewport, so it self-centres regardless of size.
-  function buildProjectsHelix() {
-    const wrap = projHelixRef.value;
-    if (!wrap || wrap.childElementCount) return;
-    const spacing = 22;
-    const count = Math.ceil(wrap.getBoundingClientRect().width / spacing) + 1;
-    for (let i = 0; i < count; i++) {
-      const s = document.createElement('div');
-      s.className = 'proj-strand';
-      s.style.left = i * spacing + 'px';
-      s.style.animationDelay = -0.34 * i + 's';
-      const d1 = document.createElement('div');
-      d1.className = 'proj-strand-dot';
-      const d2 = d1.cloneNode() as HTMLElement;
-      d2.style.top = 'auto';
-      d2.style.bottom = '-13px';
-      s.appendChild(d1);
-      s.appendChild(d2);
-      wrap.appendChild(s);
-    }
-  }
+  // back/front slices above; purely decorative (see CLAUDE.md "Section
+  // Backgrounds"). Rendered on its own canvas (see miscProjectHelixCanvas)
+  // instead of per-strand DOM nodes, which were too heavy to composite.
+  let cleanupHelixCanvas: (() => void) | null = null;
 
-  onMounted(buildProjectsHelix);
+  onMounted(() => {
+    if (projHelixRef.value) cleanupHelixCanvas = initializeProjectHelixCanvas(projHelixRef.value);
+  });
 
   let CleanupBackgroundAnimations: (() => void) | null = null;
   const isReturning = ref(false);
@@ -125,6 +111,8 @@
       CleanupBackgroundAnimations();
       CleanupBackgroundAnimations = null;
     }
+    cleanupHelixCanvas?.();
+    cleanupHelixCanvas = null;
   });
 </script>
 
@@ -303,56 +291,22 @@
 
   // ── horizontal DNA-strand backdrop (Projects) ──
   // Centred on the viewport and overspilling both edges so the rotating
-  // strands never show a hard clip at the section's sides.
+  // strands never show a hard clip at the section's sides. A canvas; the
+  // strand geometry, opacity fades, and dot glow are all drawn by
+  // miscProjectHelixCanvas; only placement lives here. Tall enough for the
+  // dots' widest perspective swing (~±200px around the strand centre).
   .proj-helix {
     position: absolute;
     top: 30%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 130vw;
-    height: 100%;
-    perspective: 1000px;
-    opacity: 0.2;
+    height: 440px;
     z-index: 4;
-    overflow: visible;
     pointer-events: none;
   }
 
-  .proj-strand {
-    position: absolute;
-    top: 50%;
-    width: 2px;
-    height: 280px;
-    margin-top: -140px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.55);
-    transform-style: preserve-3d;
-    animation: projHelixRot 9s linear infinite;
-    will-change: transform;
-    // Hidden by default (not just via JS) — JS only sets opacity on section
-    // enter/leave, which doesn't run until after the intro finishes, so
-    // without this the freshly-built strands flash visible on initial load.
-    opacity: 0;
-  }
-
-  .proj-strand-dot {
-    position: absolute;
-    left: -5px;
-    top: -13px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #dc143c;
-    box-shadow: 0 0 16px #dc143c;
-    opacity: 0.9;
-  }
-
-  @keyframes projHelixRot {
-    from { transform: rotateX(0deg); }
-    to { transform: rotateX(360deg); }
-  }
-
-  // Corner slices — top-right drops in from the top, bottom-left rises from
+  // Corner slices; top-right drops in from the top, bottom-left rises from
   // the bottom (see CLAUDE.md Current Task 6).
   .extra-tr {
     position: absolute;
@@ -400,7 +354,7 @@
     }
   }
 
-  // Sandbox corner accents — top corners drop from the top, bottom corners
+  // Sandbox corner accents; top corners drop from the top, bottom corners
   // rise from the bottom, same rule as the extra slices above.
   .sandbox-tl {
     position: absolute;
@@ -468,5 +422,32 @@
       width: 16vw;
       height: 12vh;
     }
+  }
+
+  // Classified section corner accents; desktop only for now (mobile paths are
+  // frozen; see CLAUDE.md). Hidden by default via top/bottom offset so they
+  // stay off-screen even before JS runs.
+  .classified-tl {
+    position: absolute;
+    top: -40%;
+    left: 0;
+    width: 12vw;
+    height: 34vh;
+    background: linear-gradient(200deg, rgba(138, 43, 226, 1) 0%, rgba(45, 12, 74, 1) 100%);
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    z-index: 4;
+    will-change: top;
+  }
+
+  .classified-br {
+    position: absolute;
+    bottom: -40%;
+    right: 0;
+    width: 12vw;
+    height: 34vh;
+    background: linear-gradient(20deg, rgba(138, 43, 226, 1) 0%, rgba(45, 12, 74, 1) 100%);
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    z-index: 4;
+    will-change: bottom;
   }
 </style>

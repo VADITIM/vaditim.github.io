@@ -16,6 +16,7 @@
         </div>
         <SectionTransition />
         <Navigator />
+        <ClassifiedUnlockPopup />
       </template>
     </template>
 
@@ -48,10 +49,12 @@
   import HardwareAccelerationNotice from '@components/Misc/Hardware-Acceleration-Notice.vue';
   import MagneticDots from '@components/Misc/Magnetic-Dots.vue';
   import SectionTransition from '@components/Misc/Section-Transition.vue';
+  import ClassifiedUnlockPopup from '@components/Misc/Classified-Unlock-Popup.vue';
 
   import { hardwareNoticeActive } from '@modules/miscHardwareNotice';
   import { isMobile } from '@modules/miscIsMobile';
   import { activeProjectIndex } from '@modules/sectionsProjects';
+  import { registerDebugCacheClear } from '@modules/miscDebugCacheClear';
 
   setSectionCount(SECTIONS.length);
 
@@ -70,8 +73,11 @@
     lingerMs: 1500,
   });
 
+  const cleanupDebugCacheClear = registerDebugCacheClear();
+
   onBeforeUnmount(() => {
     cleanupSectionLayerStyle();
+    cleanupDebugCacheClear();
   });
 
   const tryInitializeApp = () => {

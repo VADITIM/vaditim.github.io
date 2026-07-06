@@ -5,7 +5,8 @@
       <div ref="eyebrowRef" class="sb-eyebrow">INTERACTION&nbsp;·&nbsp;SANDBOX</div>
     </div>
 
-    <!-- Kickable physics title — each glyph is its own no-gravity body that
+
+    <!-- Kickable physics title; each glyph is its own no-gravity body that
          bounces off the viewport edges and the module windows, and gets shoved
          by the cursor on contact. -->
     <div ref="lettersRef" class="sb-letters">
@@ -58,9 +59,10 @@
       <ModuleDisplay label-over>
         <template #label>04 · PARALLAX TILT</template>
         <div ref="tiltWrapRef" class="sb-tilt-wrap">
-          <div ref="tiltRef" class="sb-tilt">
+          <div ref="tiltRef" class="sb-tilt" @click="onTiltClick">
             <div class="sb-tilt-frame"></div>
-            <img :src="qrSrc" class="sb-tilt-qr" alt="Scan me" draggable="false" />
+            <img v-if="!isClassifiedUnlocked" :src="qrSrc" class="sb-tilt-qr" alt="Scan me" draggable="false" />
+            <div v-else class="sb-tilt-wow">WOW!</div>
             <div class="sb-tilt-chip">2026</div>
             <div class="sb-tilt-name">SCAN ME?</div>
           </div>
@@ -81,6 +83,8 @@
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import qrSrc from '@assets/images/rickroll-qr.png'
+  import { triggerClassifiedUnlock, isClassifiedUnlocked } from '@modules/sectionsClassifiedUnlock'
+
 
   const LIST_ITEMS = ['NEBULA UI', 'HELIX', 'PULSE', 'ARCADE']
   const TITLE_LETTERS = 'SANDBOX'.split('')
@@ -117,28 +121,51 @@
   const pointer = { x: -999, y: -999, down: false }
   let rafId = 0
 
-  // ── pull-field visuals (black-hole effect while holding click in zero-g space) ──
-  let pullField: HTMLElement | null = null   // wrapper anchored at cursor
-  let pullVoid: HTMLElement | null = null    // the dark singularity
-  let pullDisk: HTMLElement | null = null    // hot accretion disk (conic gradient)
-  let pullIdleTween: gsap.core.Timeline | null = null
+  // ── pull-field visuals (gravity-well effect while holding click in zero-g
+  //    space). Minimal + on-palette: a bright green core, thin rings that fall
+  //    continuously inward (matter drawn into the well) and a faint rotating
+  //    HUD reticle; replaces the old off-palette fiery black hole. ──
+  let pullField: HTMLElement | null = null      // wrapper anchored at cursor
+  let pullCore: HTMLElement | null = null       // singularity core dot
+  let pullReticle: HTMLElement | null = null    // slow-rotating outer HUD ring
+  let pullRings: HTMLElement[] = []             // in-falling rings
+  let pullTweens: gsap.core.Tween[] = []        // looping ring/core/reticle tweens
 
   // ── kickable title physics (no gravity) ──
   // Each glyph stores its top-left position (x,y) in section-space, velocity,
   // measured size (w,h) and "home" slot (hx,hy) it animates into on enter.
   type Glyph = { el: HTMLElement; w: number; h: number; x: number; y: number; vx: number; vy: number; rot: number; vr: number; hx: number; hy: number }
-  type Box = { l: number; t: number; r: number; b: number }
+  // A corner background-slice's diagonal edge, as a bumper: p1→p2 is the
+  // hypotenuse (section-space), n is the unit normal pointing INTO the solid
+  // (colored) triangle so collision math has one consistent sign convention.
+  type Bumper = { p1x: number; p1y: number; p2x: number; p2y: number; nx: number; ny: number; l: number; t: number; r: number; b: number; el: HTMLElement }
   let glyphs: Glyph[] = []
-  let glyphBoxes: Box[] = []
+  let glyphBumpers: Bumper[] = []
+  const BUMPER_KICK = 2.2              // pinball bumpers add a strong energy kick, unlike a plain wall bounce (G_REST)
+  const bumperPulseAt = new WeakMap<HTMLElement, number>()
+  // Each corner's hypotenuse endpoints (as l/t/r/b box corners) and the
+  // right-angle vertex on the solid side, derived from that slice's clip-path
+  // polygon in Section-Cover-Slice.vue.
+  type Corner = 'tl' | 'tr' | 'bl' | 'br'
+  const CORNER_BUMPER_DEFS: Array<{ selector: string; hypo: [Corner, Corner]; solid: Corner }> = [
+    { selector: '.sandbox-tl', hypo: ['tr', 'bl'], solid: 'tl' },
+    { selector: '.sandbox-tr', hypo: ['tl', 'br'], solid: 'tr' },
+    { selector: '.sandbox-bl', hypo: ['tl', 'br'], solid: 'bl' },
+    { selector: '.sandbox-br', hypo: ['tr', 'bl'], solid: 'br' },
+  ]
+  // Resolved slice elements (the DOM lives in the global Section-Cover-Slice
+  // layer, not this component), cached so the per-frame re-measure doesn't
+  // re-query the document.
+  let cornerSlices: Array<{ el: HTMLElement; hypo: [Corner, Corner]; solid: Corner }> = []
   let glyphsReleased = false          // physics only runs once the title has landed
   const gPtr = { x: -9999, y: -9999, px: -9999, py: -9999 }
-  const G_DRIFT = 0.94                // near-frictionless space, no gravity — drifts to rest
+  const G_DRIFT = 0.94                // near-frictionless space, no gravity; drifts to rest
   const G_REST = 0.72                 // energy kept after a bounce
   const G_MAXV = 46                   // velocity clamp so a fast flick can't fling letters off-screen
   const G_MAXVR = 40                  // angular velocity clamp (deg/frame)
   const G_SPIN_FRICTION = 0.985       // spin slowly bleeds off
   const G_CURSOR_R = 28               // cursor "paddle" radius
-  const G_PULL = 0.135                // module-03 black-hole pull on letters — 50% of the particle magnet (0.27)
+  const G_PULL = 0.135                // module-03 black-hole pull on letters; 50% of the particle magnet (0.27)
 
   // Treat each glyph as a circle for inter-glyph and cursor response so they roll
   // off one another cleanly instead of catching on rectangular corners.
@@ -211,6 +238,13 @@
     })
   }
 
+  // ── tilt parallax card: placeholder for the real QR-scan unlock (the real
+  //    flow scans this same card's code on a phone; see TASKS.md "Classified
+  //    Section; QR code unlock"). No-op after the first unlock. ──
+  function onTiltClick() {
+    triggerClassifiedUnlock()
+  }
+
   // ── tilt parallax card ──
   function initTilt() {
     const wrap = tiltWrapRef.value, card = tiltRef.value
@@ -278,63 +312,97 @@
     on(window, 'mouseup', () => { if (pointer.down) { hidePullField(); burst(); pointer.down = false } })
   }
 
-  // ── pull-field: simple black hole under the cursor while holding ──
+  // ── pull-field: minimal on-palette gravity well under the cursor while holding ──
+  const PULL_GREEN = '#5bfd5b'
+  const PULL_RING_R = 44      // in-falling ring start radius (px)
+  const PULL_RETICLE_R = 52   // outer HUD reticle radius (px)
+  const PULL_RING_PERIOD = 1.4
+
   function buildPullField(cont: HTMLElement) {
     const field = document.createElement('div')
     field.style.cssText =
       'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:2;' +
       'opacity:0;will-change:transform,opacity;'
 
-    // accretion disk — flat ellipse spinning around the void
-    const disk = document.createElement('div')
-    disk.style.cssText =
-      'position:absolute;left:-52px;top:-14px;width:104px;height:28px;border-radius:50%;' +
-      'background:conic-gradient(from 0deg,' +
-      'rgba(255,180,40,0) 0deg,rgba(255,160,30,0.9) 60deg,rgba(255,80,10,0.7) 120deg,' +
-      'rgba(255,180,40,0) 180deg,rgba(255,180,40,0) 190deg,rgba(255,160,30,0.6) 270deg,' +
-      'rgba(255,180,40,0) 360deg);' +
-      'filter:blur(1.5px);will-change:transform;'
+    // faint dashed reticle at a fixed outer radius; the "instrument" identity
+    const reticle = document.createElement('div')
+    reticle.style.cssText =
+      `position:absolute;left:${-PULL_RETICLE_R}px;top:${-PULL_RETICLE_R}px;` +
+      `width:${PULL_RETICLE_R * 2}px;height:${PULL_RETICLE_R * 2}px;border-radius:50%;` +
+      'border:1px dashed rgba(91,253,91,0.45);opacity:0;will-change:transform,opacity;'
+    field.appendChild(reticle)
 
-    // void — pitch-black event horizon with a thin orange photon ring
-    const void_ = document.createElement('div')
-    void_.style.cssText =
-      'position:absolute;left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;' +
-      'background:#000;' +
-      'box-shadow:0 0 0 2px rgba(255,150,30,0.8),0 0 16px 4px rgba(255,100,10,0.45);' +
+    // three thin rings that continuously contract toward the core
+    const rings: HTMLElement[] = []
+    for (let i = 0; i < 3; i++) {
+      const ring = document.createElement('div')
+      ring.style.cssText =
+        `position:absolute;left:${-PULL_RING_R}px;top:${-PULL_RING_R}px;` +
+        `width:${PULL_RING_R * 2}px;height:${PULL_RING_R * 2}px;border-radius:50%;` +
+        `border:1.5px solid ${PULL_GREEN};box-shadow:0 0 12px rgba(91,253,91,0.5);` +
+        'opacity:0;will-change:transform,opacity;'
+      field.appendChild(ring)
+      rings.push(ring)
+    }
+
+    // bright core singularity with a soft green halo
+    const core = document.createElement('div')
+    core.style.cssText =
+      'position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;' +
+      `background:${PULL_GREEN};` +
+      'box-shadow:0 0 10px 2px rgba(91,253,91,0.9),0 0 24px 7px rgba(91,253,91,0.4);' +
       'will-change:transform;'
+    field.appendChild(core)
 
-    field.appendChild(disk)
-    field.appendChild(void_)
     cont.appendChild(field)
 
     pullField = field
-    pullVoid  = void_
-    pullDisk  = disk
+    pullReticle = reticle
+    pullRings = rings
+    pullCore = core
   }
 
   function showPullField() {
     if (!pullField) return
     pullField.style.transform = `translate(${pointer.x}px,${pointer.y}px)`
-    gsap.killTweensOf([pullField, pullVoid, pullDisk])
-    pullIdleTween?.kill()
+    pullTweens.forEach((t) => t.kill())
+    pullTweens = []
+    gsap.killTweensOf([pullField, pullReticle, pullCore, ...pullRings])
 
-    gsap.set([pullVoid, pullDisk], { scale: 0, opacity: 0 })
     gsap.fromTo(pullField, { opacity: 0 }, { opacity: 1, duration: 0.15, ease: 'none' })
-    gsap.to(pullVoid, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.8)' })
-    gsap.to(pullDisk, { scale: 1, opacity: 1, duration: 0.5, ease: 'power2.out', delay: 0.05 })
 
-    gsap.to(pullDisk, { rotation: 360, duration: 2.8, ease: 'none', repeat: -1 })
+    // reticle fades in and rotates slowly, forever
+    gsap.set(pullReticle, { scale: 0.85 })
+    gsap.to(pullReticle, { scale: 1, opacity: 1, duration: 0.4, ease: 'power2.out' })
+    pullTweens.push(gsap.to(pullReticle, { rotation: 360, duration: 9, ease: 'none', repeat: -1 }))
+
+    // core pops in and keeps a gentle pulse
+    gsap.set(pullCore, { scale: 0 })
+    gsap.to(pullCore, { scale: 1, duration: 0.4, ease: 'back.out(2)' })
+    pullTweens.push(gsap.to(pullCore, { scale: 1.28, duration: 0.7, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: 0.4 }))
+
+    // rings fall inward on a staggered loop; a perpetual "pulling in" cadence
+    pullRings.forEach((ring, i) => {
+      pullTweens.push(
+        gsap.fromTo(ring,
+          { scale: 1, opacity: 0.9 },
+          { scale: 0, opacity: 0, duration: PULL_RING_PERIOD, ease: 'power1.in', repeat: -1, delay: i * (PULL_RING_PERIOD / pullRings.length) }
+        )
+      )
+    })
   }
 
   function hidePullField() {
     if (!pullField) return
-    pullIdleTween?.kill()
-    pullIdleTween = null
-    gsap.killTweensOf([pullVoid, pullDisk])
+    pullTweens.forEach((t) => t.kill())
+    pullTweens = []
+    gsap.killTweensOf([pullReticle, pullCore, ...pullRings])
 
-    gsap.to(pullDisk, { scale: 2, opacity: 0, duration: 0.3, ease: 'power3.out' })
-    gsap.to(pullVoid, { scale: 0, duration: 0.2, ease: 'power3.in', delay: 0.05 })
-    gsap.to(pullField, { opacity: 0, duration: 0.3, ease: 'power2.in', delay: 0.1 })
+    // rings snap the rest of the way in, core collapses, reticle + field fade
+    gsap.to(pullRings, { scale: 0, opacity: 0, duration: 0.25, ease: 'power3.in' })
+    gsap.to(pullCore, { scale: 0, duration: 0.2, ease: 'power3.in', delay: 0.03 })
+    gsap.to(pullReticle, { scale: 1.15, opacity: 0, duration: 0.28, ease: 'power2.in' })
+    gsap.to(pullField, { opacity: 0, duration: 0.3, ease: 'power2.in', delay: 0.08 })
   }
 
   function resetParticles() {
@@ -429,9 +497,50 @@
     return rootRef.value?.getBoundingClientRect() ?? null
   }
 
-  // Characters phase through all module windows — glyphBoxes stays empty.
+  // Resolve the four Sandbox corner background-slice elements once (they live in
+  // the global Section-Cover-Slice layer, not this component's template).
+  function resolveCornerSlices() {
+    cornerSlices = CORNER_BUMPER_DEFS.flatMap(({ selector, hypo, solid }) => {
+      const el = document.querySelector<HTMLElement>(selector)
+      return el ? [{ el, hypo, solid }] : []
+    })
+  }
+
+  // The corner slices act as pinball bumpers: re-measure their diagonal edge in
+  // section-space so letterStep can bounce glyphs off it (see
+  // resolveGlyphBumper). Called every frame because the slices animate in from
+  // off-screen on section enter — a one-time measure would record them hidden.
   function refreshGlyphBounds() {
-    glyphBoxes = []
+    const sec = sectionRect()
+    if (!sec) { glyphBumpers = []; return }
+    const corner = (r: DOMRect, which: Corner) => {
+      const x = which === 'tl' || which === 'bl' ? r.left - sec.left : r.right - sec.left
+      const y = which === 'tl' || which === 'tr' ? r.top - sec.top : r.bottom - sec.top
+      return { x, y }
+    }
+    glyphBumpers = cornerSlices.map(({ el, hypo, solid }) => {
+      const r = el.getBoundingClientRect()
+      const p1 = corner(r, hypo[0]), p2 = corner(r, hypo[1]), rightAngle = corner(r, solid)
+      const dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.hypot(dx, dy) || 1
+      let nx = -dy / len, ny = dx / len
+      if (nx * (rightAngle.x - p1.x) + ny * (rightAngle.y - p1.y) < 0) { nx = -nx; ny = -ny }
+      const l = r.left - sec.left, t = r.top - sec.top, right = r.right - sec.left, b = r.bottom - sec.top
+      return { p1x: p1.x, p1y: p1.y, p2x: p2.x, p2y: p2.y, nx, ny, l, t, r: right, b, el }
+    })
+  }
+
+  // Brief bright flash on the bumper that was just hit. Uses filter (not
+  // box-shadow) since the slice is clip-path'd to a triangle - a shadow would
+  // glow around the invisible clipped bounding box instead of the shape.
+  // Throttled so overlap frames don't spam the tween.
+  function pulseBumper(el: HTMLElement) {
+    const now = performance.now()
+    if (now - (bumperPulseAt.get(el) ?? 0) < 180) return
+    bumperPulseAt.set(el, now)
+    gsap.fromTo(el,
+      { filter: 'brightness(1)' },
+      { filter: 'brightness(2.2)', duration: 0.08, ease: 'power2.out', yoyo: true, repeat: 1, overwrite: 'auto' }
+    )
   }
 
   // Lay the glyphs out as a centred title row near the top and record those as
@@ -451,24 +560,40 @@
     for (const g of glyphs) g.el.style.transform = `translate(${g.x}px,${g.y}px) rotate(${g.rot}deg)`
   }
 
-  // Push a glyph back out of a module box along the shallowest axis and reflect.
-  function resolveGlyphBox(g: Glyph, b: Box) {
-    if (g.x + g.w <= b.l || g.x >= b.r || g.y + g.h <= b.t || g.y >= b.b) return
-    const penL = g.x + g.w - b.l
-    const penR = b.r - g.x
-    const penT = g.y + g.h - b.t
-    const penB = b.b - g.y
-    const min = Math.min(penL, penR, penT, penB)
-    if (min === penL) { g.x -= penL; g.vx = -Math.abs(g.vx) * G_REST; g.vr += g.vy * 0.1 }
-    else if (min === penR) { g.x += penR; g.vx = Math.abs(g.vx) * G_REST; g.vr -= g.vy * 0.1 }
-    else if (min === penT) { g.y -= penT; g.vy = -Math.abs(g.vy) * G_REST; g.vr -= g.vx * 0.1 }
-    else { g.y += penB; g.vy = Math.abs(g.vy) * G_REST; g.vr += g.vx * 0.1 }
+  // Bounce a glyph (treated as a circle, see glyphRadius) off a corner slice's
+  // diagonal edge like a pinball bumper: reflect the velocity across the edge
+  // normal and add energy (unlike a wall/glyph collision, which only
+  // conserves it), plus a flash on the slice.
+  function resolveGlyphBumper(g: Glyph, bumper: Bumper) {
+    const cx = g.x + g.w / 2, cy = g.y + g.h / 2, radius = glyphRadius(g)
+    // Line is infinite; clamp to the slice's own rect so its half-plane doesn't
+    // reach across the whole viewport past the actual corner shape.
+    if (cx < bumper.l - radius || cx > bumper.r + radius || cy < bumper.t - radius || cy > bumper.b + radius) return
+    const d = (cx - bumper.p1x) * bumper.nx + (cy - bumper.p1y) * bumper.ny
+    if (d <= -radius) return // fully on the open side, no overlap into the solid triangle
+    const push = -radius - d
+    g.x += bumper.nx * push
+    g.y += bumper.ny * push
+    const vn = g.vx * bumper.nx + g.vy * bumper.ny
+    if (vn > 0) {
+      const j = (1 + BUMPER_KICK) * vn
+      g.vx -= j * bumper.nx
+      g.vy -= j * bumper.ny
+      const vt = -g.vx * bumper.ny + g.vy * bumper.nx
+      g.vr += vt * 0.15
+    }
+    pulseBumper(bumper.el)
   }
 
   function letterStep() {
     const sec = sectionRect()
     if (!sec) return
     const W = sec.width, H = sec.height
+
+    // Re-measure the corner slices each frame: they animate in from off-screen
+    // on section enter (and shift on resize), so a one-time measurement would
+    // record them at their hidden position and they'd never collide.
+    refreshGlyphBounds()
 
     // cursor velocity this frame (acts as a paddle)
     const cvx = gPtr.x - gPtr.px
@@ -518,14 +643,14 @@
       g.rot += g.vr; g.vr *= G_SPIN_FRICTION
       g.vr = Math.max(-G_MAXVR, Math.min(G_MAXVR, g.vr))
 
-      // viewport walls — a wall bounce also kicks the glyph into a roll
+      // viewport walls; a wall bounce also kicks the glyph into a roll
       if (g.x < 0) { g.x = 0; g.vx = -g.vx * G_REST; g.vr -= g.vy * 0.1 }
       else if (g.x + g.w > W) { g.x = W - g.w; g.vx = -g.vx * G_REST; g.vr += g.vy * 0.1 }
       if (g.y < 0) { g.y = 0; g.vy = -g.vy * G_REST; g.vr += g.vx * 0.1 }
       else if (g.y + g.h > H) { g.y = H - g.h; g.vy = -g.vy * G_REST; g.vr -= g.vx * 0.1 }
 
-      // module boxes
-      for (const b of glyphBoxes) resolveGlyphBox(g, b)
+      // corner background-slice bumpers
+      for (const bumper of glyphBumpers) resolveGlyphBumper(g, bumper)
     }
 
     // glyph-vs-glyph: circular elastic collisions with spin transfer
@@ -650,6 +775,7 @@
     initTilt()
     initParticles()
     initGlyphs()
+    resolveCornerSlices()
     refreshGlyphBounds()
     computeGlyphHome()
     // place the title at home immediately so it's not stacked at 0,0 before reveal
@@ -681,7 +807,7 @@
       }
     })
 
-    // Fonts can land after mount and change glyph metrics — re-measure once ready.
+    // Fonts can land after mount and change glyph metrics; re-measure once ready.
     if (document.fonts?.ready) {
       document.fonts.ready.then(() => {
         if (glyphsReleased) return
@@ -707,10 +833,11 @@
     clearTimeout(magResetTimer)
     stopSectionWatch?.()
     stopSectionWatch = null
-    pullIdleTween?.kill()
-    pullIdleTween = null
-    gsap.killTweensOf([pullField, pullVoid, pullDisk])
-    pullField = pullVoid = pullDisk = null
+    pullTweens.forEach((t) => t.kill())
+    pullTweens = []
+    gsap.killTweensOf([pullField, pullReticle, pullCore, ...pullRings])
+    pullField = pullReticle = pullCore = null
+    pullRings = []
     listeners.forEach((off) => off())
     listeners.length = 0
     shapes = []
@@ -727,9 +854,9 @@
     width: 100vw;
     height: 100vh;
     // Section wrappers collapse to 0 height and stack below the full-height Perks
-    // wrapper, landing one viewport down — pull back up to fill the viewport.
+    // wrapper, landing one viewport down; pull back up to fill the viewport.
     transform: translateY(-100vh);
-    // Transparent so the section background (once built — see CLAUDE.md Current
+    // Transparent so the section background (once built; see CLAUDE.md Current
     // Task 7) remains visible behind the content, matching every other section.
     background: transparent;
     overflow: hidden;
@@ -754,7 +881,7 @@
 
   // ── kickable title ──
   // Full-section layer the glyphs roam across. pointer-events:none so the cursor
-  // still reaches the module windows beneath — kicking is driven by tracked
+  // still reaches the module windows beneath; kicking is driven by tracked
   // cursor position, not real hit-testing.
   .sb-letters {
     position: absolute;
@@ -888,7 +1015,7 @@
     place-items: center;
     perspective: 900px;
     // Establish a size container so the card can derive BOTH dimensions from
-    // the window's height (cqh) — guaranteeing the portrait aspect ratio
+    // the window's height (cqh); guaranteeing the portrait aspect ratio
     // regardless of grid/flex auto-sizing quirks.
     container-type: size;
   }
@@ -904,6 +1031,7 @@
     transform-style: preserve-3d;
     will-change: transform;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
+    cursor: pointer;
   }
 
   .sb-tilt-frame {
@@ -914,7 +1042,7 @@
     transform: translateZ(20px);
   }
 
-  // QR code parallax layer — sits highest on the Z axis so it floats most
+  // QR code parallax layer; sits highest on the Z axis so it floats most
   // prominently above the card face as it tilts. Rendered as-is from the PNG.
   .sb-tilt-qr {
     position: absolute;
@@ -924,6 +1052,21 @@
     height: 56%;
     image-rendering: pixelated;
     transform: translate(-50%, -50%) translateZ(70px);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  // Replaces the QR image once the section is unlocked; same slot/depth so the
+  // tilt parallax and layout stay identical, just a payoff instead of a code.
+  .sb-tilt-wow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(70px);
+    font-family: 'Wosker';
+    font-size: 42px;
+    color: #5bfd5b;
+    text-shadow: 0 0 24px rgba(91, 253, 91, 0.6);
     pointer-events: none;
     user-select: none;
   }

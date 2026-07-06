@@ -132,7 +132,7 @@ export function CreateSectionLayerStyleController(
 
 	const lingeringSection = ref<number | null>(null);
 	const fadingSection = ref<number | null>(null);
-	// The section currently leaving — held above the entering one for `leaveLiftMs`
+	// The section currently leaving; held above the entering one for `leaveLiftMs`
 	// so its exit animation is visible until the curtain closes over the swap.
 	const liftedSection = ref<number | null>(null);
 

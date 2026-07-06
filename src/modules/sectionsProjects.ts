@@ -11,6 +11,7 @@ interface Project {
   platform: string
   link: string
   type?: string
+  genre?: string
   image1?: string
   image2?: string
   image3?: string
@@ -42,6 +43,7 @@ export const projects: Project[] = [
   {
     name: "Wrath of the Fallen Queen",
     description: "Description",
+    genre: "Web · Narrative RPG",
     year: 2024,
     img: new URL("../assets/images/projects/wrathofthefallenqueen/wrathofthefallenqueen.png", import.meta.url).href,
     engine: new URL("../assets/images/icons/webengine.png", import.meta.url).href,
@@ -59,6 +61,7 @@ export const projects: Project[] = [
   {
     name: "Haunted",
     description: "Description",
+    genre: "Horror · Survival",
     year: 2024,
     img: new URL("../assets/images/projects/haunted.png", import.meta.url).href,
     engine: new URL("../assets/images/icons/unity.png", import.meta.url).href,
@@ -93,6 +96,7 @@ export const projects: Project[] = [
   {
     name: "Boundless Board",
     description: "Description",
+    genre: "Board Game · Multiplayer",
     year: 2025,
     img: new URL("../assets/images/projects/boundlessboard.png", import.meta.url).href,
     engine: new URL("../assets/images/icons/unity.png", import.meta.url).href,
@@ -110,6 +114,7 @@ export const projects: Project[] = [
   {
     name: "//NETRUNNERS",
     description: "Description",
+    genre: "Cyberpunk · Action",
     year: 2025,
     img: new URL("../assets/images/projects/netrunners.png", import.meta.url).href,
     engine: new URL("../assets/images/icons/unity.png", import.meta.url).href,
@@ -127,6 +132,7 @@ export const projects: Project[] = [
 	{
     name: "Simulation City Reborn",
     description: "Description",
+    genre: "City Builder · Simulation",
     year: 2025,
     img: new URL("../assets/images/projects/simulationcity.jpg", import.meta.url).href,
     engine: new URL("../assets/images/icons/unity.png", import.meta.url).href,
@@ -143,6 +149,7 @@ export const projects: Project[] = [
 	{
 		name: "Velvet Deck",
 		description: "Description",
+		genre: "Card Game · Mobile",
 		year: 2025,
     img: new URL("../assets/images/projects/velvetdeck/velvetdeck.png", import.meta.url).href,
     engine: new URL("../assets/images/icons/godot.png", import.meta.url).href,
@@ -161,6 +168,7 @@ export const projects: Project[] = [
 	{
     name: "Anomaly",
     description: "Description",
+    genre: "Ontological Horror · Dark Fantasy",
     year: "Planned 2030",
     img: new URL("../assets/images/projects/anomaly.JPG", import.meta.url).href,
     engine: new URL("../assets/images/icons/godot.png", import.meta.url).href,

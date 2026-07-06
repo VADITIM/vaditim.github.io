@@ -59,14 +59,15 @@
 	import { buildLabelReveal, playLabelLeave } from '@modules/miscLabelReveal';
 
 	const loadingContainer = ref<HTMLElement | null>(null);
+	let enterTl: gsap.core.Timeline | null = null;
+	let lastSKeyTime = 0;
+	const DOUBLE_PRESS_WINDOW = 600; // ms
 
 	function Finished() {
 		if (!finished.value) {
-			if (!isMobile.value) {
-				gsap.set(".name-container", { right: "-100%" });
-				gsap.set(".skills-line-container", { x: "-1000" });
-				gsap.set(".skill", { x: "-210%" });
-			}
+			// The Perks components (Name / Perks-Node-Graph) hide themselves on
+			// mount, so nothing needs pre-hiding here anymore.
+			if (!isMobile.value) { /* no-op */ }
 		}
 		else {
 			// Transition to the first section (perks) after the loading exit animation completes
@@ -81,7 +82,7 @@
 	// The two greeting lines uncover via the shared label-reveal API, then lift
 	// away and fade out before PORTFOLIO pops in one character at a time (the
 	// subtitle and credit uncover via the same API alongside it), and the EXPLORE
-	// button snaps in last. PORTFOLIO itself keeps its char-pop — it's the hero
+	// button snaps in last. PORTFOLIO itself keeps its char-pop; it's the hero
 	// centrepiece, not a label (same exception as the Sandbox's kickable title).
 	function PlayEnterAnimation() {
 		if (!loadingContainer.value) return;
@@ -102,28 +103,52 @@
 		gsap.set('.explore-mag-pos .mag-btn', { scale: 0, opacity: 0 });
 
 		const tl = gsap.timeline({ delay: baseDelay });
+		enterTl = tl;
+		// Dev-only hook so the intro choreography can be scrubbed/inspected.
+		if (import.meta.env.DEV) (window as any).__introTl = tl;
 
-		// 1. "Greetings User." uncovers, then "Enjoy your experience!" follows
-		const greetStagger = 0.2;
-		const greetRevealDur = 0.42 + 0.5;
-		if (greet1) tl.add(buildLabelReveal(greet1), 0);
-		if (greet2) tl.add(buildLabelReveal(greet2), greetStagger);
+		// Collapse a single label back to hidden (clip + bar), independent of the
+		// shared playLabelLeave helper since these two lines cycle through the
+		// same on-screen slot one at a time rather than leaving together.
+		// No killTweensOf here; the reveal is long finished by leave time, and
+		// a kill scheduled at the same position would cancel this very tween.
+		function leaveOne(label: HTMLElement | null, at: number, dur: number) {
+			if (!label) return;
+			const text = label.querySelector('.pc-label-text');
+			const bar = label.querySelector('.pc-label-bar');
+			const line = label.closest('.greet-line');
+			if (!text || !bar) return;
+			tl.to(text, { clipPath: 'inset(0 100% 0 0)', duration: dur, ease: 'power2.in' }, at);
+			tl.set(bar, { opacity: 0 }, at);
+			if (line) tl.to(line, { y: -20, opacity: 0, duration: dur, ease: 'power2.in' }, at);
+		}
 
-		// 2. once both labels have finished, each lifts away and fades on its own —
-		// staggered by the same gap they started with, so greet-1 (which started
-		// first) also fades out first.
-		const fadeStart = greetStagger + greetRevealDur + 0.15;
-		const fadeDur = 0.35;
-		tl.to('.greet-1', { y: -40, opacity: 0, duration: fadeDur, ease: 'power2.in' }, fadeStart);
-		tl.to('.greet-2', { y: -40, opacity: 0, duration: fadeDur, ease: 'power2.in' }, fadeStart + greetStagger);
+		// 1. "Greetings User." reveals, holds, then fully leaves; only after its
+		// leave has finished does "Explore your experience!" cycle into the same
+		// slot, hold, and leave too; then the rest of the intro proceeds.
+		// All greeting timings run at half their original length.
+		const revealDur = (0.42 + 0.5) / 2; // buildLabelReveal at timeScale(2)
+		const hold = 0.5;
+		const gap = 0.175;
+		const leaveDur = 0.15;
 
-		// 3. only now — after a little extra breathing room — does PORTFOLIO pop in
+		const greet1RevealAt = 0;
+		if (greet1) tl.add(buildLabelReveal(greet1).timeScale(2), greet1RevealAt);
+		const greet1LeaveAt = greet1RevealAt + revealDur + hold;
+		leaveOne(greet1, greet1LeaveAt, leaveDur);
+
+		const greet2RevealAt = greet1LeaveAt + leaveDur + gap;
+		if (greet2) tl.add(buildLabelReveal(greet2).timeScale(2), greet2RevealAt);
+		const greet2LeaveAt = greet2RevealAt + revealDur + hold;
+		leaveOne(greet2, greet2LeaveAt, leaveDur);
+
+		// 2. only now; after a little extra breathing room; does PORTFOLIO pop in
 		// one character at a time…
-		const portfolioStart = fadeStart + greetStagger + fadeDur + 0.3;
+		const portfolioStart = greet2LeaveAt + leaveDur + 0.3;
 		tl.to(chars, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(3)' }, portfolioStart);
 
 		// …and the subtitle + credit uncover via the label-reveal bar sweep as
-		// PORTFOLIO becomes visible — top line first, the credit (lowest and
+		// PORTFOLIO becomes visible; top line first, the credit (lowest and
 		// right-anchored) last, matching the pattern's top-left-first ordering.
 		if (rv1) tl.add(buildLabelReveal(rv1), portfolioStart);
 		if (rv2) tl.add(buildLabelReveal(rv2), portfolioStart + 0.15);
@@ -152,6 +177,7 @@
 		playLabelLeave(labelInners);
 
 		timeline
+			.to('.explore-mag-pos .mag-btn', { scale: 0, opacity: 0, duration: 0.6, ease: 'back.in', overwrite: 'auto' }, 0)
 			.to('.greet-line', { opacity: 0, y: -20, duration: 0.3, ease: 'power2.in' }, 0)
 			.to('.rv-subtitle', { opacity: 0, y: -20, duration: 0.35, ease: 'power2.in' }, 0)
 			.to('.rv-ul', { scaleX: 0, duration: 0.3, ease: 'power2.in' }, 0)
@@ -174,12 +200,33 @@
 		RunLoadingAnimation();
 	}
 
+	// Debug shortcut: pressing "S" twice in quick succession abandons the intro
+	// wherever it currently is (regardless of how far each element's timeline
+	// has progressed) and jumps straight to the leave animation; makes
+	// iterating on later sections much faster without waiting out the intro.
+	function handleSkipKeydown(e: KeyboardEvent) {
+		if (e.key.toLowerCase() !== 's') return;
+		if (finished.value) return; // already left, nothing to skip
+
+		const now = performance.now();
+		if (now - lastSKeyTime <= DOUBLE_PRESS_WINDOW) {
+			lastSKeyTime = 0;
+			enterTl?.kill();
+			enterTl = null;
+			RunLoadingAnimation();
+		} else {
+			lastSKeyTime = now;
+		}
+	}
+
 	onMounted(() => {
 		if (!loadingContainer.value) return;
 
 		loadingContainer.value.addEventListener('play-animation', () => {
 			PlayLoadingAnimation();
 		});
+
+		window.addEventListener('keydown', handleSkipKeydown);
 
 		// Set hidden states for first section elements (they're underneath the landing page)
 		Finished();
@@ -189,6 +236,7 @@
 	});
 
 	onBeforeUnmount(() => {
+		window.removeEventListener('keydown', handleSkipKeydown);
 	});
 </script>
 
@@ -221,13 +269,12 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		display: flex;
-		flex-direction: column;
 		align-items: center;
 		text-align: center;
 		z-index: 306;
 	}
 
-	// ── label-reveal structure (system-wide pattern — see CLAUDE.md), coloured
+	// ── label-reveal structure (system-wide pattern; see CLAUDE.md), coloured
 	// with the landing accent (green) rather than the pattern's default.
 	.pc-label-inner {
 		position: relative;
@@ -255,8 +302,15 @@
 		transform: scaleX(0);
 	}
 
+	// Both lines share the same anchor (cycled in place, one at a time) rather
+	// than stacking; the absolute position takes them out of flex flow, and
+	// the flex parent's align/justify centres each one identically.
 	.greet-line {
-		position: relative;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		white-space: nowrap;
 	}
 
 	.greet-1 .pc-label-text {
@@ -270,8 +324,6 @@
 	}
 
 	.greet-2 {
-		margin-top: 0.4rem;
-
 		.pc-label-text {
 			font-size: 1rem;
 			letter-spacing: 4px;

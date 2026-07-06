@@ -7,7 +7,8 @@
 
 <script setup lang="ts">
   import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-  import { onSectionChange, isTransitioning } from '@modules/sectionsCore';
+  import { onSectionChange, isTransitioning, currentSection } from '@modules/sectionsCore';
+  import { getSectionIndexById } from '@modules/sectionLookup';
 
   defineProps<{ isDisabled?: boolean }>();
 
@@ -60,6 +61,11 @@
   // Start at the loading color and lerp toward the current section color each frame
   let currentRgb = { r: 91, g: 253, b: 91 };
   let targetRgb  = { r: 91, g: 253, b: 91 };
+
+  // Perks' bright yellow reads too hot at the same alpha range as the other
+  // sections' dot fields; dim it specifically for that section.
+  const perksSectionIndex = getSectionIndexById('perks');
+  const perksBrightness = 0.55;
 
   const buildGrid = () => {
     const canvas = canvasRef.value;
@@ -164,9 +170,11 @@
       const cy = s.baseY + s.y;
       const sr = r * s.scale;
 
+      const sectionDim = currentSection.value === perksSectionIndex ? perksBrightness : 1;
+
       ctx.beginPath();
       ctx.arc(cx, cy, sr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${dotR},${dotG},${dotB},${s.alpha * fieldAlpha})`;
+      ctx.fillStyle = `rgba(${dotR},${dotG},${dotB},${s.alpha * fieldAlpha * sectionDim})`;
       ctx.fill();
     }
 

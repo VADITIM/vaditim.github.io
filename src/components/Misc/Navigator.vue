@@ -2,35 +2,41 @@
 	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isMobile ? 'is-mobile' : 'is-desktop', { 'dragging': isDragging && isMobile }]" :style="dragStyle">
 			<div class="line"></div>
 			<div v-if="isMobile" class="rect-container">
-				<div
-					v-for="(section, i) in SECTIONS"
-					:key="section.id + '-rect'"
-					class="rect"
-					:class="getEntryClasses(i)"
-					:style="getEntryDragStyle(i, 'rect')"
-					@click="onEntryClick(i)"
-				></div>
+				<template v-for="(section, i) in SECTIONS" :key="section.id + '-rect'">
+					<div
+						v-if="!isSectionLocked(i)"
+						class="rect"
+						:class="getEntryClasses(i)"
+						:style="getEntryDragStyle(i, 'rect')"
+						@click="onEntryClick(i)"
+					></div>
+				</template>
 			</div>
-			<div
-				v-for="(section, i) in SECTIONS"
-				:key="section.id"
-				class="section-header-list"
-				:class="[`${section.id}-header-list`, getEntryClasses(i)]"
-				:style="[{ '--accent': section.color }, getEntryDragStyle(i, 'text')]"
-				@click="onEntryClick(i)"
-			>
-				<span class="shl-marker"></span>
-				<span class="shl-index">{{ String(i + 1).padStart(2, '0') }}</span>
-				<span class="shl-label">{{ section.label }}</span>
-			</div>
+			<template v-for="(section, i) in SECTIONS" :key="section.id">
+				<Transition :css="false" @enter="onNavEntryEnter">
+					<div
+						v-if="!isSectionLocked(i)"
+						class="section-header-list"
+						:class="[`${section.id}-header-list`, getEntryClasses(i)]"
+						:style="[{ '--accent': section.color }, isMobile ? getEntryDragStyle(i, 'text') : getDesktopEntryStyle(i)]"
+						@click="onEntryClick(i)"
+					>
+						<span class="shl-label">{{ section.label }}</span>
+						<span class="shl-index">{{ String(i + 1).padStart(2, '0') }}</span>
+						<span class="shl-marker"></span>
+					</div>
+				</Transition>
+			</template>
 	  </div>
 
 </template>
 
 <script setup lang="ts">
 	import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
+	import { gsap } from 'gsap'
 	import { currentSection, InitializeSectionTracking, cleanupSectionTracking, ChangeToSectionID } from '@modules/sectionsCore'
 	import { SECTIONS } from '@modules/sectionsRegistry'
+	import { isSectionLocked } from '@modules/sectionLookup'
 	import { activeProjectIndex } from '@modules/sectionsProjects'
 	import { isMobile } from '@modules/miscIsMobile'
 	import { navigationLockRef } from '@modules/miscNavigationLock'
@@ -121,11 +127,65 @@
 		}
 	}
 
+	// ── desktop: sliding 3-wide window of diamond + index indicators ──
+	// Only three entries are shown at once; the window slides so the active
+	// section stays centred, clamping at the list ends so it always stays full.
+	const DESKTOP_WINDOW_SPACING_REM = 2.9
+
+	const visibleSectionIndices = computed(() =>
+		SECTIONS.map((_, i) => i).filter((i) => !isSectionLocked(i))
+	)
+
+	const currentVisiblePos = computed(() =>
+		visibleSectionIndices.value.indexOf(currentSection.value)
+	)
+
+
+	// Scale falls off with distance from the current section; shared by the
+	// label/index/marker font-sizes (via --dist-scale, see <style>) and by the
+	// cumulative spacing below, so nothing scales in isolation.
+	const scaleForDistance = (distance: number) => Math.max(0.45, 1 - distance * 0.15)
+
+	// Vertical spacing between consecutive entries shrinks along with them
+	// (averaging each pair's scale) so the gaps don't look oversized once the
+	// entries themselves have shrunk - a flat per-step spacing would.
+	const cumulativeSpacingRem = (relative: number) => {
+		const steps = Math.abs(relative)
+		let sum = 0
+		for (let step = 1; step <= steps; step++) {
+			const avgScale = (scaleForDistance(step - 1) + scaleForDistance(step)) / 2
+			sum += DESKTOP_WINDOW_SPACING_REM * avgScale
+		}
+		return relative < 0 ? -sum : sum
+	}
+
+	// Every entry stays visible and moves as one vertical column, anchored on the
+	// current section so it's always centred at 50%. Distance from the current
+	// section drives a progressive falloff: entries shrink, fade and bow outward
+	// (translateX grows super-linearly) so the column reads as an arch with the
+	// current section biggest at its apex.
+	const getDesktopEntryStyle = (sectionIndex: number) => {
+		const position = visibleSectionIndices.value.indexOf(sectionIndex)
+		if (position === -1) return { opacity: 0, pointerEvents: 'none' as const }
+		const relative = position - currentVisiblePos.value
+		const distance = Math.abs(relative)
+		const scale = scaleForDistance(distance)
+		const archX = -Math.pow(distance, 1.5) * 0.38 // rem; bows the column leftward
+		const opacity = Math.max(0.4, 1 - distance * 0.16)
+		return {
+			'--dist-scale': scale,
+			transform: `translate(${archX}rem, calc(-50% + ${cumulativeSpacingRem(relative)}rem))`,
+			opacity,
+			zIndex: 10 - distance,
+		}
+	}
+
 	function getTargetSectionIndex() {
 		if (!dragDirection.value) return null
 		const delta = dragDirection.value === 'down' ? 1 : -1
 		const nextSection = currentSection.value + delta
 		if (nextSection < 0 || nextSection >= SECTIONS.length) return null
+		if (isSectionLocked(nextSection)) return null
 		return nextSection
 	}
 
@@ -197,6 +257,15 @@
 	const onEntryClick = (sectionIndex: number) => {
 		vibrateClick();
 		ChangeToSectionID(sectionIndex);
+	};
+
+	// Newly unlocked nav entries (currently just Classified) mount straight into
+	// the list. On mobile they slide in from off-screen; on desktop the windowed
+	// layout owns each entry's transform (see getDesktopEntryStyle), so a gsap
+	// tween would fight it — let CSS fade it into the window instead.
+	const onNavEntryEnter = (el: Element, done: () => void) => {
+		if (!isMobile.value) { done(); return }
+		gsap.fromTo(el, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.5)', onComplete: done, overwrite: 'auto' })
 	};
 
 	onMounted(() => {
@@ -295,22 +364,23 @@
 		}
 	}
 
-	// ── desktop: modern top-right section index ──
+	// ── desktop: sliding 3-wide window of diamond + index indicators ──
+	// Entries are absolutely positioned and moved by an inline translateY so the
+	// window slides as the section changes (see getDesktopEntryStyle).
 	.content-list-container.is-desktop {
+		display: block;
 		top: 50%;
-		right: 2.2rem;
+		right: 1.2rem;
 		left: auto;
 		bottom: auto;
 		width: auto;
-		align-items: flex-end;
-		gap: 0.15rem;
+		height: 0;
 		filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
-		transform: translateY(-50%);
 
 		// slide out of view while a project detail window is open
 		&.active {
 			opacity: 0;
-			transform: translateY(-50%) translateX(46px);
+			transform: translateX(46px);
 			pointer-events: none;
 		}
 	}
@@ -337,63 +407,81 @@
 		transition: .3s all;
 	}
 
-	// ── desktop entry: [label] [index] [diamond marker], right-aligned ──
+	// ── desktop entry: [index] [diamond marker], right-aligned. Labels are
+	//    dropped here to de-clutter; only the windowed diamonds + numbers show. ──
 	.content-list-container.is-desktop .section-header-list {
+		position: absolute;
+		right: 0;
+		top: 0;
 		align-items: center;
 		justify-content: flex-end;
-		gap: 0.7rem;
-		padding: 0.32rem 0;
+		// --dist-scale (set inline per entry, see getDesktopEntryStyle) drives real
+		// font-size/dimensions here rather than a transform: scale() on the row, so
+		// the gap shrinks along with the content instead of looking oversized, and
+		// the text stays crisp instead of blurring under a CSS scale transform.
+		gap: calc(0.7rem * var(--dist-scale, 1));
 		color: #6a6a6a;
-		transition: color .3s ease, transform .35s cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: transform, opacity;
+		transition:
+			transform .45s cubic-bezier(0.22, 1, 0.36, 1),
+			opacity .4s ease,
+			color .3s ease;
 
 		.shl-label {
 			font-family: 'Wosker';
-			font-size: 1.45rem;
+			font-size: calc(1.35rem * var(--dist-scale, 1));
 			line-height: 1;
 			letter-spacing: 1px;
-			transition: font-size .35s cubic-bezier(0.22, 1, 0.36, 1), color .3s ease, text-shadow .3s ease;
+			color: #6a6a6a;
+			transition:
+				font-size .35s cubic-bezier(0.22, 1, 0.36, 1),
+				color .3s ease,
+				text-shadow .3s ease;
 		}
 
 		.shl-index {
 			font-family: 'Audiowide';
-			font-size: 0.66rem;
+			font-size: calc(0.6rem * var(--dist-scale, 1));
 			letter-spacing: 2px;
-			color: #4f4f4f;
-			transition: color .3s ease;
+			color: #5a5a5a;
+			transition: color .3s ease, font-size .35s cubic-bezier(0.22, 1, 0.36, 1), text-shadow .3s ease;
 		}
 
 		.shl-marker {
-			width: 9px;
-			height: 9px;
+			width: calc(7px * var(--dist-scale, 1));
+			height: calc(7px * var(--dist-scale, 1));
 			flex-shrink: 0;
-			border: 2px solid #4f4f4f;
+			border: 2px solid #5a5a5a;
 			border-radius: 2px;
 			transform: rotate(45deg);
-			transition: all .35s cubic-bezier(0.22, 1, 0.36, 1);
+			transition: width .35s cubic-bezier(0.22, 1, 0.36, 1), height .35s cubic-bezier(0.22, 1, 0.36, 1), background .3s ease, border-color .3s ease, box-shadow .3s ease;
 		}
 
-		// hover — lift toward white, nudge left
+		// hover; brighten the name + diamond + number (transform is owned by the window)
 		&:hover:not(.active) {
-			color: #cfcfcf;
-			transform: translateX(-4px);
-
-			.shl-label { font-size: 1.6rem; color: #fff; }
-			.shl-index { color: #9a9a9a; }
+			.shl-label { color: #fff; }
+			.shl-index { color: #cfcfcf; }
 			.shl-marker { border-color: #fff; }
 		}
 
-		// active — section accent colour, enlarged, glowing diamond
+		// active; section accent colour, enlarged glowing name + diamond + number
 		&.active {
 			.shl-label {
-				font-size: 2.5rem;
+				font-size: 2rem;
 				color: var(--accent, #{$red});
 				text-shadow: 0 0 22px var(--accent, #{$red});
 			}
-			.shl-index { color: var(--accent, #{$red}); }
+			.shl-index {
+				font-size: 0.78rem;
+				color: var(--accent, #{$red});
+				text-shadow: 0 0 16px var(--accent, #{$red});
+			}
 			.shl-marker {
+				width: 11px;
+				height: 11px;
 				background: var(--accent, #{$red});
 				border-color: var(--accent, #{$red});
-				box-shadow: 0 0 14px var(--accent, #{$red});
+				box-shadow: 0 0 16px var(--accent, #{$red});
 			}
 		}
 	}

@@ -160,7 +160,7 @@
     openTl.to(t.close, { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.5, ease: 'back.out(2.2)' }, 0.75)
   }
 
-  // ── leave: snappy reverse — every element exits, then the window drops away ──
+  // ── leave: snappy reverse; every element exits, then the window drops away ──
   function playClose() {
     const t = targets()
     openTl?.kill()

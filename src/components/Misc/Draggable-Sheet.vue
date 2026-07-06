@@ -1,6 +1,6 @@
 <template>
   <div ref="sheetRef" class="ds-sheet" :style="{ '--ds-glow': accent ?? '#fff' }" @wheel.stop>
-    <!-- arch handle — always visible at the bottom edge, drag up to open -->
+    <!-- arch handle; always visible at the bottom edge, drag up to open -->
     <div ref="handleRef" class="ds-handle" @pointerdown.prevent="onDown">
       <svg
         class="ds-arch"
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <!-- content panel — hidden below the section edge when closed -->
+    <!-- content panel; hidden below the section edge when closed -->
     <div class="ds-body">
       <slot />
     </div>
@@ -38,8 +38,8 @@
   const sheetRef  = ref<HTMLElement | null>(null)
   const handleRef = ref<HTMLElement | null>(null)
 
-  const ARCH_H   = 44       // px — visible arch height (matches viewBox height)
-  const SNAP_VEL = 0.35     // px/ms — flick threshold to force snap direction
+  const ARCH_H   = 44       // px; visible arch height (matches viewBox height)
+  const SNAP_VEL = 0.35     // px/ms; flick threshold to force snap direction
 
   let isOpen      = false
   let contentH    = 0        // 110vh in px, recalculated on measure()

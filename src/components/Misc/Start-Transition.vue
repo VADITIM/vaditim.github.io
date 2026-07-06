@@ -16,7 +16,6 @@
 </template>
 
 <script setup lang="ts">
-	import { gsap } from 'gsap';
 	import { onBeforeUnmount, onMounted, ref } from 'vue';
 	import fullscreenIcon from '@assets/images/icons/fullscreen.png';
 	import minimiseIcon from '@assets/images/icons/minimise.png';
@@ -39,17 +38,6 @@
 	});
 
 	async function OnExploreClick() {
-		const btn = exploreBtnRef.value?.el;
-		if (btn) {
-			gsap.to(btn, {
-				scale: 0,
-				opacity: 0,
-				duration: 0.6,
-				ease: 'back.in',
-				overwrite: 'auto',
-			});
-		}
-
 		if (props.isMobile && props.containerElement) {
 			try {
 				if (props.containerElement.requestFullscreen) {

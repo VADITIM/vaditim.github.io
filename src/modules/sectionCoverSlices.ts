@@ -8,6 +8,7 @@ import {
 import { currentSection } from '@modules/sectionsCore'
 import { getSectionIndexById } from '@modules/sectionsRegistry'
 import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
+import { showProjectHelix, hideProjectHelix } from '@modules/miscProjectHelixCanvas'
 
 gsap.defaults({ immediateRender: false })
 
@@ -39,6 +40,8 @@ const COVER_SLICE_TARGETS = [
   '.sandbox-tr',
   '.sandbox-bl',
   '.sandbox-br',
+  '.classified-tl',
+  '.classified-br',
 ]
 
 function DragTransition(buildTimeline: (timeline: gsap.core.Timeline) => void) {
@@ -94,8 +97,7 @@ function playProjectsEnterDesktop() {
     tl.to('.projects-back', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
     tl.to('.projects-front', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
-  gsap.killTweensOf('.proj-strand')
-  gsap.to('.proj-strand', { opacity: 1, duration: 0.22, ease: 'power2.out', stagger: 0.006, overwrite: 'auto', delay: SECTION_ENTER_DELAY })
+  showProjectHelix(SECTION_ENTER_DELAY)
 }
 
 function playProjectsLeaveDesktop() {
@@ -104,8 +106,7 @@ function playProjectsLeaveDesktop() {
     tl.to('.projects-back', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
     tl.to('.projects-front', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
-  gsap.killTweensOf('.proj-strand')
-  gsap.to('.proj-strand', { opacity: 0, duration: 0.12, ease: 'power2.in', stagger: 0.004, overwrite: 'auto' })
+  hideProjectHelix()
 }
 
 function playExtraEnterDesktop() {
@@ -141,6 +142,22 @@ function playSandboxLeaveDesktop() {
     tl.to('.sandbox-tr', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
     tl.to('.sandbox-bl', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
     tl.to('.sandbox-br', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+  })
+}
+
+function playClassifiedEnterDesktop() {
+  gsap.killTweensOf(['.classified-tl', '.classified-br'])
+  DragTransition((tl) => {
+    tl.to('.classified-tl', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    tl.to('.classified-br', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+  })
+}
+
+function playClassifiedLeaveDesktop() {
+  gsap.killTweensOf(['.classified-tl', '.classified-br'])
+  DragTransition((tl) => {
+    tl.to('.classified-tl', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    tl.to('.classified-br', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
   })
 }
 
@@ -244,7 +261,7 @@ function playMobileBackgroundTransition(
       tl.to('.perks-front', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
-    // LOGS — entering from below (perks) vs. entering from above (projects)
+    // LOGS; entering from below (perks) vs. entering from above (projects)
     if (meta.isEnteringSection(logsIdx) && !meta.isFromSection(projectsIdx)) {
       tl.set('.logs-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
       tl.set('.logs-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
@@ -318,6 +335,7 @@ export function ScrollBackgroundSections() {
   const projectsIdx  = getSectionIndexById('projects')
   const extraIdx     = getSectionIndexById('extra')
   const sandboxIdx = getSectionIndexById('sandbox')
+  const classifiedIdx = getSectionIndexById('classified')
 
   const isPerksEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(perksIdx)
   const isPerksLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(perksIdx)
@@ -329,6 +347,8 @@ export function ScrollBackgroundSections() {
   const isExtraLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(extraIdx)
   const isSandboxEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(sandboxIdx)
   const isSandboxLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(sandboxIdx)
+  const isClassifiedEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(classifiedIdx)
+  const isClassifiedLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(classifiedIdx)
 
   const MatchMedia = gsap.matchMedia()
 
@@ -341,11 +361,12 @@ export function ScrollBackgroundSections() {
     gsap.set('.logs-front', { left: '-30%', top: '0%' })
     gsap.set('.projects-back', { right: '-40%', top: '0%' })
     gsap.set('.projects-front', { right: '-40%', top: '0%' })
-    gsap.set('.proj-strand', { opacity: 0 })
     gsap.set('.extra-tr', { top: CORNER_HIDDEN })
     gsap.set('.extra-bl', { bottom: CORNER_HIDDEN })
     gsap.set(['.sandbox-tl', '.sandbox-tr'], { top: CORNER_HIDDEN })
     gsap.set(['.sandbox-bl', '.sandbox-br'], { bottom: CORNER_HIDDEN })
+    gsap.set('.classified-tl', { top: CORNER_HIDDEN })
+    gsap.set('.classified-br', { bottom: CORNER_HIDDEN })
 
     const cleanupPerks = onSectionEnterLeaveAnimation({
       isEnter: isPerksEnter,
@@ -387,12 +408,21 @@ export function ScrollBackgroundSections() {
       initialSection: sandboxIdx,
     })
 
+    const cleanupClassified = onSectionEnterLeaveAnimation({
+      isEnter: isClassifiedEnter,
+      isLeave: isClassifiedLeave,
+      onEnter: playClassifiedEnterDesktop,
+      onLeave: playClassifiedLeaveDesktop,
+      initialSection: classifiedIdx,
+    })
+
     return () => {
       cleanupPerks()
       cleanupLogs()
       cleanupProjects()
       cleanupExtra()
       cleanupSandbox()
+      cleanupClassified()
     }
   })
 

@@ -2,7 +2,7 @@
  * Sandbox section animations.
  *
  * Unlike the other sections, the Sandbox co-locates all of its animation and
- * interaction logic inside `Sandbox-Section.vue` — it relies on template refs
+ * interaction logic inside `Sandbox-Section.vue`; it relies on template refs
  * (magnetic button, hover list, tilt card, particle container) and a gated
  * requestAnimationFrame physics loop that only steps while the section is active.
  *
@@ -11,5 +11,5 @@
  * the registry contract (`registerAnimations`).
  */
 export function registerSandboxAnimations() {
-  // Intentionally empty — see component for the self-managed reveal + interactions.
+  // Intentionally empty; see component for the self-managed reveal + interactions.
 }

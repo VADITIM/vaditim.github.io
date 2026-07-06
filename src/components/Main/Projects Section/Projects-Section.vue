@@ -9,7 +9,7 @@
     <!-- corner labels (system-wide label-reveal pattern) -->
     <LabelSet :labels="PROJECT_LABELS" section-id="projects" accent="#dc143c" />
 
-    <!-- fanned card feed — each card is a numbered module frame; the centred
+    <!-- fanned card feed; each card is a numbered module frame; the centred
          card alone narrows its image and reveals a tech-icon module beside it -->
     <div ref="fanRef" class="proj-fan">
       <div
@@ -41,13 +41,13 @@
       </div>
     </div>
 
-    <!-- info window — name / description / year for the centred card.
+    <!-- info window; name / description / year for the centred card.
          The panel enter/leave (container fade) is animated on our own plain
-         DOM ref (infoPanelRef), not on ModuleDisplay's internal exposed el —
+         DOM ref (infoPanelRef), not on ModuleDisplay's internal exposed el -
          so the panel's own tween can never gate or interfere with the name's
          independent label-reveal animation underneath. -->
-    <div ref="infoPanelRef" class="proj-info">
-      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false">
+    <div ref="infoPanelRef" class="proj-info proj-info-grid">
+      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false" class="proj-info-name">
         <template #label>01 · NOW SHOWING</template>
         <div class="proj-info-body">
           <div class="proj-h-wrap">
@@ -58,14 +58,30 @@
           </div>
           <div class="proj-sub-wrap">
             <div class="proj-sub-inner">
-              <div ref="descRef" class="proj-sub proj-sub-desc">{{ currentProjectDescription }}</div>
-              <div ref="descBarRef" class="proj-sub-bar"></div>
-            </div>
-          </div>
-          <div class="proj-sub-wrap">
-            <div class="proj-sub-inner">
               <div ref="yearRef" class="proj-sub proj-sub-year">{{ currentProjectYear }}</div>
               <div ref="yearBarRef" class="proj-sub-bar"></div>
+            </div>
+          </div>
+        </div>
+      </ModuleDisplay>
+      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false" class="proj-info-genre">
+        <template #label>02 · GENRE</template>
+        <div class="proj-info-body">
+          <div class="proj-sub-wrap">
+            <div class="proj-sub-inner">
+              <div ref="genreRef" class="proj-sub proj-sub-genre">{{ currentProjectGenre }}</div>
+              <div ref="genreBarRef" class="proj-sub-bar"></div>
+            </div>
+          </div>
+        </div>
+      </ModuleDisplay>
+      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false" class="proj-info-desc">
+        <template #label>03 · DESCRIPTION</template>
+        <div class="proj-info-body">
+          <div class="proj-sub-wrap">
+            <div class="proj-sub-inner">
+              <div ref="descRef" class="proj-sub proj-sub-desc">{{ currentProjectDescription }}</div>
+              <div ref="descBarRef" class="proj-sub-bar"></div>
             </div>
           </div>
         </div>
@@ -100,12 +116,13 @@
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
+  import { rippleProjectHelix } from '@modules/miscProjectHelixCanvas'
 
   const N = projects.length
   const projectsIndex = getSectionIndexById('projects')
 
   const PROJECT_LABELS = [
-    { text: 'DRAG · OR · ARROWS', pos: { top: '92%', left: '10%' } },
+    { text: 'DRAG · OR · ARROWS', pos: { top: '45%', left: '50%', transform: 'translateX(-50%)' } },
   ]
 
   const eyebrowRef = ref<HTMLElement | null>(null)
@@ -116,13 +133,21 @@
   const descBarRef = ref<HTMLElement | null>(null)
   const yearRef = ref<HTMLElement | null>(null)
   const yearBarRef = ref<HTMLElement | null>(null)
+  const genreRef = ref<HTMLElement | null>(null)
+  const genreBarRef = ref<HTMLElement | null>(null)
   const fanRef = ref<HTMLElement | null>(null)
   const cardRefs = ref<HTMLElement[]>([])
 
   const fanCenter = ref(Math.floor(N / 2))
-  const currentProjectName = computed(() => projects[fanCenter.value]?.name?.toUpperCase() ?? 'PROJECTS')
-  const currentProjectDescription = computed(() => projects[fanCenter.value]?.description ?? '')
-  const currentProjectYear = computed(() => String(projects[fanCenter.value]?.year ?? '').toUpperCase())
+  // The info labels render from displayedIndex, not fanCenter: fanCenter moves
+  // the instant a project is selected (the fan must react immediately), but the
+  // label text may only swap once the leave animation has fully hidden it -
+  // otherwise the new value flashes under the outgoing reveal.
+  const displayedIndex = ref(fanCenter.value)
+  const currentProjectName = computed(() => projects[displayedIndex.value]?.name?.toUpperCase() ?? 'PROJECTS')
+  const currentProjectDescription = computed(() => projects[displayedIndex.value]?.description ?? '')
+  const currentProjectYear = computed(() => String(projects[displayedIndex.value]?.year ?? '').toUpperCase())
+  const currentProjectGenre = computed(() => projects[displayedIndex.value]?.genre ?? '')
 
   // drag state
   let dragging = false
@@ -132,7 +157,7 @@
   const listeners: Array<() => void> = []
   let stopSectionWatch: (() => void) | null = null
   // Handle to the delayed enter timeline so a fast leave can cancel it before its
-  // deferred card/heading/strand tweens fire — otherwise they animate content back
+  // deferred card/heading/strand tweens fire; otherwise they animate content back
   // in on top of the leave when the section is exited before SECTION_ENTER_DELAY.
   let feedTl: gsap.core.Timeline | null = null
 
@@ -143,7 +168,7 @@
 
   // ── fan geometry ──
   function fanDims() {
-    // Fixed slot spacing, not a fan spread — only the centre ± one neighbour
+    // Fixed slot spacing, not a fan spread; only the centre ± one neighbour
     // are ever visible (see reference image), so this is just the gap between
     // those three flat slots, proportional to viewport width.
     return { SX: window.innerWidth * 0.27 }
@@ -156,15 +181,21 @@
     return d
   }
 
-  // Three flat, evenly-sized slots (left / centre / right) — no rotation,
+  // Three flat, evenly-sized slots (left / centre / right); no rotation,
   // no scale falloff, no vertical cascade. Anything beyond the immediate
   // neighbours is fully hidden off-slot, not faded into a deep fan.
   function fanTarget(o: number) {
     const ao = Math.abs(o)
+    // Cards beyond the visible ±1 neighbours travel to a fixed off-screen rest
+    // position (viewport edge + 20vw) rather than growing proportionally with
+    // their fan offset; otherwise a card several slots away drifts to an
+    // arbitrary point mid-transition and fades out short of the actual edge.
+    const offscreenX = window.innerWidth * 0.5 + window.innerWidth * 0.2
+    const x = ao > 1 ? Math.sign(o) * offscreenX : o * fanDims().SX
     return {
       xPercent: -50,
       yPercent: -50,
-      x: o * fanDims().SX,
+      x,
       y: 0,
       rotation: 0,
       scale: 1,
@@ -190,7 +221,7 @@
     })
   }
 
-  // ── heading label reveal (system-wide label-reveal pattern — see CLAUDE.md) ──
+  // ── heading label reveal (system-wide label-reveal pattern; see CLAUDE.md) ──
   // A bar sweeps across the project name, covering it while the text swaps
   // underneath, then recedes to leave the new name behind.
   function playHeadingReveal(delay = 0) {
@@ -208,13 +239,16 @@
       .set(bar, { opacity: 0 })
   }
 
-  // Leave re-collapses instantly, no stagger — per the enter/leave asymmetry rule.
+  const HEADING_LEAVE_DUR = 0.25
+
+  // Leave re-collapses instantly, no stagger; per the enter/leave asymmetry rule.
+  // Returns the leave duration so callers can gate the next reveal on it.
   function playHeadingLeave() {
     const text = headingRef.value
     const bar = headingBarRef.value
     if (!text || !bar) return
     gsap.killTweensOf([text, bar])
-    gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
+    gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: HEADING_LEAVE_DUR, ease: 'power2.in', overwrite: 'auto' })
     gsap.set(bar, { opacity: 0 })
   }
 
@@ -224,6 +258,7 @@
     const pairs: [HTMLElement | null, HTMLElement | null][] = [
       [descRef.value, descBarRef.value],
       [yearRef.value, yearBarRef.value],
+      [genreRef.value, genreBarRef.value],
     ]
     pairs.forEach(([text, bar], i) => {
       if (!text || !bar) return
@@ -240,25 +275,45 @@
   }
 
   function playSubLeave() {
-    const els = [descRef.value, yearRef.value]
-    const bars = [descBarRef.value, yearBarRef.value]
+    const els = [descRef.value, yearRef.value, genreRef.value]
+    const bars = [descBarRef.value, yearBarRef.value, genreBarRef.value]
     gsap.killTweensOf([...els, ...bars])
     els.forEach((text) => { if (text) gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' }) })
     bars.forEach((bar) => { if (bar) gsap.set(bar, { opacity: 0 }) })
   }
 
+  // Bumped on every centerOn call (and on section leave). All info labels run
+  // one strict sequence per cycle: leave animation → swap displayed values →
+  // enter animation. A queued step from a superseded cycle bails out instead
+  // of flashing stale content; the replacing cycle's own leave picks the
+  // labels up from wherever the killed tweens left them (mid-enter included),
+  // so rapid cycling stays continuous instead of snapping or hiding.
+  let labelRequestToken = 0
+
   function centerOn(i: number) {
     const next = ((i % N) + N) % N
     if (next === fanCenter.value) return
-    // Cards move the instant the switch is triggered — the fan is the primary
-    // motion and must never wait on the info text. Text leave/reveal run as a
-    // short, independent overlap alongside it instead of gating the fan.
-    playHeadingLeave()
-    playSubLeave()
+
+    // Cards move the instant the switch is triggered; the fan is the primary
+    // motion and must never wait on the info text.
     fanCenter.value = next
     layoutFan(true)
-    nextTick(() => {
-      gsap.delayedCall(0.12, () => { playHeadingReveal(0); playSubReveal(0.08) })
+    rippleProjectHelix()
+
+    // Leave first; the label text must not change while it is still visible.
+    const token = ++labelRequestToken
+    playHeadingLeave()
+    playSubLeave()
+    gsap.delayedCall(HEADING_LEAVE_DUR, () => {
+      if (token !== labelRequestToken) return
+      // Leave finished with the old values fully hidden; only now swap the
+      // rendered text to the newly selected project, then reveal it.
+      displayedIndex.value = fanCenter.value
+      nextTick(() => {
+        if (token !== labelRequestToken) return
+        playHeadingReveal(0)
+        playSubReveal(0.08)
+      })
     })
   }
   function feedNext() { centerOn(fanCenter.value + 1) }
@@ -295,6 +350,10 @@
     const cards = cardRefs.value
 
     fanCenter.value = Math.floor(N / 2)
+    // Section enter starts from a fully hidden state; sync the rendered label
+    // values immediately and invalidate any pending centerOn label sequence.
+    displayedIndex.value = fanCenter.value
+    labelRequestToken++
 
     feedTl?.kill()
     gsap.killTweensOf([eyebrow, panel, ...cards])
@@ -327,10 +386,13 @@
     const panel = infoPanelRef.value
     const cards = cardRefs.value
 
-    // Cancel a still-pending enter timeline first — its deferred callback would
+    // Cancel a still-pending enter timeline first; its deferred callback would
     // otherwise re-spawn card/heading tweens after this leave has run.
     feedTl?.kill()
     feedTl = null
+    // Invalidate any pending centerOn label sequence so it can't reveal text
+    // after the section has left.
+    labelRequestToken++
     gsap.killTweensOf([eyebrow, panel, ...cards])
     playHeadingLeave()
     playSubLeave()
@@ -401,7 +463,7 @@
     width: 100vw;
     height: 100vh;
     // Section wrappers collapse to 0 height and stack below the full-height Perks
-    // wrapper, landing one viewport down — pull back up to fill the viewport.
+    // wrapper, landing one viewport down; pull back up to fill the viewport.
     transform: translateY(-100vh);
     // Transparent so the animated red section-background panels (rendered behind
     // by Section-Cover-Slice) remain visible behind the fan.
@@ -434,14 +496,25 @@
     top: 15%;
     width: min(40vw, 570px);
     z-index: 6;
+  }
+
+  // Name/year - Genre - Description laid out side by side, description gets
+  // double the width since it carries the most text.
+  .proj-info-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 14px;
+    align-items: stretch;
+    width: min(62vw, 1900px);
+    height: min(30vh, 230px);
 
     :deep(.module-display-content) {
-      padding: 60px 24px 24px;
+      padding: 52px 18px 18px;
     }
 
     :deep(.module-display-label) {
-      font-size: 12px;
-      padding: 18px 20px;
+      font-size: 11px;
+      padding: 16px 18px;
     }
   }
 
@@ -450,6 +523,16 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+    // Fill the module's content box so the release year can be pinned to the
+    // bottom regardless of how tall the project name wraps.
+    flex: 1;
+    min-height: 0;
+  }
+
+  // Release year sits at the bottom of the name module; its position stays
+  // fixed no matter how many lines the project name occupies above it.
+  .proj-info-name .proj-sub-wrap {
+    margin-top: auto;
   }
 
   // ── heading label reveal (system-wide label-reveal pattern) ──
@@ -518,6 +601,11 @@
     color: #ff7588;
   }
 
+  .proj-sub-genre {
+    font-size: clamp(13px, 1.1vw, 16px);
+    color: #d8c3c8;
+  }
+
   .proj-sub-bar {
     position: absolute;
     top: -8%;
@@ -546,7 +634,7 @@
     left: 50%;
     top: 50%;
     // Landscape module-frame proportions (reference image), not a portrait
-    // poster — width grows further still for the centred/active card to make
+    // poster; width grows further still for the centred/active card to make
     // room for the tech-icon module beside its (now narrower) image.
     width: clamp(320px, 25vw, 430px);
     height: clamp(240px, 19vw, 340px);
@@ -557,7 +645,7 @@
     cursor: pointer;
     will-change: transform;
     transition: width 0.4s ease;
-    // 3D stage for the pointer-tilt — children pop at different depths (parallax).
+    // 3D stage for the pointer-tilt; children pop at different depths (parallax).
     // No overflow:hidden here, as it would flatten the 3D children.
     transform-style: preserve-3d;
   }
@@ -566,11 +654,16 @@
     width: clamp(410px, 33vw, 560px);
   }
 
-  // ── card module frame — fills the card, supplies the numbered "0X · PROJECT"
+  // ── card module frame; fills the card, supplies the numbered "0X · PROJECT"
   // chrome shared with every other window in the app ──
   .proj-card-module {
     position: absolute;
     inset: 0;
+    // Carries the pointer-tilt parallax down from .proj-card; without
+    // preserve-3d here the nested image/tech modules' translateZ below gets
+    // flattened and the card tilts as one flat plane instead of layers popping
+    // at their own depth.
+    transform-style: preserve-3d;
 
     :deep(.module-display-content) {
       padding: 32px 8px 8px;
@@ -579,6 +672,7 @@
     :deep(.module-display-label) {
       font-size: 9px;
       padding: 10px 12px;
+      transform: translateZ(45px);
     }
   }
 
@@ -587,14 +681,17 @@
     flex-direction: row;
     height: 100%;
     gap: 8px;
+    transform-style: preserve-3d;
   }
 
-  // Image nested module — full width until the card becomes centred, then
-  // narrows to make room for the tech-icon module beside it.
+  // Image nested module; full width until the card becomes centred, then
+  // narrows to make room for the tech-icon module beside it. Sits nearest the
+  // card plane so the tech module (below) pops further forward on tilt.
   .proj-card-image {
     flex: 1 1 100%;
     min-width: 0;
     transition: flex-basis 0.4s ease;
+    transform: translateZ(15px);
 
     :deep(.module-display-content) {
       padding: 0;
@@ -609,7 +706,7 @@
     border-radius: 6px;
   }
 
-  // Tech-icon nested module — collapsed to nothing for off-centre cards,
+  // Tech-icon nested module; collapsed to nothing for off-centre cards,
   // revealed only for the centred (active) one. The module itself is
   // static-visible (always opacity:1 via inline style), so width/flex-basis
   // do the actual hiding here; the icon fade lives on the inner wrapper below.
@@ -618,6 +715,7 @@
     width: 0;
     overflow: hidden;
     transition: flex-basis 0.4s ease, width 0.4s ease;
+    transform: translateZ(35px);
 
     :deep(.module-display-content) {
       padding: 8px;

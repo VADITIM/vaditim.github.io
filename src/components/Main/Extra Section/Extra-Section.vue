@@ -50,7 +50,7 @@
 
     </div>
 
-    <!-- Impressum bottom-sheet — drag the handle up to reveal -->
+    <!-- Impressum bottom-sheet; drag the handle up to reveal -->
     <DraggableSheet ref="sheetRef" v-model="impressumOpen" accent="#f09b3a">
       <template #hint>IMPRESSUM&nbsp;▲</template>
       <MagneticButton type="button" class="ex-impressum-close-wrap" :zone="14" @click="impressumOpen = false">✕</MagneticButton>
@@ -99,7 +99,7 @@
           </p>
         </section>
 
-        <p class="ex-impressum-note">— Adresse und weitere Angaben werden noch ergänzt —</p>
+        <p class="ex-impressum-note">- Adresse und weitere Angaben werden noch ergänzt -</p>
 
       </div>
     </DraggableSheet>
@@ -121,7 +121,7 @@
   import DraggableSheet from '@components/Misc/Draggable-Sheet.vue'
 
   const EXTRA_LABELS = [
-    { text: 'IMPRESSED? SAY HI!', pos: { top: '5%', left: '4%' }, stretch: true },
+    { text: 'IMPRESSED? // SAY_HI!', pos: { top: '5%', left: '4%' }, stretch: true },
     { text: 'LEGAL BELOW', pos: { bottom: '5%', right: '4%' } },
   ]
 
@@ -187,7 +187,7 @@
     width: 100vw;
     height: 100vh;
     // Section wrappers collapse to 0 height and stack below the full-height Perks
-    // wrapper, landing one viewport down — pull back up to fill the viewport.
+    // wrapper, landing one viewport down; pull back up to fill the viewport.
     transform: translateY(-100vh);
     // Transparent so the animated orange section-background slices (rendered
     // behind by Section-Cover-Slice) remain visible behind the content.

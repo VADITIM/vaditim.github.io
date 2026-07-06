@@ -23,7 +23,7 @@
   import { gsap } from 'gsap'
 
   const props = withDefaults(defineProps<{
-    zone?: number      // px padding around the button — defines the magnetic attraction area
+    zone?: number      // px padding around the button; defines the magnetic attraction area
     strength?: number  // 0–1, how far the button travels toward the cursor
     type?: 'button' | 'submit' | 'reset'
     disabled?: boolean
@@ -67,7 +67,7 @@
     cursor: pointer;
   }
 
-  // Bare reset — all visual styling is done by the consumer via :deep(.mag-btn).
+  // Bare reset; all visual styling is done by the consumer via :deep(.mag-btn).
   .mag-btn {
     -webkit-appearance: none;
     appearance: none;
