@@ -30,7 +30,7 @@
   import { downloadRef, tilts, devItems} from '@modules/sectionsProjectsTechnology';
   import { activeProjectIndex, currentProjectIndex, projects } from '@modules/sectionsProjects';
   import { InitializeTilt } from '@modules/miscVanillaTilt';
-  import { watch, ref } from 'vue';
+  import { watch } from 'vue';
   import { gsap } from 'gsap';
 
   let animationTimeline: gsap.core.Timeline | null = null;
@@ -67,7 +67,7 @@
     );
   };
 
-  watch(activeProjectIndex, (newIndex) => {
+  watch(activeProjectIndex, () => {
     const devContainer = document.querySelector('.dev-container');
     if (!devContainer) return;
 

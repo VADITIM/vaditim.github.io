@@ -167,7 +167,7 @@
     gsap.killTweensOf(Object.values(t).flat())
 
     const tl = gsap.timeline({
-      onComplete: () => gsap.set(rootRef.value, { autoAlpha: 0, pointerEvents: 'none' }),
+      onComplete: () => { gsap.set(rootRef.value, { autoAlpha: 0, pointerEvents: 'none' }) },
     })
     tl.to(t.ghub, { autoAlpha: 0, scale: 0, duration: 0.18, ease: 'power2.in' }, 0)
     tl.to(t.close, { autoAlpha: 0, scale: 0, rotate: -90, duration: 0.18, ease: 'power2.in' }, 0)

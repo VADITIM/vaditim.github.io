@@ -8,7 +8,6 @@ import {
 import { currentSection } from '@modules/sectionsCore'
 import { getSectionIndexById } from '@modules/sectionsRegistry'
 import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
-import { dragOffset, dragDirection, consumeLastDragOffsetY as ConsumeLastDragOffsetY, wasTransitionDragged as WasTransitionDragged } from '@modules/miscMobileDragNavigation'
 
 gsap.defaults({ immediateRender: false })
 

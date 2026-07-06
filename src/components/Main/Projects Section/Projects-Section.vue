@@ -143,7 +143,6 @@
 
   // ── fan geometry ──
   function fanDims() {
-    const h = window.innerHeight
     // Fixed slot spacing, not a fan spread — only the centre ± one neighbour
     // are ever visible (see reference image), so this is just the gap between
     // those three flat slots, proportional to viewport width.

@@ -189,7 +189,7 @@
       magGrowth = 1
       magClicks.value = 0
       gsap.to(btn, { scale: 1, rotation: 0, skewX: 0, skewY: 0, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
-      gsap.to(magCountRef.value, { opacity: 0.4, duration: 0.3, overwrite: 'auto', onComplete: () => gsap.to(magCountRef.value, { opacity: 1, duration: 0.3 }) })
+      gsap.to(magCountRef.value, { opacity: 0.4, duration: 0.3, overwrite: 'auto', onComplete: () => { gsap.to(magCountRef.value, { opacity: 1, duration: 0.3 }) } })
     }, MAG_RESET_MS)
   }
 

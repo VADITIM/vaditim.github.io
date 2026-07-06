@@ -44,3 +44,4 @@ types/generated/
 
 # Build output (dev builds locally; only gh-pages tracks the published docs/)
 /docs/
+CLAUDE.local.md
