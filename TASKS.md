@@ -123,18 +123,18 @@ Site-wide reduced-motion mode, gated on the `prefers-reduced-motion: reduce` med
 
 Needs a shared helper (e.g. a `prefersReducedMotion` ref/matchMedia listener in a misc module) that animation handlers can branch on, rather than each handler re-querying the media feature ad hoc. Ties into the existing "respect `prefers-reduced-motion`" accessibility guideline in `.claude/rules/frontend.md` — this task is the concrete implementation of that guideline.
 
-### Perks Section overhaul
+### Perks Section overhaul — DONE
 
-Interactive node graph on the left (like Obsidian's graph view). Each main perk is clickable and reveals its children as new nodes. Each perk gets its own Module-Display. Module-Displays aligned in a vertical grid, dynamic scaling.
+Implemented from the `Perks Section.dc.html` Claude Design prototype (project "Portfolio design system setup"). Superseded the original plan, which called for an Obsidian-style node graph with one Module-Display per perk in a vertical grid — the section now uses the **PERK-CRYSTAL** showpiece instead, and the perks carry **no module chrome** of their own.
 
-Perk changes:
-- C# Developer → **C#** (C#-related skills)
-- Vue & Typescript → **Web** (Vue, Angular, Typescript, mySQL)
-- UI/UX Animator → **UI/UX**
-- Game Designer → REMOVE
-- Technical Designer → REMOVE
+Current shape:
+- Left half: a canvas wireframe icosahedron (`miscPerkCrystalCanvas.ts`) — draggable via world-space quaternions like the Logs cubes, with a glowing nucleus, orbiting spark ring, and a counter-rotating inner shell. Deliberately a gem, not a box, so it reads as a sibling of the Logs cubes rather than a copy.
+- Category headlines (C# / WEB / UI/UX) sit beneath it as bare underlined text. Selecting one recolours the crystal and unfolds that category's skills as satellite nodes tethered to the nearest shell vertex; clicking a node opens the shared detail panel below.
+- Right half: the name block (`Name.vue`), unchanged.
 
-Name-Display replaced by Name: "vadim niedental" becomes **VADITIM**, with "vadim niedental" as a small suffix/notice underneath. Enter/leave animations overhauled. Both names get a typewriter animation — built as a standalone API like Label-Set (configurable delays, speed, etc.). The typewriter caret bar uses the section main color, same as the text. Labels should be real 3D (the old setup overlaps multiple copies and borders — replace with actual 3D).
+Remaining follow-ups:
+- The prototype also carried `particles` (a V-monogram particle field) and `hologram` (a 9-axis stat radar) showpiece variants behind a design-time switcher. Only `core` — the crystal — was ported; the other two are still available in the design project if we ever want to swap.
+- Nothing responsive below `smallDesktop`: the crystal stage is a fixed 430×430 / canvas 380×330, in line with the frozen-mobile rule.
 
 ## Current Ideas
 

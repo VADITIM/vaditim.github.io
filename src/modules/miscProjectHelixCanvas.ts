@@ -18,6 +18,7 @@ const PERSPECTIVE = 1000
 const DOT_DIAMETER = 12
 const DOT_GLOW_RADIUS = 16
 const BACKDROP_OPACITY = 0.2 // the old .proj-helix container opacity
+const DOT_ALPHA_MULTIPLIER = 1.8 // dots punch through the backdrop dimming more than the lines
 
 // ── show/hide (mirrors the old GSAP .proj-strand opacity tweens) ──
 const SHOW_DURATION = 0.22
@@ -25,9 +26,12 @@ const SHOW_STAGGER = 0.006
 const HIDE_DURATION = 0.12
 const HIDE_STAGGER = 0.004
 
-// ── ripple (mirrors the old GSAP dot scale/brightness yoyo tween) ──
-const RIPPLE_HALF_DURATION = 0.3
-const RIPPLE_STAGGER = 0.014
+// ── ripple ──
+// A narrow pulse: half duration ≈ stagger means only ~2 strands are lit at
+// any moment, sweeping outward fast — a long half duration with a tiny
+// stagger lights every strand at once and reads as one big gradient smear.
+const RIPPLE_HALF_DURATION = 0.07
+const RIPPLE_STAGGER = 0.06
 const RIPPLE_MAX_EXTRA_SCALE = 0.9
 const RIPPLE_MAX_EXTRA_BRIGHTNESS = 1.4
 
@@ -163,13 +167,14 @@ function drawFrame(now: number) {
     const sprite = ripple > 0.02 ? brightDotSprite : dotSprite
     const dotTop = project(-DOT_CENTER_OFFSET)
     const dotBottom = project(DOT_CENTER_OFFSET)
+    const dotAlpha = Math.min(1, alpha * DOT_ALPHA_MULTIPLIER)
     for (const dot of [dotTop, dotBottom]) {
       const size = (DOT_DIAMETER + DOT_GLOW_RADIUS * 2) * dot.scale * dotScale
-      context.globalAlpha = alpha
+      context.globalAlpha = dotAlpha
       context.drawImage(sprite, dot.screenX - size / 2, dot.screenY - size / 2, size, size)
       // Cross-fade toward the bright sprite instead of a hard swap.
       if (ripple > 0.02 && ripple < 0.98) {
-        context.globalAlpha = alpha * (1 - ripple)
+        context.globalAlpha = dotAlpha * (1 - ripple)
         context.drawImage(dotSprite, dot.screenX - size / 2, dot.screenY - size / 2, size, size)
       }
     }

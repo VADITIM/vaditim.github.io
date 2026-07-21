@@ -5,9 +5,8 @@
        section's main colour. The labels live on genuinely separate 3D planes
        (preserve-3d + per-plane translateZ + pointer tilt) instead of the old
        stacked-copies/border fake. -->
-  <div class="name-frame">
-    <div ref="rootRef" class="name-root">
-      <div ref="stageRef" class="name-stage">
+  <div ref="rootRef" class="name-root">
+    <div ref="stageRef" class="name-stage">
       <div ref="mainPlaneRef" class="name-plane name-plane-main">
         <Typewriter
           ref="mainTw"
@@ -18,24 +17,23 @@
           :options="{ speed: 0.09, caretBlink: 0.45 }"
         />
       </div>
-        <div ref="subPlaneRef" class="name-plane name-plane-sub">
-          <Typewriter
-            ref="subTw"
-            text="vadim niedental"
-            color="#FFDD1B"
-            class="name-sub"
-            :options="{ speed: 0.045, caretBlink: 0.45, holdCaret: false }"
-          />
-        </div>
-        <div ref="titlePlaneRef" class="name-plane name-plane-title">
-          <Typewriter
-            ref="titleTw"
-            text="Creative Developer - Designer"
-            color="#FFDD1B"
-            class="name-title"
-            :options="{ speed: 0.045, caretBlink: 0.45, holdCaret: false }"
-          />
-        </div>
+      <div ref="subPlaneRef" class="name-plane name-plane-sub">
+        <Typewriter
+          ref="subTw"
+          text="vadim niedental"
+          color="#FFDD1B"
+          class="name-sub"
+          :options="{ speed: 0.045, caretBlink: 0.45, holdCaret: false }"
+        />
+      </div>
+      <div ref="titlePlaneRef" class="name-plane name-plane-title">
+        <Typewriter
+          ref="titleTw"
+          text="Creative Developer - Designer"
+          color="#FFDD1B"
+          class="name-title"
+          :options="{ speed: 0.045, caretBlink: 0.45, holdCaret: false }"
+        />
       </div>
     </div>
   </div>
@@ -157,26 +155,12 @@
 <style scoped lang="scss">
   @use "@styleVariables" as *;
 
-  // In-flow full-viewport frame. This is what gives the Perks section wrapper
-  // its 100vh height; every later section compensates its own position with
-  // translateY(-100vh) assuming the Perks wrapper is full-height (see
-  // Projects-Section), so this must stay position: relative, not absolute.
-  .name-frame {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-  }
-
+  // Plain flex child now — Perks-Section.vue owns the full-viewport frame and
+  // the flexbox that positions this against Perks-Skills' column, so no
+  // absolute positioning or right-edge offset is needed here.
   .name-root {
     @extend .disable-selection;
-    position: absolute;
-    top: 50%;
-    // Nav reserves roughly the right-most 23rem + 2.2rem (see Navigator.vue) -
-    // stay far enough left of that so VADITIM never runs under it.
-    right: calc(10% + 12vw);
-    transform: translateY(-50%);
-    z-index: 4;
+    flex: 0 0 auto;
     perspective: 1100px;
     pointer-events: none;
     will-change: transform, opacity;
@@ -213,9 +197,9 @@
 
   .name-main {
     font-family: Wosker;
-    font-size: clamp(6rem, 10vw, 13rem);
+    font-size: clamp(6rem, 12vw, 13rem);
     line-height: 1;
-    filter: drop-shadow(0 0 0.12rem #ffffff) drop-shadow(0.6rem 0.9rem 0.9rem rgba(0, 0, 0, 0.55));
+    filter: drop-shadow(0.6rem 0.9rem 0.9rem rgba(0, 0, 0, 0.55));
   }
 
   .name-sub {

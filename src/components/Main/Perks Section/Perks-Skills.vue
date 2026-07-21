@@ -1,63 +1,48 @@
 <template>
-  <!-- Quick-glance skills board: one Module-Display per perk category, each
-       holding a flex grid of clickable skill cards; one card per label.
-       Clicking a card opens ITS OWN category's detail popup right next to
-       that module (not one shared panel), game-character-sheet style rather
-       than a graph/skill-tree. -->
-  <div class="perk-frame">
-    <div ref="rootRef" class="perk-outer-wrap">
-      <!-- one outer module nests the 3 category modules inside it; each
-           category module still nests its own skill entries. -->
+  <!-- Perks showpiece column (left half; the name block owns the right).
+       The PERK-CRYSTAL canvas is the interaction surface: picking a category
+       headline unfolds that category's skills as satellite nodes around the
+       crystal, and clicking a node opens its detail panel underneath. The
+       skills deliberately carry no module chrome of their own — the crystal is
+       the frame. -->
+  <div ref="rootRef" class="perk-column">
+    <div class="perk-body">
+      <div ref="showpieceRef" class="perk-showpiece">
+        <canvas ref="canvasRef" class="perk-crystal"></canvas>
+      </div>
+
+      <div class="perk-category-row">
+        <button
+          v-for="perk in perkGraph"
+          :key="perk.id"
+          class="perk-category"
+          :class="{ selected: selectedCategory === perk.id }"
+          :style="{ '--accent': perk.color }"
+          @click="onCategoryClick(perk)"
+        >
+          <span class="pc-label-inner">
+            <span class="pc-label-text">{{ perk.label.toUpperCase() }}</span>
+            <span class="pc-label-bar"></span>
+          </span>
+          <span class="perk-category-underline"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- One shared panel; `displayedSkill` is only written the instant
+         before an enter, so a click during its leave animation can never
+         blank or rewrite the text that is still fading out. -->
+    <div ref="detailRef" class="perk-detail">
       <ModuleDisplay
-        label="SKILLS"
-        accent="#5bfd5b"
+        :label="(displayedSkill ?? '').toUpperCase()"
+        :accent="displayedPerk?.color ?? CRYSTAL_ACCENT"
         static-visible
         :animate-height="false"
-        class="perk-outer"
+        class="perk-detail-module"
       >
-        <div class="perk-grid">
-          <div v-for="(perk, pi) in perkGraph" :key="perk.id" class="perk-row">
-            <ModuleDisplay
-              :label="`0${pi + 1} · ${perk.label.toUpperCase()}`"
-              :accent="perk.color"
-              static-visible
-              :animate-height="false"
-              class="perk-module"
-            >
-              <div class="perk-skills">
-                <button
-                  v-for="child in perk.children"
-                  :key="child"
-                  class="perk-skill"
-                  :class="{ selected: selectedSkill === child }"
-                  :style="{ '--accent': perk.color }"
-                  @click="onChildClick(child)"
-                >
-                  {{ child }}
-                </button>
-              </div>
-            </ModuleDisplay>
-
-            <!-- this category's own detail popup; only ever shows content for
-                 one of ITS skills, positioned flush right of its own module.
-                 Reads displayedSkill[perk.id], its own independent state, so a
-                 click in a different module can never rewrite this one's text
-                 while it's still mid-leave-animation. -->
-            <div class="perk-detail" :data-perk="perk.id">
-              <ModuleDisplay
-                :label="`${(displayedSkill[perk.id] ?? '').toUpperCase()}`"
-                :accent="perk.color"
-                static-visible
-                :animate-height="false"
-                class="perk-detail-module"
-              >
-                <div class="perk-detail-body">
-                  <div class="perk-detail-title">{{ displayedSkill[perk.id] }}</div>
-                  <div class="perk-detail-text">{{ perkInfo[displayedSkill[perk.id] ?? ''] ?? '' }}</div>
-                </div>
-              </ModuleDisplay>
-            </div>
-          </div>
+        <div class="perk-detail-body">
+          <div class="perk-detail-title">{{ displayedSkill }}</div>
+          <div class="perk-detail-text">{{ perkInfo[displayedSkill ?? ''] ?? '' }}</div>
         </div>
       </ModuleDisplay>
     </div>
@@ -65,153 +50,214 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, onBeforeUnmount, reactive, ref } from 'vue'
+  import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
   import { gsap } from 'gsap'
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
-  import { perkGraph, perkInfo } from '@modules/sectionsPerksGraph'
+  import { perkGraph, perkInfo, type PerkGraphNode } from '@modules/sectionsPerksGraph'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { currentSection } from '@modules/sectionsCore'
   import { finished } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
+  import { hideLabels, buildLabelReveal, playLabelLeave } from '@modules/miscLabelReveal'
+  import {
+    initializePerkCrystalCanvas,
+    showPerkCrystal,
+    hidePerkCrystal,
+    setPerkCrystalCategory,
+    setPerkCrystalSelectedSkill,
+    PERK_CRYSTAL_REVEAL_DURATION_SECONDS,
+  } from '@modules/miscPerkCrystalCanvas'
 
   gsap.defaults({ immediateRender: false })
 
+  const CRYSTAL_ACCENT = '#7e55dd'
+  // Offset from SECTION_ENTER_DELAY; the crystal grows once its container has landed.
+  const CRYSTAL_GROW_OFFSET = 0.75
+  // The category headlines only start revealing once the crystal above them has
+  // fully arrived — they read as the crystal's caption, not as a parallel entrance.
+  const CATEGORY_REVEAL_DELAY = SECTION_ENTER_DELAY + CRYSTAL_GROW_OFFSET + PERK_CRYSTAL_REVEAL_DURATION_SECONDS
+  // Left-to-right, matching the label pattern's top-left-first ordering.
+  const CATEGORY_REVEAL_STAGGER = 0.12
+  const CATEGORY_UNDERLINE_DURATION = 0.5
+
   const rootRef = ref<HTMLElement | null>(null)
-  // Which skill is currently "open" overall (drives the .selected class on
-  // skill cards and same-skill-toggle-closes logic).
+  const showpieceRef = ref<HTMLElement | null>(null)
+  const canvasRef = ref<HTMLCanvasElement | null>(null)
+  const detailRef = ref<HTMLElement | null>(null)
+
+  const selectedCategory = ref<string | null>(null)
   const selectedSkill = ref<string | null>(null)
-  // Per-category last-shown skill; each popup's own state, only written when
-  // its own category opens, so it never gets overwritten by another
-  // category's click while it's still animating out.
-  const displayedSkill = reactive<Record<string, string | null>>(
-    Object.fromEntries(perkGraph.map((perk) => [perk.id, null]))
-  )
+  // What the panel renders. Diverges from selectedSkill for the length of a
+  // leave animation, so outgoing text stays intact while it fades.
+  const displayedSkill = ref<string | null>(null)
+  // Guards the leave→enter handoff: a click that lands while an older leave is
+  // still running invalidates that leave's completion callback.
+  let skillClickToken = 0
+
   const perksIndex = getSectionIndexById('perks')
   let cleanupStates: (() => void) | null = null
+  let cleanupCanvas: (() => void) | null = null
 
-  function perkIdForSkill(skill: string): string | null {
-    return perkGraph.find((perk) => perk.children.includes(skill))?.id ?? null
+  const displayedPerk = computed<PerkGraphNode | null>(() =>
+    displayedSkill.value
+      ? perkGraph.find((perk) => perk.children.includes(displayedSkill.value!)) ?? null
+      : null,
+  )
+
+  function categoryLabelElements() {
+    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-category .pc-label-inner')] : []
   }
 
-  function detailElementFor(perkId: string) {
-    return rootRef.value?.querySelector<HTMLElement>(`.perk-detail[data-perk="${perkId}"]`) ?? null
+  function categoryUnderlineElements() {
+    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-category-underline')] : []
   }
 
-  // ── per-module detail popup ──
-  function enterDetail(perkId: string) {
-    const el = detailElementFor(perkId)
-    if (!el) return
-    gsap.killTweensOf(el)
-    gsap.fromTo(el,
-      { yPercent: -50, x: -40, opacity: 0, scale: 0.94 },
-      { yPercent: -50, x: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.6)', overwrite: 'auto' }
+  // ── detail panel ──
+  function enterDetail() {
+    const element = detailRef.value
+    if (!element) return
+    gsap.killTweensOf(element)
+    element.style.pointerEvents = 'auto'
+    gsap.fromTo(element,
+      { y: -28, opacity: 0, scale: 0.94 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.6)', overwrite: 'auto' },
     )
   }
 
-  function leaveDetail(perkId: string, instant = false, onDone?: () => void) {
-    const el = detailElementFor(perkId)
-    if (!el) { onDone?.(); return }
-    gsap.killTweensOf(el)
+  function leaveDetail(instant = false, onDone?: () => void) {
+    const element = detailRef.value
+    if (!element) { onDone?.(); return }
+    gsap.killTweensOf(element)
+    element.style.pointerEvents = 'none'
     if (instant) {
-      gsap.set(el, { yPercent: -50, x: -40, opacity: 0, scale: 0.94 })
+      gsap.set(element, { y: -28, opacity: 0, scale: 0.94 })
       onDone?.()
       return
     }
-    gsap.to(el, {
-      yPercent: -50, x: -24, opacity: 0, scale: 0.96,
+    gsap.to(element, {
+      y: -18, opacity: 0, scale: 0.96,
       duration: 0.2, ease: 'power2.in', overwrite: 'auto',
       onComplete: onDone,
     })
   }
 
-  function closeDetail(instant = false) {
-    const openPerkId = selectedSkill.value ? perkIdForSkill(selectedSkill.value) : null
-    if (!openPerkId) { selectedSkill.value = null; return }
-    leaveDetail(openPerkId, instant, () => { selectedSkill.value = null })
+  // ── interaction ──
+  function onCategoryClick(perk: PerkGraphNode) {
+    const isClosing = selectedCategory.value === perk.id
+    skillClickToken++
+    if (selectedSkill.value) leaveDetail()
+    selectedSkill.value = null
+    setPerkCrystalSelectedSkill(null)
+
+    if (isClosing) {
+      selectedCategory.value = null
+      setPerkCrystalCategory(null)
+      return
+    }
+    selectedCategory.value = perk.id
+    setPerkCrystalCategory(perk)
   }
 
-  function onChildClick(child: string) {
-    if (selectedSkill.value === child) { closeDetail(); return }
-    const newPerkId = perkIdForSkill(child)
-    const oldPerkId = selectedSkill.value ? perkIdForSkill(selectedSkill.value) : null
-    selectedSkill.value = child
-    if (!newPerkId) return
+  function onSkillNodeClick(name: string) {
+    skillClickToken++
+    const token = skillClickToken
+    const isStale = () => token !== skillClickToken
 
-    if (!oldPerkId) {
-      // Nothing was open; just enter fresh.
-      displayedSkill[newPerkId] = child
-      enterDetail(newPerkId)
-    } else if (oldPerkId === newPerkId) {
-      // Same category's popup: it's the same element, so the swap must be
-      // sequential; play the old skill's leave out in full, only then swap
-      // the text and play the new skill's enter. Running both at once on one
-      // element would just cut the leave short instead of animating it.
-      leaveDetail(oldPerkId, false, () => {
-        displayedSkill[newPerkId] = child
-        enterDetail(newPerkId)
-      })
-    } else {
-      // Different category's popup; separate elements, so the old one can
-      // leave and the new one can enter independently, at the same time. The
-      // old category's displayedSkill is left untouched (it's mid-leave,
-      // then hidden) rather than cleared, so it never flashes new content.
-      displayedSkill[newPerkId] = child
-      leaveDetail(oldPerkId)
-      enterDetail(newPerkId)
+    if (selectedSkill.value === name) {
+      selectedSkill.value = null
+      setPerkCrystalSelectedSkill(null)
+      leaveDetail()
+      return
     }
+    if (selectedSkill.value) {
+      leaveDetail(false, () => {
+        if (isStale()) return
+        selectedSkill.value = name
+        displayedSkill.value = name
+        setPerkCrystalSelectedSkill(name)
+        enterDetail()
+      })
+      return
+    }
+    selectedSkill.value = name
+    displayedSkill.value = name
+    setPerkCrystalSelectedSkill(name)
+    enterDetail()
   }
 
   // ── section enter/leave (Perks content enters from off-screen left) ──
-  function modules() {
-    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-module')] : []
-  }
-
-  function skillElements() {
-    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-skill')] : []
-  }
-
-  function detailElements() {
-    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-detail')] : []
-  }
-
   function playEnter() {
-    const mods = modules()
-    const skills = skillElements()
-    gsap.killTweensOf([...mods, ...skills])
-    // Modules slide+pop in from the left…
-    gsap.fromTo(mods,
-      { x: '-120%', opacity: 0, scale: 0.92 },
-      { x: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.1, delay: SECTION_ENTER_DELAY, ease: 'back.out(1.4)', overwrite: 'auto' }
-    )
-    // …then each skill card pops into place inside its module.
-    gsap.fromTo(skills,
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.4, stagger: 0.04, delay: SECTION_ENTER_DELAY + 0.4, ease: 'back.out(2.2)', overwrite: 'auto' }
-    )
+    const showpiece = showpieceRef.value
+    const labels = categoryLabelElements()
+    const underlines = categoryUnderlineElements()
+    gsap.killTweensOf([showpiece, ...underlines])
+
+    resetSelection()
+
+    if (showpiece) {
+      gsap.fromTo(showpiece,
+        { opacity: 0, y: 36, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, delay: SECTION_ENTER_DELAY + 0.15, ease: 'back.out(1.6)', overwrite: 'auto' },
+      )
+    }
+    // Bar-sweep reveal (see the Label Reveal Pattern in CLAUDE.md). The
+    // positional stagger of playLabelReveals doesn't apply here — these sit on
+    // one row at the same height, so the delay is a plain left-to-right step.
+    labels.forEach((label, index) => {
+      buildLabelReveal(label).delay(CATEGORY_REVEAL_DELAY + index * CATEGORY_REVEAL_STAGGER)
+    })
+    underlines.forEach((underline, index) => {
+      gsap.fromTo(underline,
+        { scaleX: 0 },
+        {
+          scaleX: 1,
+          duration: CATEGORY_UNDERLINE_DURATION,
+          // Lands with the bar's collapse, so the rule draws itself in as the text appears.
+          delay: CATEGORY_REVEAL_DELAY + index * CATEGORY_REVEAL_STAGGER + 0.42,
+          ease: 'power3.inOut',
+          overwrite: 'auto',
+        },
+      )
+    })
+
+    showPerkCrystal(SECTION_ENTER_DELAY + CRYSTAL_GROW_OFFSET)
   }
 
   function playLeave() {
-    const mods = modules()
-    const skills = skillElements()
-    gsap.killTweensOf([...mods, ...skills])
-    closeDetail(true)
-    // Everything animated on enter leaves too: skill cards shrink, modules
-    // slide out. Leave is snappier than enter, no stagger.
-    gsap.to(skills, { scale: 0, opacity: 0, duration: 0.18, ease: 'power2.in', overwrite: 'auto' })
-    gsap.to(mods, {
-      x: '-120%', opacity: 0, scale: 0.92,
-      duration: 0.3,
-      stagger: 0.06,
-      ease: 'power2.in',
-      overwrite: 'auto',
-    })
+    const showpiece = showpieceRef.value
+    const underlines = categoryUnderlineElements()
+    gsap.killTweensOf([showpiece, ...underlines])
+
+    resetSelection()
+
+    if (showpiece) {
+      gsap.to(showpiece, { opacity: 0, y: 36, scale: 0.96, duration: 0.3, ease: 'power2.in', overwrite: 'auto' })
+    }
+    playLabelLeave(categoryLabelElements())
+    gsap.to(underlines, { scaleX: 0, duration: 0.3, ease: 'power2.in', overwrite: 'auto' })
+
+    hidePerkCrystal()
+  }
+
+  // Drop any open category/skill so the section is never re-entered mid-state.
+  function resetSelection() {
+    skillClickToken++
+    selectedCategory.value = null
+    selectedSkill.value = null
+    setPerkCrystalCategory(null)
+    leaveDetail(true)
   }
 
   onMounted(() => {
-    gsap.set(modules(), { x: '-120%', opacity: 0, scale: 0.92 })
-    gsap.set(skillElements(), { scale: 0, opacity: 0 })
-    gsap.set(detailElements(), { yPercent: -50, x: -40, opacity: 0, scale: 0.94 })
+    gsap.set(showpieceRef.value, { opacity: 0, y: 36, scale: 0.96 })
+    hideLabels(categoryLabelElements())
+    gsap.set(categoryUnderlineElements(), { scaleX: 0 })
+    gsap.set(detailRef.value, { y: -28, opacity: 0, scale: 0.94 })
+
+    if (canvasRef.value) {
+      cleanupCanvas = initializePerkCrystalCanvas(canvasRef.value, { onSkillClick: onSkillNodeClick })
+    }
 
     cleanupStates = onSectionStatesChange((meta) => {
       if (meta.isEnteringSection(perksIndex)) playEnter()
@@ -229,120 +275,158 @@
   onBeforeUnmount(() => {
     cleanupStates?.()
     cleanupStates = null
+    cleanupCanvas?.()
+    cleanupCanvas = null
   })
 </script>
 
 <style scoped lang="scss">
   @use "@styleVariables" as *;
 
-  // Section layer wrappers collapse to 0 height; re-establish a
-  // full-viewport coordinate space (same workaround as Projects-Section).
-  .perk-frame {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-
-    > * {
-      pointer-events: auto;
-    }
-  }
-
-  // Outer frame positions the whole nested board; the outer module itself
-  // just wraps and sizes to its content.
-  .perk-outer-wrap {
-    position: absolute;
-    left: 5%;
-    top: 15%;
+  // Plain flex child now — Perks-Section.vue owns the full-viewport frame and
+  // the flexbox that positions this against Name, so its width is resolved by
+  // flexbox against Name's own width rather than a guessed fixed percentage.
+  .perk-column {
+    flex: 0 1 auto;
+    min-width: 0;
     z-index: 5;
-  }
-
-  .perk-outer {
-    will-change: transform, opacity;
-    // Detail popups sit outside a perk-row's own bounds, flush right of it;
-    // the base module-display's overflow:hidden would otherwise clip them.
-    overflow: visible;
-
-    :deep(.module-display-content) {
-      padding: 56px 26px 26px;
-      overflow: visible;
-    }
-
-    :deep(.module-display-label) {
-      font-size: 13px;
-    }
-  }
-
-  // Category modules stack under each other inside the outer module.
-  .perk-grid {
     display: flex;
     flex-direction: column;
-    gap: clamp(20px, 2.4vw, 36px);
-    width: clamp(500px, 18vw, 1000px);
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
   }
 
-  // Each row holds one module and (positioned absolutely, so it never
-  // affects the row's own width) that module's own detail popup.
-  .perk-row {
-    position: relative;
-  }
-
-  .perk-module {
-    will-change: transform, opacity;
-
-    :deep(.module-display-content) {
-      padding: 52px 22px 22px;
-    }
-
-    :deep(.module-display-label) {
-      font-size: 13px;
-    }
-  }
-
-  // Skill entries wrap so more than one can share a line.
-  .perk-skills {
+  // Crystal centered on top, categories in a row underneath it.
+  .perk-body {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2px, 0.25vw, 8px);
   }
 
-  .perk-skill {
+  // Sized by the canvas it holds; the wrapper exists purely as the GSAP target
+  // for the showpiece's enter/leave.
+  .perk-showpiece {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  // Scales with viewport width instead of a fixed px box — CANVAS_WIDTH /
+  // CANVAS_HEIGHT in miscPerkCrystalCanvas.ts (820×684) only fix the drawing
+  // resolution and aspect ratio; toCanvasPoint() already maps pointer
+  // coordinates through getBoundingClientRect(), so the on-screen CSS size is
+  // free to scale as long as this aspect-ratio matches that resolution.
+  .perk-crystal {
+    width: clamp(400px, 38vw, 1080px);
+    aspect-ratio: 820 / 684;
+    height: auto;
+    cursor: grab;
+    pointer-events: auto;
+    @extend .disable-selection;
+  }
+
+  // Category headlines: bare text with an underline rule, no module chrome —
+  // a row underneath the crystal.
+  .perk-category-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(18px, 2vw, 36px);
+    // The crystal canvas reserves empty space below the drawn shape for the
+    // orbit's lowest excursion. Shifted with a transform rather than a negative
+    // margin so the column keeps its height — shrinking it would re-centre the
+    // body and drag the crystal down with it.
+    transform: translateY(clamp(-90px, -6vw, -30px));
+  }
+
+  // Headline text uses the shared bar-sweep reveal (Label Reveal Pattern), so the
+  // button itself carries no opacity animation — the clip-path and the underline
+  // scale are what bring it in.
+  .perk-category {
     --accent: #ffdd1b;
+    position: relative;
     appearance: none;
-    background: rgba(24, 24, 24, 0.92);
-    border: 1.5px solid color-mix(in srgb, var(--accent) 65%, transparent);
-    border-radius: 8px;
-    color: #fff;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0.3em 0.15em 0.45em;
     font-family: 'Mono';
-    font-size: clamp(14px, 1.15vw, 17px);
-    letter-spacing: 0.5px;
-    padding: 0.75em 1.1em;
+    font-weight: 700;
+    font-size: clamp(18px, 1.7vw, 28px);
+    letter-spacing: 4px;
+    color: #e8e8e8;
     cursor: pointer;
+    pointer-events: auto;
     @extend .disable-selection;
 
     transition:
-      background 0.25s ease,
-      box-shadow 0.25s ease,
-      border-color 0.25s ease;
+      color 0.25s ease,
+      text-shadow 0.25s ease;
 
     &:hover,
     &.selected {
-      background: color-mix(in srgb, var(--accent) 22%, rgba(24, 24, 24, 0.92));
-      border-color: var(--accent);
-      box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent);
+      color: var(--accent);
+      text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent);
+
+      .perk-category-underline {
+        background: var(--accent);
+      }
     }
   }
 
-  // ── per-module detail popup; sits directly to the right of its own
-  // module, not the whole grid. Vertical centring lives in the GSAP yPercent
-  // (not a CSS transform) so the enter/leave x/scale tweens can't clobber it.
+  .pc-label-inner {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+  }
+
+  .pc-label-text {
+    display: block;
+    white-space: pre;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .pc-label-bar {
+    position: absolute;
+    top: -6%;
+    bottom: -6%;
+    left: 0;
+    width: 100%;
+    background: var(--accent);
+    box-shadow: 0 0 26px var(--accent);
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+
+  // Replaces the old border-bottom so the rule can be drawn in with the label
+  // instead of sitting there fully formed before the text arrives.
+  .perk-category-underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.15);
+    transform-origin: left center;
+    transform: scaleX(0);
+    will-change: transform;
+    transition: background 0.25s ease;
+  }
+
+  // Pulled out of flow deliberately: the column centres its content, so a panel
+  // that took part in layout would shunt the crystal and headlines every time it
+  // opened, closed, or swapped to a skill whose text wraps to a different height.
   .perk-detail {
     position: absolute;
-    left: calc(100% + clamp(20px, 2.4vw, 36px));
-    top: 50%;
-    width: clamp(220px, 18vw, 340px);
+    top: calc(100% + 16px);
+    left: 0;
+    right: 0;
     z-index: 6;
     opacity: 0;
     pointer-events: none;
@@ -351,7 +435,7 @@
 
   .perk-detail-module {
     :deep(.module-display-content) {
-      padding: 44px 18px 18px;
+      padding: 40px 16px 16px;
     }
   }
 
