@@ -1,16 +1,15 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
-    "baseUrl": "./src",
     "paths": {
-      "@styleVariables": ["style/variables.scss"],
-      "@components/*": ["components/*"],
-      "@modules/*": ["modules/*"],
-      "@assets/*": ["assets/*"],
-      "@perks/*": ["components/Main/Perks Section/*"],
-      "@logs/*": ["components/Main/Logs Section/*"],
-      "@projects/*": ["components/Main/Projects Section/*"],
-      "@sections/*": ["components/Main/*"]
+      "@styleVariables": ["./src/style/variables.scss"],
+      "@components/*": ["./src/components/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@perks/*": ["./src/components/Main/Perks Section/*"],
+      "@logs/*": ["./src/components/Main/Logs Section/*"],
+      "@projects/*": ["./src/components/Main/Projects Section/*"],
+      "@sections/*": ["./src/components/Main/*"]
     },
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
 
