@@ -6,6 +6,18 @@ Migrated from `src/CLAUDE.md`. This file is not auto-loaded by Claude — point 
 
 ### Comments Section (backed by a database)
 
+**Progress (2026-07-21):** Backend built in `api/` (ASP.NET Core Minimal API, .NET 8, EF Core with SQLite for dev / SQL Server for hosted, selected via `DbProvider` config). All acceptance rules, rate limiting, admin endpoints (`X-Admin-Key` header), and the by-IP correlation view implemented. Frontend wired: `src/modules/extraComments.ts` (fingerprint + API client) and live comments UI in Extra-Section. API base URL comes from `VITE_COMMENTS_API_URL` (defaults to `http://localhost:5282`).
+
+**Database provisioned (2026-07-21):** Azure SQL Database `portfolio` on logical server `vaditim-portfolio.database.windows.net` (resource group `portfolio-rg`, West Europe, **free offer** — 32 GB storage + 100k vCore-seconds/month, serverless General Purpose, auto-pauses when idle, overage billing disabled). SQL authentication; firewall allows Azure services + the dev machine's IP. Postgres/Neon is no longer a candidate — the Npgsql provider was removed.
+
+Verified end-to-end against the live Azure database: schema auto-created, all four acceptance-rule cases (clean accept / cookie duplicate / fingerprint duplicate / same-IP-different-fingerprint flagging), rate limiting (429 after 3 posts), admin auth (401 without key), hide, and delete. Test rows removed afterwards; table is empty.
+
+Because the serverless tier auto-pauses, `UseSqlServer` sets `EnableRetryOnFailure` — the first request after an idle period fails with error 40613 while the database wakes. Do not remove it.
+
+**Local config:** connection string lives in .NET user secrets (`ConnectionStrings:CommentsDb`), never in the repo. Run against Azure with `DbProvider=SqlServer dotnet run`; omit it to use local SQLite. Note `Properties/launchSettings.json` overrides `ASPNETCORE_URLS`, so `dotnet run` listens on 5282 regardless of that variable.
+
+**Remaining:** API hosting (App Service still blocked on the compute quota below), production secrets (`IpHashSalt`, `AdminApiKey`), CORS `FrontendOrigin` for the gh-pages origin, and the two open decisions below. Flagged comments currently start **visible** (`IsHidden: false`) — provisional, pending the decision below.
+
 Build a comments feature backed by a database so visitors can leave a message that persists and is shown to future visitors. **One comment per visitor, no real authentication** — enforced by layering several weak identity signals instead of one strong one, sized for a small portfolio (deter casual double-posting, flag the determined cases for manual review; not social-media-grade security).
 
 **Backend: ASP.NET Core Minimal API** (shared host with the Classified Section unlock — see that task).
@@ -70,7 +82,7 @@ app.MapPost("/comments", async (CommentInput input, HttpContext http, CommentsDb
 **Known accepted gaps** (fine for a portfolio): VPN + incognito + different machine posts twice (gets flagged only if IP repeats); two genuine visitors behind the same NAT with odd setups may get flagged (manual review resolves it); fingerprints drift with browser updates (worst case: a duplicate slips through and is visible to you anyway).
 
 Open questions:
-- Hosting: GitHub Pages can't run the API — host it separately (Azure App Service free tier, Fly.io, Render) with a hosted DB (Azure SQL free tier, Postgres on Neon/Supabase); local SQLite resets on ephemeral filesystems. Cross-site cookies (gh-pages frontend → API domain) require `SameSite=None; Secure` and exact CORS origin configuration — verify early, it's the most likely integration headache.
+- Hosting: GitHub Pages can't run the API — host it separately (Azure App Service free tier, Fly.io, Render). **The database half is settled** (Azure SQL free offer, provisioned above); only the API host is still open. Cross-site cookies (gh-pages frontend → API domain) require `SameSite=None; Secure` and exact CORS origin configuration — verify early, it's the most likely integration headache.
 - Whether flagged comments start hidden or visible.
 - Admin surface: bare endpoints + REST client is enough, or a tiny hidden admin page.
 

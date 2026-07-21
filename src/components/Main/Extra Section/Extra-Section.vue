@@ -13,31 +13,50 @@
 
     <div class="ex-grid">
 
-      <!-- LEFT · comments layout (skeleton, no backend yet) -->
+      <!-- LEFT · comments (live, backed by the comments API) -->
       <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments" caption="one message per visitor · stored for everyone">
         <template #label>01 · COMMENTS</template>
         <div class="ex-comment-list">
-          <div v-for="c in PLACEHOLDER_COMMENTS" :key="c.name" class="ex-comment">
-            <div class="ex-comment-avatar">{{ c.name.charAt(0) }}</div>
+          <div v-if="isCommentsLoaded && comments.length === 0" class="ex-comment">
+            <div class="ex-comment-avatar">?</div>
             <div class="ex-comment-body">
               <div class="ex-comment-meta">
-                <span class="ex-comment-name">{{ c.name }}</span>
-                <span class="ex-comment-date">{{ c.date }}</span>
+                <span class="ex-comment-name">Nobody yet</span>
               </div>
-              <div class="ex-comment-text">{{ c.text }}</div>
+              <div class="ex-comment-text">Be the first to leave a message.</div>
+            </div>
+          </div>
+          <div v-for="comment in comments" :key="comment.id" class="ex-comment">
+            <div class="ex-comment-avatar">{{ comment.name.charAt(0).toUpperCase() }}</div>
+            <div class="ex-comment-body">
+              <div class="ex-comment-meta">
+                <span class="ex-comment-name">{{ comment.name }}</span>
+                <span class="ex-comment-date">{{ formatCommentDate(comment.createdAtUtc) }}</span>
+              </div>
+              <div class="ex-comment-text">{{ comment.text }}</div>
             </div>
           </div>
         </div>
         <div class="ex-comment-input">
+          <input
+            v-model="draftName"
+            class="ex-input ex-input-name"
+            type="text"
+            maxlength="40"
+            placeholder="Name"
+            :disabled="hasPosted"
+          />
           <textarea
+            v-model="draftText"
             class="ex-input"
             rows="2"
             maxlength="280"
-            placeholder="Leave a message… (coming soon)"
-            disabled
+            :placeholder="hasPosted ? 'You already left your message.' : 'Leave a message…'"
+            :disabled="hasPosted"
           ></textarea>
-          <MagneticButton type="button" class="ex-send-wrap" :zone="16" :disabled="true">SEND</MagneticButton>
+          <MagneticButton type="button" class="ex-send-wrap" :zone="16" :disabled="!canSend" @click="handleSend">SEND</MagneticButton>
         </div>
+        <div v-if="submitFeedback" class="ex-submit-feedback">{{ submitFeedback }}</div>
       </ModuleDisplay>
 
       <!-- RIGHT · contacts (existing container, repositioned into the panel) -->
@@ -108,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, ref } from 'vue'
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
   import { gsap } from 'gsap'
   import { currentSection } from '@modules/sectionsCore'
   import { getSectionIndexById } from '@modules/sectionLookup'
@@ -119,17 +138,38 @@
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import LogsContact from '@components/Main/Logs Section/Contact.vue'
   import DraggableSheet from '@components/Misc/Draggable-Sheet.vue'
+  import { comments, isCommentsLoaded, loadComments, ownComment, submitComment, submitState } from '@modules/extraComments'
 
   const EXTRA_LABELS = [
     { text: 'IMPRESSED? // SAY_HI!', pos: { top: '5%', left: '4%' }, stretch: true },
     { text: 'LEGAL BELOW', pos: { bottom: '5%', right: '4%' } },
   ]
 
-  const PLACEHOLDER_COMMENTS = [
-    { name: 'Visitor', date: '··/··/····', text: 'Comments will live here once the backend lands.' },
-    { name: 'Someone', date: '··/··/····', text: 'One message per visitor, shown to everyone after.' },
-    { name: 'You?', date: 'soon', text: 'This slot is waiting for a real database row.' },
-  ]
+  const draftName = ref('')
+  const draftText = ref('')
+
+  const hasPosted = computed(() => ownComment.value !== null)
+  const canSend = computed(() =>
+    !hasPosted.value && submitState.value !== 'sending' && draftName.value.trim() !== '' && draftText.value.trim() !== '')
+
+  const submitFeedback = computed(() => {
+    switch (submitState.value) {
+      case 'sent': return 'Message saved — thanks!'
+      case 'alreadyPosted': return 'You already have a comment.'
+      case 'rateLimited': return 'Too many attempts — try again in a few minutes.'
+      case 'error': return 'Could not reach the guestbook. Try again later.'
+      default: return ''
+    }
+  })
+
+  function formatCommentDate(isoDate: string) {
+    return new Date(isoDate).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
+  async function handleSend() {
+    if (!canSend.value) return
+    await submitComment(draftName.value.trim(), draftText.value.trim())
+  }
 
   const rootRef = ref<HTMLElement | null>(null)
   const eyebrowRef = ref<HTMLElement | null>(null)
@@ -169,6 +209,7 @@
       else if (meta.isEnteringSection(extraIndex)) playReveal()
     })
     if (currentSection.value === extraIndex) playReveal()
+    loadComments()
   })
 
   onBeforeUnmount(() => {
@@ -234,7 +275,7 @@
   .ex-comment-list {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -318,6 +359,18 @@
     &:disabled { cursor: not-allowed; }
   }
 
+  .ex-input-name {
+    flex: 0 0 22%;
+    align-self: stretch;
+  }
+
+  .ex-submit-feedback {
+    padding: 0 16px 12px;
+    font-family: 'Mono';
+    font-size: 11px;
+    color: #f09b3a;
+  }
+
   .ex-send-wrap {
     align-self: stretch;
 
@@ -330,8 +383,9 @@
       color: #0e0e0e;
       background: #f09b3a;
       border-radius: 6px;
-      opacity: 0.35;
     }
+
+    &:has(:disabled) :deep(.mag-btn) { opacity: 0.35; }
   }
 
   // ── contact panel: re-anchor the existing container inside the panel ──

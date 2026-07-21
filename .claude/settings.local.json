@@ -10,7 +10,9 @@
       "Bash(DOTCLAUDE_FINGERPRINT=1 .claude/hooks/session-start.sh)",
       "Bash(echo \"exit=$?\")",
       "PowerShell(jq *)",
-      "PowerShell(npm run typecheck)"
+      "PowerShell(npm run typecheck)",
+      "Bash(dotnet --list-sdks)",
+      "Bash(az account *)"
     ]
   }
 }

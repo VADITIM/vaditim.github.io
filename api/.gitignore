@@ -1,0 +1,5 @@
+bin/
+obj/
+comments.db
+comments.db-*
+appsettings.Production.json
