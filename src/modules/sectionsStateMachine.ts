@@ -14,15 +14,15 @@ export type SectionTransitionMeta = {
 	previous: number;
 	direction: SectionDirection;
 	/** True when this section is now the active one (and wasn't before). */
-	isEnteringSection: (i: number) => boolean;
+	isEnteringSection: (index: number) => boolean;
 	/** True when this section was active and is no longer. */
-	isLeavingSection: (i: number) => boolean;
+	isLeavingSection: (index: number) => boolean;
 	/** True when this was the previous section. */
-	isFromSection: (i: number) => boolean;
+	isFromSection: (index: number) => boolean;
 	/** True when this is the current section. */
-	isToSection: (i: number) => boolean;
+	isToSection: (index: number) => boolean;
 	/** True when the section sits between previous and current but is neither (was skipped). */
-	isSkippingSection: (i: number) => boolean;
+	isSkippingSection: (index: number) => boolean;
 };
 
 export function buildTransitionMeta(
@@ -34,15 +34,15 @@ export function buildTransitionMeta(
 		current,
 		previous,
 		direction,
-		isEnteringSection: (i) => current === i && previous !== i,
-		isLeavingSection: (i) => previous === i && current !== i,
-		isFromSection: (i) => previous === i,
-		isToSection: (i) => current === i,
-		isSkippingSection: (i) => {
-			if (current === i || previous === i) return false;
-			const lo = Math.min(current, previous);
-			const hi = Math.max(current, previous);
-			return lo < i && i < hi;
+		isEnteringSection: (index) => current === index && previous !== index,
+		isLeavingSection: (index) => previous === index && current !== index,
+		isFromSection: (index) => previous === index,
+		isToSection: (index) => current === index,
+		isSkippingSection: (index) => {
+			if (current === index || previous === index) return false;
+			const lowest = Math.min(current, previous);
+			const highest = Math.max(current, previous);
+			return lowest < index && index < highest;
 		},
 	};
 }

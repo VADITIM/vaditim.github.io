@@ -16,7 +16,7 @@ Because the serverless tier auto-pauses, `UseSqlServer` sets `EnableRetryOnFailu
 
 **Local config:** connection string lives in .NET user secrets (`ConnectionStrings:CommentsDb`), never in the repo. Run against Azure with `DbProvider=SqlServer dotnet run`; omit it to use local SQLite. Note `Properties/launchSettings.json` overrides `ASPNETCORE_URLS`, so `dotnet run` listens on 5282 regardless of that variable.
 
-**Remaining:** API hosting (App Service still blocked on the compute quota below), production secrets (`IpHashSalt`, `AdminApiKey`), CORS `FrontendOrigin` for the gh-pages origin, and the two open decisions below. Flagged comments currently start **visible** (`IsHidden: false`) — provisional, pending the decision below.
+**Remaining:** production secrets (`IpHashSalt`, `AdminApiKey`), CORS `FrontendOrigin` for the gh-pages origin, the one-time migration baseline insert (see the migration note below), and the two open decisions below. Flagged comments currently start **visible** (`IsHidden: false`) — provisional, pending the decision below. Hosting is settled: Azure Container Apps, see [`api/DEPLOY.md`](api/DEPLOY.md).
 
 Build a comments feature backed by a database so visitors can leave a message that persists and is shown to future visitors. **One comment per visitor, no real authentication** — enforced by layering several weak identity signals instead of one strong one, sized for a small portfolio (deter casual double-posting, flag the determined cases for manual review; not social-media-grade security).
 
@@ -86,7 +86,15 @@ Open questions:
 - Whether flagged comments start hidden or visible.
 - Admin surface: bare endpoints + REST client is enough, or a tiny hidden admin page.
 
-### Extra Section — edit your comment once
+### Extra Section — edit your comment once — DONE (2026-07-22)
+
+Frontend: the SEND button becomes EDIT once a comment exists and SAVE while the one permitted edit
+is open (`commentAction` in `Extra-Section.vue`); the inputs stay disabled otherwise. Backend:
+`Comment.EditCount`, capped at one in `PUT /comments/mine` with the layered identity lookup, 409 on
+a second attempt; `CommentOutput.CanEdit` carries the remaining-edit state. Identity prefetch fires
+from `OnExploreClick`. `POST /visitor/session` replaced the three separate lookups.
+
+Original plan below, kept for the reasoning.
 
 A visitor who has posted may edit their name and message **exactly once**.
 
@@ -100,7 +108,16 @@ One request, not three: `POST /visitor/session` takes the full + coarse fingerpr
 
 **Caveat:** a *different device* is the one case the coarse fingerprint cannot honestly match — a phone and a desktop share no screen metrics, DPR or core count. Cross-device leaves only the cookie (per-browser) and the IP hash (shared by the whole network, so never a match on its own). "Always unlocked elsewhere" holds for another browser on the same machine and for the same browser after a data wipe, not for a genuinely new device; rescan stays the fallback. Where identity resolves only via the weak path, show an empty form rather than pre-filling what might be someone else's name and message.
 
-### Extra Section — RATING module (backed by a database)
+### Extra Section — RATING module (backed by a database) — DONE (2026-07-22)
+
+`Rating` entity, `GET /ratings/summary`, `GET /ratings/mine`, `POST /ratings` (upsert, 1–5, new
+`post-ratings` policy) and `src/modules/extraRating.ts` all landed. The stars show the visitor's own
+pick, the readout shows the community average with the vote count beside it. `computeFingerprint`
+moved to the shared `visitorFingerprint.ts`, which also supplies `computeCoarseFingerprint`.
+Deviation from the plan below: `Rating` also carries `CoarseFingerprintHash`, so all three tables
+answer the same layered lookup rather than three subtly different ones.
+
+Original plan below, kept for the reasoning.
 
 **Progress (2026-07-22): frontend done, backend not started.** The Extra section was re-laid out into three modules — `01 · COMMENTS` / `02 · RATING` / `03 · CONTACT` on a `50fr 30fr 20fr` grid. The rating module renders a vertical star column (5 at the top, fill grows upwards) filled with a shared SVG gradient in the section colour; hover previews, click commits. The pick currently lives in a local `ref` in `Extra-Section.vue` marked with a `TODO(vaditim)` — nothing is persisted and no average is shown yet.
 
@@ -119,6 +136,19 @@ Also landed with it: posted comments slide in from the panel's left edge (GSAP h
 **Trap:** `db.Database.EnsureCreated()` in `Program.cs` does **not** add tables to a database that already exists. The Azure SQL database is already created with `Comments`, so a new `Ratings` entity will not appear on its own — this needs an explicit migration step (see the shared note at the bottom of the Classified task).
 
 ### Classified Section — QR code unlock (realtime)
+
+**Status: DONE (2026-07-22).** Step 5 landed: the confirm button leaves on its own beat ahead of
+the card, and `confirmClassifiedUnlock()` — not the hub push — is what activates the section, so
+the nav entry arrives as the reward for the press. On desktop the entry slides in from beyond the
+right edge through a `--enter-x` custom property the windowed layout composes into its transform
+(a plain GSAP `x` tween fought it); the layout's own transform transition is suspended for the
+tween via `.is-entering`. Persistence landed too: `VisitorUnlock`, the one-time claim token minted
+in `UnlockSessionStore` and pushed to the desktop, `POST /unlock/claim`, and the lookup folded into
+`POST /visitor/session` rather than a separate `/unlock/mine` ("one request, not three").
+`DELETE /visitor` drops the unlock row. Verified end-to-end against a local run: replayed scan 404,
+replayed token 401, cross-browser inherit, and a clean first visit after DELETE.
+
+Original notes below, kept for the reasoning.
 
 **Status: unlock mechanic implemented; nav/section-registration half still open.** Hosting is settled (Azure Container Apps, shared with the comments API — App Service was abandoned after the new-subscription VM quota block). The realtime channel is live: `UnlockHub` + `POST /unlock/{sessionId}` in `api/Unlock/`, client in `src/modules/classifiedUnlockSession.ts`, phone splash in `Unlock-Scan-Splash.vue`. Session flow, TTL, single-use claiming and the single-replica constraint are documented in [`api/DEPLOY.md`](api/DEPLOY.md).
 
@@ -149,6 +179,18 @@ That coarse hash is deliberately weak, so it must **never** match alone — requ
 **Entity:** `VisitorUnlock` — `Id`, `VisitorId`, `FingerprintHash`, `CoarseFingerprintHash`, `IpHash`, `UnlockedAtUtc`. Unique index on `VisitorId`; indexes on `FingerprintHash` and `CoarseFingerprintHash`.
 
 **Also:** `DELETE /visitor` must delete the unlock row too, or "DELETE DATA" clears local storage and the server immediately re-unlocks on the next lookup — which would break the only practical way to re-test the QR flow (`visitorDataReset.ts`). Rate-limit both new endpoints under the existing `unlock` policy.
+
+#### Shared migration note — RESOLVED (2026-07-22)
+
+Migrations won. `api/Migrations/` holds `InitialCreate` (the existing `Comments` shape) and
+`AddRatingsAndVisitorUnlocks` (the delta), and `Program.cs` calls `Migrate()` when
+`DbProvider=SqlServer`. Local SQLite keeps `EnsureCreated()` — migrations are provider-specific and
+the dev database is disposable; delete `api/comments.db` to pick up a schema change. The hosted
+database still needs **one manual baseline insert** into `__EFMigrationsHistory` before the next
+deploy, or `Migrate()` will try to re-create `Comments`; the exact SQL is in
+[`api/DEPLOY.md`](api/DEPLOY.md) § "Baseline the existing database for migrations".
+
+Original note below.
 
 #### Shared migration note
 
@@ -188,7 +230,24 @@ A hidden section unlocked by scanning a QR code displayed on the desktop page. T
 - Whether unlock also triggers anything ambient (background shift, sound, nav glint) beyond the module + new entry.
 - SignalR vs. plain WebSockets/SSE if the comments backend ends up not being ASP.NET.
 
-### `prefers-reduced-motion` support
+### `prefers-reduced-motion` support — DONE (2026-07-22)
+
+`src/modules/miscReducedMotion.ts`. Rather than branching in every handler, GSAP is collapsed at
+the root: `gsap.globalTimeline.timeScale(120)`, so every tween still reaches its end state (nothing
+is stranded off-screen) but the travel is over within a frame — delays included, so the section
+enter gate stops holding content back. The two carve-outs use `keepFullMotion()`, whose reciprocal
+timeScale restores real time for one animation: the Perks name typewriter (`playType`, and the
+plane tweens in `Name.vue`) and the Projects `01 · NOW SHOWING` / `02 · GENRE` /
+`03 · DESCRIPTION` reveals and leaves — including the `delayedCall` that sequences the label swap
+behind the leave, or a collapsed delay against a real-time leave would swap text still on screen.
+
+The section transitioner returns early instead of collapsing: six bars sweeping in one frame is the
+exact strobe the preference exists to avoid. Same reasoning for the endless ambient loops, which
+are skipped rather than sped up — floating elements, the logs cube bob and idle spin, the sandbox
+pull field, the perk crystal's base rotation, and the typewriter caret blink (a 0.45s blink at 120×
+is a 133 Hz strobe).
+
+Original spec below.
 
 Site-wide reduced-motion mode, gated on the `prefers-reduced-motion: reduce` media query. When active:
 
@@ -214,18 +273,29 @@ Remaining follow-ups:
 
 ## Current Ideas
 
-- **Projects section:** when switching projects, the helix should ripple itself from a random position on its strand in all directions.
-- **Landing section:** keypress listener for "S" — pressed twice, the whole Loading section is skipped: only its leave animation plays; all timelines stop wherever they are. (Debugging aid.)
+Both shipped (2026-07-22) — they were already in the tree when the backlog was swept:
+
+- ~~**Projects section:** when switching projects, the helix should ripple itself from a random position on its strand in all directions.~~ `rippleProjectHelix()` in `miscProjectHelixCanvas.ts`, called from `centerOn`.
+- ~~**Landing section:** keypress listener for "S" — pressed twice, the whole Loading section is skipped.~~ `handleSkipKeydown` in `Start-Section.vue`.
 
 ## Known Issues
 
-- Projects section: Module-Displays in Module-Display-Projects are not parallax.
-- Projects section: Module-Display border hover should be the section main color.
-- Projects section: Project-Name in Module-Display-Project-Info doesn't properly play its leave animation before showing new content. Uncouple Module-Display-Projects animation from Project-Name leave animation — two separate animations handling their data differently. Project-Name always plays its leave animation before showing new content, no matter how fast projects are cycled; before playing enter, check the current project and use its data (don't queue animations).
-- Landing page & Section-Cover-Slices should not use border-radius.
-- Landing page: "Greetings User" shows first, stays 1s, plays its leave animation; wait 0.35s, then "Explore your experience" plays and stays 1s. Both labels share the same position (cycled). Then proceed with the normal timeline.
+All cleared 2026-07-22:
 
-
+- ~~Projects section: Module-Displays in Module-Display-Projects are not parallax.~~ `ModuleDisplay`'s base `overflow: hidden` forces `transform-style` back to `flat`, which was collapsing every nested `translateZ`. `.proj-card-module` now opts out, and `.module-display-content` carries `preserve-3d` so the 3D chain is unbroken from card to nested module.
+- ~~Projects section: Module-Display border hover should be the section main color.~~ `--accent` now defaults to `var(--section-color)` (App.vue keeps that pointed at the active section) instead of a hardcoded green, so nested modules that pass no `accent` stop glowing green inside a red section; the border picks it up on hover.
+- ~~Projects section: Project-Name doesn't play its leave animation before showing new content.~~ Already resolved by the `labelRequestToken` sequencing in `centerOn` — the fan moves immediately, the labels run leave → swap → enter as one strict cycle, and a superseded cycle bails instead of queueing. Verified, no change needed.
+- ~~Landing page & Section-Cover-Slices should not use border-radius.~~ Root cause was the global `*, *::before, *::after { border-radius: var(--squircle) }` in `style.scss`, not any local rule; both now opt out explicitly. The mobile-only `30px` corners on the slices were dropped too.
+- ~~Landing page greeting timing.~~ `hold` 0.5s → 1s and `gap` 0.175s → 0.35s in `PlayEnterAnimation`. The copy still reads "Enjoy your experience!" rather than "Explore your experience" — that looked like a paraphrase in the issue, not a requested copy change; say the word and it flips.
 
 ## Code Inconsistencies
-Scan the entire codebase and replace all abbreviations with full names.
+
+Swept 2026-07-22. A codemod expanded `btn` / `el` / `els` / `evt` / `idx` / `tl` / `prev` / `ctx` /
+`dur` across 20 files (word-bounded so hyphenated CSS class names like `.sandbox-tl` and `.mag-btn`
+were never touched), then single-letter locals were expanded by hand in every module and in
+Navigator, Magnetic-Dots, Magnetic-Button, Module-Display, Cubes, Projects-Section,
+Project-Detail-Window and Sandbox-Section. Typecheck and build clean after each pass.
+
+Deliberately kept: vector components in the physics and canvas maths (`dx`/`dy`, `nx`/`ny`, `x`/`y`)
+— they are the domain's own notation, and `deltaXPosition` reads worse, not better. `api/` was
+already free of abbreviations.

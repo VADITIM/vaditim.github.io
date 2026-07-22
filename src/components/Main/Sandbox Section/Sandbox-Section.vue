@@ -113,7 +113,7 @@
   let magResetTimer = 0
 
   // ── particle physics state ──
-  type Shape = { el: HTMLElement; r: number; x: number; y: number; vx: number; vy: number; rot: number; vr: number }
+  type Shape = { element: HTMLElement; r: number; x: number; y: number; vx: number; vy: number; rot: number; vr: number }
   const PARTICLE_COUNT = 8
   const PARTICLE_MIN = 3
   const PARTICLE_MAX = 30
@@ -138,11 +138,11 @@
   // ── kickable title physics (no gravity) ──
   // Each glyph stores its top-left position (x,y) in section-space, velocity,
   // measured size (w,h) and "home" slot (hx,hy) it animates into on enter.
-  type Glyph = { el: HTMLElement; w: number; h: number; x: number; y: number; vx: number; vy: number; rot: number; vr: number; hx: number; hy: number }
+  type Glyph = { element: HTMLElement; w: number; h: number; x: number; y: number; vx: number; vy: number; rot: number; vr: number; hx: number; hy: number }
   // A corner background-slice's diagonal edge, as a bumper: p1→p2 is the
   // hypotenuse (section-space), n is the unit normal pointing INTO the solid
   // (colored) triangle so collision math has one consistent sign convention.
-  type Bumper = { p1x: number; p1y: number; p2x: number; p2y: number; nx: number; ny: number; l: number; t: number; r: number; b: number; el: HTMLElement }
+  type Bumper = { p1x: number; p1y: number; p2x: number; p2y: number; nx: number; ny: number; l: number; t: number; r: number; b: number; element: HTMLElement }
   let glyphs: Glyph[] = []
   let glyphBumpers: Bumper[] = []
   const BUMPER_KICK = 2.2              // pinball bumpers add a strong energy kick, unlike a plain wall bounce (G_REST)
@@ -150,19 +150,19 @@
   // Each corner's hypotenuse endpoints (as l/t/r/b box corners) and the
   // right-angle vertex on the solid side, derived from that slice's clip-path
   // polygon in Section-Cover-Slice.vue.
-  type Corner = 'tl' | 'tr' | 'bl' | 'br'
+  type Corner = 'timeline' | 'tr' | 'bl' | 'br'
   const CORNER_BUMPER_DEFS: Array<{ selector: string; hypo: [Corner, Corner]; solid: Corner }> = [
-    { selector: '.sandbox-tl', hypo: ['tr', 'bl'], solid: 'tl' },
-    { selector: '.sandbox-tr', hypo: ['tl', 'br'], solid: 'tr' },
-    { selector: '.sandbox-bl', hypo: ['tl', 'br'], solid: 'bl' },
+    { selector: '.sandbox-tl', hypo: ['tr', 'bl'], solid: 'timeline' },
+    { selector: '.sandbox-tr', hypo: ['timeline', 'br'], solid: 'tr' },
+    { selector: '.sandbox-bl', hypo: ['timeline', 'br'], solid: 'bl' },
     { selector: '.sandbox-br', hypo: ['tr', 'bl'], solid: 'br' },
   ]
   // Resolved slice elements (the DOM lives in the global Section-Cover-Slice
   // layer, not this component), cached so the per-frame re-measure doesn't
   // re-query the document.
-  let cornerSlices: Array<{ el: HTMLElement; hypo: [Corner, Corner]; solid: Corner }> = []
+  let cornerSlices: Array<{ element: HTMLElement; hypo: [Corner, Corner]; solid: Corner }> = []
   let glyphsReleased = false          // physics only runs once the title has landed
-  const gPtr = { x: -9999, y: -9999, px: -9999, py: -9999 }
+  const glyphPointer = { x: -9999, y: -9999, px: -9999, py: -9999 }
   const G_DRIFT = 0.94                // near-frictionless space, no gravity; drifts to rest
   const G_REST = 0.72                 // energy kept after a bounce
   const G_MAXV = 46                   // velocity clamp so a fast flick can't fling letters off-screen
@@ -173,7 +173,7 @@
 
   // Treat each glyph as a circle for inter-glyph and cursor response so they roll
   // off one another cleanly instead of catching on rectangular corners.
-  function glyphRadius(g: Glyph) { return (g.w + g.h) / 4 }
+  function glyphRadius(glyph: Glyph) { return (glyph.w + glyph.h) / 4 }
 
   // ── cleanup bookkeeping ──
   const listeners: Array<() => void> = []
@@ -186,8 +186,8 @@
 
   // ── magnetic button impact (extra function appended to the base MagneticButton) ──
   function onHitMeClick() {
-    const btn = magBtnCompRef.value?.el
-    if (!btn) return
+    const button = magBtnCompRef.value?.element
+    if (!button) return
 
     clearTimeout(magResetTimer)
     magCombo++
@@ -198,28 +198,28 @@
     magGrowth += remaining * 0.22
     if (MAG_MAX_SCALE - magGrowth < 0.05) magGrowth = MAG_MAX_SCALE
 
-    gsap.killTweensOf(btn, 'scale,rotation,skewX,skewY,backgroundColor,boxShadow')
+    gsap.killTweensOf(button, 'scale,rotation,skewX,skewY,backgroundColor,boxShadow')
 
     const kick = 3 + Math.min(magCombo, 5)
     const dir = magCombo % 2 === 0 ? 1 : -1
     const hit = gsap.timeline({ overwrite: 'auto' })
-    hit.to(btn, { scale: magGrowth, duration: 0.12, ease: 'back.out(2)' }, 0)
-    hit.to(btn, { scale: Math.max(1, magGrowth - 0.12), duration: 0.35, ease: 'power2.in' }, 0.16)
-    hit.to(btn, { rotation: -dir * kick, skewX: -dir * kick * 0.6, skewY: dir * kick * 0.3, duration: 0.04, ease: 'power1.out' }, 0)
-    hit.to(btn, { rotation: dir * kick * 0.8, skewX: dir * kick * 0.5, skewY: -dir * kick * 0.25, duration: 0.05, ease: 'power1.inOut' }, 0.04)
-    hit.to(btn, { rotation: dir * kick * 0.5, skewX: dir * kick * 0.3, skewY: -dir * kick * 0.15, duration: 0.08, ease: 'power2.out' }, 0.09)
+    hit.to(button, { scale: magGrowth, duration: 0.12, ease: 'back.out(2)' }, 0)
+    hit.to(button, { scale: Math.max(1, magGrowth - 0.12), duration: 0.35, ease: 'power2.in' }, 0.16)
+    hit.to(button, { rotation: -dir * kick, skewX: -dir * kick * 0.6, skewY: dir * kick * 0.3, duration: 0.04, ease: 'power1.out' }, 0)
+    hit.to(button, { rotation: dir * kick * 0.8, skewX: dir * kick * 0.5, skewY: -dir * kick * 0.25, duration: 0.05, ease: 'power1.inOut' }, 0.04)
+    hit.to(button, { rotation: dir * kick * 0.5, skewX: dir * kick * 0.3, skewY: -dir * kick * 0.15, duration: 0.08, ease: 'power2.out' }, 0.09)
 
     if (magGrowth >= MAG_MAX_SCALE) {
-      hit.set(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 24px 6px rgba(255,43,43,0.85)' }, 0)
-      hit.to(btn, { backgroundColor: '#ff2b2b', boxShadow: '0 0 32px 10px rgba(255,43,43,0.95)', duration: 0.12, ease: 'power2.out', repeat: 1, yoyo: true }, 0)
-      hit.to(btn, { backgroundColor: '#5bfd5b', boxShadow: '0 0 0 0 rgba(255,43,43,0)', duration: 0.4, ease: 'power2.out' }, 0.24)
+      hit.set(button, { backgroundColor: '#ff2b2b', boxShadow: '0 0 24px 6px rgba(255,43,43,0.85)' }, 0)
+      hit.to(button, { backgroundColor: '#ff2b2b', boxShadow: '0 0 32px 10px rgba(255,43,43,0.95)', duration: 0.12, ease: 'power2.out', repeat: 1, yoyo: true }, 0)
+      hit.to(button, { backgroundColor: '#5bfd5b', boxShadow: '0 0 0 0 rgba(255,43,43,0)', duration: 0.4, ease: 'power2.out' }, 0.24)
     }
 
     magResetTimer = window.setTimeout(() => {
       magCombo = 0
       magGrowth = 1
       magClicks.value = 0
-      gsap.to(btn, { scale: 1, rotation: 0, skewX: 0, skewY: 0, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
+      gsap.to(button, { scale: 1, rotation: 0, skewX: 0, skewY: 0, duration: 0.4, ease: 'power2.out', overwrite: 'auto' })
       gsap.to(magCountRef.value, { opacity: 0.4, duration: 0.3, overwrite: 'auto', onComplete: () => { gsap.to(magCountRef.value, { opacity: 1, duration: 0.3 }) } })
     }, MAG_RESET_MS)
   }
@@ -227,16 +227,16 @@
   // ── hover-focus list (overwrite:'auto' everywhere so fast toggling never glitches) ──
   function initList() {
     listItemRefs.value.forEach((item) => {
-      const txt = item.querySelector<HTMLElement>('.mi-txt')
+      const label = item.querySelector<HTMLElement>('.mi-txt')
       const ul = item.querySelector<HTMLElement>('.mi-ul')
       on(item, 'mouseenter', () => {
         gsap.to(item, { color: '#fff', duration: 0.3, overwrite: 'auto' })
-        gsap.to(txt, { x: 16, scale: 1.08, duration: 0.45, ease: 'back.out(2.5)', transformOrigin: 'left center', overwrite: 'auto' })
+        gsap.to(label, { x: 16, scale: 1.08, duration: 0.45, ease: 'back.out(2.5)', transformOrigin: 'left center', overwrite: 'auto' })
         gsap.to(ul, { scaleX: 1, transformOrigin: 'left center', duration: 0.45, ease: 'power3.out', overwrite: 'auto' })
       })
       on(item, 'mouseleave', () => {
         gsap.to(item, { color: '#777', duration: 0.3, overwrite: 'auto' })
-        gsap.to(txt, { x: 0, scale: 1, duration: 0.4, ease: 'power3.out', overwrite: 'auto' })
+        gsap.to(label, { x: 0, scale: 1, duration: 0.4, ease: 'power3.out', overwrite: 'auto' })
         gsap.to(ul, { scaleX: 0, transformOrigin: 'left center', duration: 0.3, ease: 'power3.in', overwrite: 'auto' })
       })
     })
@@ -250,11 +250,11 @@
   watch(isClassifiedUnlocked, (isUnlocked) => setTiltFace(isUnlocked, true))
 
   function setTiltFace(isUnlocked: boolean, isAnimated: boolean) {
-    const qr = qrRef.value, wow = wowRef.value
-    if (!qr || !wow) return
+    const qrCode = qrRef.value, wowLabel = wowRef.value
+    if (!qrCode || !wowLabel) return
 
-    const incoming = isUnlocked ? wow : qr
-    const outgoing = isUnlocked ? qr : wow
+    const incoming = isUnlocked ? wowLabel : qrCode
+    const outgoing = isUnlocked ? qrCode : wowLabel
 
     if (!isAnimated) {
       gsap.set(incoming, { ...FACE_BASE, opacity: 1, scale: 1 })
@@ -278,62 +278,62 @@
     // known starting point and doesn't trigger a scale glitch from reading the
     // browser's computed CSS with no prior GSAP _gsap data on the element.
     gsap.set(card, { rotationX: 0, rotationY: 0, transformPerspective: 900 })
-    on(wrap, 'mousemove', (e) => {
-      const ev = e as MouseEvent
-      const r = wrap.getBoundingClientRect()
-      const px = (ev.clientX - (r.left + r.width / 2)) / (r.width / 2)
-      const py = (ev.clientY - (r.top + r.height / 2)) / (r.height / 2)
-      gsap.to(card, { rotationY: px * 16, rotationX: -py * 16, duration: 0.4, ease: 'power3.out', transformPerspective: 900, overwrite: 'auto' })
+    on(wrap, 'mousemove', (event) => {
+      const mouseEvent = event as MouseEvent
+      const bounds = wrap.getBoundingClientRect()
+      const pointerX = (mouseEvent.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2)
+      const pointerY = (mouseEvent.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2)
+      gsap.to(card, { rotationY: pointerX * 16, rotationX: -pointerY * 16, duration: 0.4, ease: 'power3.out', transformPerspective: 900, overwrite: 'auto' })
     })
     on(wrap, 'mouseleave', () => gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1,0.4)', overwrite: 'auto' }))
   }
 
   // ── zero-g particles ──
-  function createShape(cont: HTMLElement, i: number): Shape {
-    const r = 9 + Math.random() * 14
-    const type = i % 3 // 0 circle, 1 square, 2 triangle
-    const col = PARTICLE_COLORS[i % PARTICLE_COLORS.length]
-    const el = document.createElement('div')
-    let css = `position:absolute;left:0;top:0;width:${r * 2}px;height:${r * 2}px;will-change:transform;pointer-events:none;`
-    if (type === 0) css += `border-radius:50%;background:${col};`
-    else if (type === 1) css += `border-radius:4px;background:${col};`
-    else css += `background:${col};clip-path:polygon(50% 0,100% 100%,0 100%);`
-    el.style.cssText = css
-    cont.appendChild(el)
-    const rect = cont.getBoundingClientRect()
-    const x = r + Math.random() * Math.max(1, rect.width - 2 * r)
-    const y = r + Math.random() * Math.max(1, rect.height - 2 * r)
-    const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 1.2
-    return { el, r, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, rot: Math.random() * 360, vr: (Math.random() - 0.5) * 8 }
+  function createShape(container: HTMLElement, shapeIndex: number): Shape {
+    const radius = 9 + Math.random() * 14
+    const type = shapeIndex % 3 // 0 circle, 1 square, 2 triangle
+    const color = PARTICLE_COLORS[shapeIndex % PARTICLE_COLORS.length]
+    const element = document.createElement('div')
+    let style = `position:absolute;left:0;top:0;width:${radius * 2}px;height:${radius * 2}px;will-change:transform;pointer-events:none;`
+    if (type === 0) style += `border-radius:50%;background:${color};`
+    else if (type === 1) style += `border-radius:4px;background:${color};`
+    else style += `background:${color};clip-path:polygon(50% 0,100% 100%,0 100%);`
+    element.style.cssText = style
+    container.appendChild(element)
+    const bounds = container.getBoundingClientRect()
+    const x = radius + Math.random() * Math.max(1, bounds.width - 2 * radius)
+    const y = radius + Math.random() * Math.max(1, bounds.height - 2 * radius)
+    const angle = Math.random() * Math.PI * 2, speed = 0.6 + Math.random() * 1.2
+    return { element, r: radius, x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, rot: Math.random() * 360, vr: (Math.random() - 0.5) * 8 }
   }
 
   function addParticle() {
-    const cont = gravRef.value
-    if (!cont || shapes.length >= PARTICLE_MAX) return
-    shapes.push(createShape(cont, shapes.length))
+    const container = gravRef.value
+    if (!container || shapes.length >= PARTICLE_MAX) return
+    shapes.push(createShape(container, shapes.length))
   }
 
   function removeParticle() {
     if (shapes.length <= PARTICLE_MIN) return
-    const s = shapes.pop()
-    s?.el.remove()
+    const removed = shapes.pop()
+    removed?.element.remove()
   }
 
   function initParticles() {
-    const cont = gravRef.value
-    if (!cont) return
+    const container = gravRef.value
+    if (!container) return
     shapes = []
-    for (let i = 0; i < PARTICLE_COUNT; i++) shapes.push(createShape(cont, i))
+    for (let index = 0; index < PARTICLE_COUNT; index++) shapes.push(createShape(container, index))
 
-    buildPullField(cont)
+    buildPullField(container)
 
-    on(window, 'mousemove', (e) => {
-      const ev = e as MouseEvent
-      const r = cont.getBoundingClientRect()
-      pointer.x = ev.clientX - r.left
-      pointer.y = ev.clientY - r.top
+    on(window, 'mousemove', (event) => {
+      const mouseEvent = event as MouseEvent
+      const bounds = container.getBoundingClientRect()
+      pointer.x = mouseEvent.clientX - bounds.left
+      pointer.y = mouseEvent.clientY - bounds.top
     })
-    on(cont, 'mousedown', () => { pointer.down = true; showPullField() })
+    on(container, 'mousedown', () => { pointer.down = true; showPullField() })
     on(window, 'mouseup', () => { if (pointer.down) { hidePullField(); burst(); pointer.down = false } })
   }
 
@@ -343,7 +343,7 @@
   const PULL_RETICLE_R = 52   // outer HUD reticle radius (px)
   const PULL_RING_PERIOD = 1.4
 
-  function buildPullField(cont: HTMLElement) {
+  function buildPullField(container: HTMLElement) {
     const field = document.createElement('div')
     field.style.cssText =
       'position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:2;' +
@@ -379,7 +379,7 @@
       'will-change:transform;'
     field.appendChild(core)
 
-    cont.appendChild(field)
+    container.appendChild(field)
 
     pullField = field
     pullReticle = reticle
@@ -390,7 +390,7 @@
   function showPullField() {
     if (!pullField) return
     pullField.style.transform = `translate(${pointer.x}px,${pointer.y}px)`
-    pullTweens.forEach((t) => t.kill())
+    pullTweens.forEach((tween) => tween.kill())
     pullTweens = []
     gsap.killTweensOf([pullField, pullReticle, pullCore, ...pullRings])
 
@@ -424,7 +424,7 @@
 
   function hidePullField() {
     if (!pullField) return
-    pullTweens.forEach((t) => t.kill())
+    pullTweens.forEach((tween) => tween.kill())
     pullTweens = []
     gsap.killTweensOf([pullReticle, pullCore, ...pullRings])
 
@@ -436,77 +436,77 @@
   }
 
   function resetParticles() {
-    const cont = gravRef.value
-    if (!cont || shapes.length === 0) return
-    const r = cont.getBoundingClientRect()
-    shapes.forEach((s) => {
-      s.x = s.r + Math.random() * (r.width - 2 * s.r)
-      s.y = s.r + Math.random() * (r.height - 2 * s.r)
-      const a = Math.random() * Math.PI * 2, sp = 0.6 + Math.random() * 1.2
-      s.vx = Math.cos(a) * sp
-      s.vy = Math.sin(a) * sp
-      s.rot = Math.random() * 360
+    const container = gravRef.value
+    if (!container || shapes.length === 0) return
+    const bounds = container.getBoundingClientRect()
+    shapes.forEach((shape) => {
+      shape.x = shape.r + Math.random() * (bounds.width - 2 * shape.r)
+      shape.y = shape.r + Math.random() * (bounds.height - 2 * shape.r)
+      const angle = Math.random() * Math.PI * 2, speed = 0.6 + Math.random() * 1.2
+      shape.vx = Math.cos(angle) * speed
+      shape.vy = Math.sin(angle) * speed
+      shape.rot = Math.random() * 360
     })
   }
 
   function burst() {
-    const cont = gravRef.value
-    if (!cont || shapes.length === 0) return
-    const W = cont.getBoundingClientRect().width
-    shapes.forEach((s) => {
-      const dx = s.x - pointer.x, dy = s.y - pointer.y, d = Math.max(Math.hypot(dx, dy), 1)
-      const power = 3 + 9 * (1 - Math.min(d / (W * 0.75), 1))
-      s.vx += (dx / d) * power
-      s.vy += (dy / d) * power - 1
-      s.vr += (Math.random() - 0.5) * 18
+    const container = gravRef.value
+    if (!container || shapes.length === 0) return
+    const containerWidth = container.getBoundingClientRect().width
+    shapes.forEach((shape) => {
+      const dx = shape.x - pointer.x, dy = shape.y - pointer.y, distance = Math.max(Math.hypot(dx, dy), 1)
+      const power = 3 + 9 * (1 - Math.min(distance / (containerWidth * 0.75), 1))
+      shape.vx += (dx / distance) * power
+      shape.vy += (dy / distance) * power - 1
+      shape.vr += (Math.random() - 0.5) * 18
     })
   }
 
   function step() {
-    const cont = gravRef.value
-    if (!cont) return
-    const r = cont.getBoundingClientRect()
-    const W = r.width, H = r.height
-    const inside = pointer.x >= 0 && pointer.x <= W && pointer.y >= 0 && pointer.y <= H
+    const container = gravRef.value
+    if (!container) return
+    const bounds = container.getBoundingClientRect()
+    const containerWidth = bounds.width, containerHeight = bounds.height
+    const inside = pointer.x >= 0 && pointer.x <= containerWidth && pointer.y >= 0 && pointer.y <= containerHeight
     const baseK = pointer.down ? 0.27 : 0 // magnet only while clicking
 
     // keep the pull-field vortex pinned to the cursor while held
     if (pointer.down && pullField) pullField.style.transform = `translate(${pointer.x}px,${pointer.y}px)`
 
-    for (const s of shapes) {
+    for (const shape of shapes) {
       if (inside) {
-        const dx = pointer.x - s.x, dy = pointer.y - s.y, d = Math.max(Math.hypot(dx, dy), 1)
-        const f = baseK * (60 / (60 + d))
-        s.vx += (dx / d) * f
-        s.vy += (dy / d) * f
+        const dx = pointer.x - shape.x, dy = pointer.y - shape.y, distance = Math.max(Math.hypot(dx, dy), 1)
+        const force = baseK * (60 / (60 + distance))
+        shape.vx += (dx / distance) * force
+        shape.vy += (dy / distance) * force
       }
-      s.vx *= DRIFT; s.vy *= DRIFT
-      s.x += s.vx; s.y += s.vy; s.rot += s.vr; s.vr *= 0.99
-      if (s.x < s.r) { s.x = s.r; s.vx = -s.vx * REST }
-      else if (s.x > W - s.r) { s.x = W - s.r; s.vx = -s.vx * REST }
-      if (s.y < s.r) { s.y = s.r; s.vy = -s.vy * REST }
-      else if (s.y > H - s.r) { s.y = H - s.r; s.vy = -s.vy * REST }
+      shape.vx *= DRIFT; shape.vy *= DRIFT
+      shape.x += shape.vx; shape.y += shape.vy; shape.rot += shape.vr; shape.vr *= 0.99
+      if (shape.x < shape.r) { shape.x = shape.r; shape.vx = -shape.vx * REST }
+      else if (shape.x > containerWidth - shape.r) { shape.x = containerWidth - shape.r; shape.vx = -shape.vx * REST }
+      if (shape.y < shape.r) { shape.y = shape.r; shape.vy = -shape.vy * REST }
+      else if (shape.y > containerHeight - shape.r) { shape.y = containerHeight - shape.r; shape.vy = -shape.vy * REST }
     }
 
     // shape-to-shape collisions with energy loss
-    for (let i = 0; i < shapes.length; i++) {
-      for (let j = i + 1; j < shapes.length; j++) {
-        const a = shapes[i], b = shapes[j]
-        const dx = b.x - a.x, dy = b.y - a.y, dist = Math.hypot(dx, dy), min = a.r + b.r
-        if (dist > 0 && dist < min) {
-          const nx = dx / dist, ny = dy / dist, overlap = (min - dist) / 2
-          a.x -= nx * overlap; a.y -= ny * overlap; b.x += nx * overlap; b.y += ny * overlap
-          const rvx = b.vx - a.vx, rvy = b.vy - a.vy, vn = rvx * nx + rvy * ny
-          if (vn < 0) {
-            const imp = -(1 + REST) * vn / 2
-            a.vx -= imp * nx; a.vy -= imp * ny; b.vx += imp * nx; b.vy += imp * ny
-            a.vr += vn * 1.2; b.vr -= vn * 1.2
+    for (let index = 0; index < shapes.length; index++) {
+      for (let otherIndex = index + 1; otherIndex < shapes.length; otherIndex++) {
+        const first = shapes[index], second = shapes[otherIndex]
+        const dx = second.x - first.x, dy = second.y - first.y, distance = Math.hypot(dx, dy), minimumGap = first.r + second.r
+        if (distance > 0 && distance < minimumGap) {
+          const normalX = dx / distance, normalY = dy / distance, overlap = (minimumGap - distance) / 2
+          first.x -= normalX * overlap; first.y -= normalY * overlap; second.x += normalX * overlap; second.y += normalY * overlap
+          const relativeVx = second.vx - first.vx, relativeVy = second.vy - first.vy, normalVelocity = relativeVx * normalX + relativeVy * normalY
+          if (normalVelocity < 0) {
+            const impulse = -(1 + REST) * normalVelocity / 2
+            first.vx -= impulse * normalX; first.vy -= impulse * normalY; second.vx += impulse * normalX; second.vy += impulse * normalY
+            first.vr += normalVelocity * 1.2; second.vr -= normalVelocity * 1.2
           }
         }
       }
     }
 
-    for (const s of shapes) s.el.style.transform = `translate(${s.x - s.r}px,${s.y - s.r}px) rotate(${s.rot}deg)`
+    for (const shape of shapes) shape.element.style.transform = `translate(${shape.x - shape.r}px,${shape.y - shape.r}px) rotate(${shape.rot}deg)`
   }
 
   function loop() {
@@ -518,8 +518,8 @@
 
   // ── kickable title: setup / geometry ──
   function initGlyphs() {
-    glyphs = charRefs.value.map((el) => ({
-      el, w: el.offsetWidth, h: el.offsetHeight, x: 0, y: 0, vx: 0, vy: 0, rot: 0, vr: 0, hx: 0, hy: 0,
+    glyphs = charRefs.value.map((element) => ({
+      element, w: element.offsetWidth, h: element.offsetHeight, x: 0, y: 0, vx: 0, vy: 0, rot: 0, vr: 0, hx: 0, hy: 0,
     }))
   }
 
@@ -531,8 +531,8 @@
   // the global Section-Cover-Slice layer, not this component's template).
   function resolveCornerSlices() {
     cornerSlices = CORNER_BUMPER_DEFS.flatMap(({ selector, hypo, solid }) => {
-      const el = document.querySelector<HTMLElement>(selector)
-      return el ? [{ el, hypo, solid }] : []
+      const element = document.querySelector<HTMLElement>(selector)
+      return element ? [{ element, hypo, solid }] : []
     })
   }
 
@@ -541,21 +541,21 @@
   // resolveGlyphBumper). Called every frame because the slices animate in from
   // off-screen on section enter — a one-time measure would record them hidden.
   function refreshGlyphBounds() {
-    const sec = sectionRect()
-    if (!sec) { glyphBumpers = []; return }
-    const corner = (r: DOMRect, which: Corner) => {
-      const x = which === 'tl' || which === 'bl' ? r.left - sec.left : r.right - sec.left
-      const y = which === 'tl' || which === 'tr' ? r.top - sec.top : r.bottom - sec.top
+    const sectionBounds = sectionRect()
+    if (!sectionBounds) { glyphBumpers = []; return }
+    const corner = (bounds: DOMRect, which: Corner) => {
+      const x = which === 'timeline' || which === 'bl' ? bounds.left - sectionBounds.left : bounds.right - sectionBounds.left
+      const y = which === 'timeline' || which === 'tr' ? bounds.top - sectionBounds.top : bounds.bottom - sectionBounds.top
       return { x, y }
     }
-    glyphBumpers = cornerSlices.map(({ el, hypo, solid }) => {
-      const r = el.getBoundingClientRect()
-      const p1 = corner(r, hypo[0]), p2 = corner(r, hypo[1]), rightAngle = corner(r, solid)
-      const dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.hypot(dx, dy) || 1
-      let nx = -dy / len, ny = dx / len
-      if (nx * (rightAngle.x - p1.x) + ny * (rightAngle.y - p1.y) < 0) { nx = -nx; ny = -ny }
-      const l = r.left - sec.left, t = r.top - sec.top, right = r.right - sec.left, b = r.bottom - sec.top
-      return { p1x: p1.x, p1y: p1.y, p2x: p2.x, p2y: p2.y, nx, ny, l, t, r: right, b, el }
+    glyphBumpers = cornerSlices.map(({ element, hypo, solid }) => {
+      const bounds = element.getBoundingClientRect()
+      const start = corner(bounds, hypo[0]), end = corner(bounds, hypo[1]), rightAngle = corner(bounds, solid)
+      const dx = end.x - start.x, dy = end.y - start.y, edgeLength = Math.hypot(dx, dy) || 1
+      let normalX = -dy / edgeLength, normalY = dx / edgeLength
+      if (normalX * (rightAngle.x - start.x) + normalY * (rightAngle.y - start.y) < 0) { normalX = -normalX; normalY = -normalY }
+      const left = bounds.left - sectionBounds.left, top = bounds.top - sectionBounds.top, right = bounds.right - sectionBounds.left, bottom = bounds.bottom - sectionBounds.top
+      return { p1x: start.x, p1y: start.y, p2x: end.x, p2y: end.y, nx: normalX, ny: normalY, l: left, t: top, r: right, b: bottom, element }
     })
   }
 
@@ -563,11 +563,11 @@
   // box-shadow) since the slice is clip-path'd to a triangle - a shadow would
   // glow around the invisible clipped bounding box instead of the shape.
   // Throttled so overlap frames don't spam the tween.
-  function pulseBumper(el: HTMLElement) {
+  function pulseBumper(element: HTMLElement) {
     const now = performance.now()
-    if (now - (bumperPulseAt.get(el) ?? 0) < 180) return
-    bumperPulseAt.set(el, now)
-    gsap.fromTo(el,
+    if (now - (bumperPulseAt.get(element) ?? 0) < 180) return
+    bumperPulseAt.set(element, now)
+    gsap.fromTo(element,
       { filter: 'brightness(1)' },
       { filter: 'brightness(2.2)', duration: 0.08, ease: 'power2.out', yoyo: true, repeat: 1, overwrite: 'auto' }
     )
@@ -576,49 +576,49 @@
   // Lay the glyphs out as a centred title row near the top and record those as
   // their "home" slots.
   function computeGlyphHome() {
-    const sec = sectionRect()
-    if (!sec || glyphs.length === 0) return
-    const gap = Math.max(4, sec.width * 0.006)
-    glyphs.forEach((g) => { g.w = g.el.offsetWidth; g.h = g.el.offsetHeight })
-    const total = glyphs.reduce((sum, g) => sum + g.w, 0) + gap * (glyphs.length - 1)
-    let x = (sec.width - total) / 2
-    const y = sec.height * 0.075
-    glyphs.forEach((g) => { g.hx = x; g.hy = y; x += g.w + gap })
+    const sectionBounds = sectionRect()
+    if (!sectionBounds || glyphs.length === 0) return
+    const gap = Math.max(4, sectionBounds.width * 0.006)
+    glyphs.forEach((glyph) => { glyph.w = glyph.element.offsetWidth; glyph.h = glyph.element.offsetHeight })
+    const rowWidth = glyphs.reduce((total, glyph) => total + glyph.w, 0) + gap * (glyphs.length - 1)
+    let x = (sectionBounds.width - rowWidth) / 2
+    const y = sectionBounds.height * 0.075
+    glyphs.forEach((glyph) => { glyph.hx = x; glyph.hy = y; x += glyph.w + gap })
   }
 
   function drawGlyphs() {
-    for (const g of glyphs) g.el.style.transform = `translate(${g.x}px,${g.y}px) rotate(${g.rot}deg)`
+    for (const glyph of glyphs) glyph.element.style.transform = `translate(${glyph.x}px,${glyph.y}px) rotate(${glyph.rot}deg)`
   }
 
   // Bounce a glyph (treated as a circle, see glyphRadius) off a corner slice's
   // diagonal edge like a pinball bumper: reflect the velocity across the edge
   // normal and add energy (unlike a wall/glyph collision, which only
   // conserves it), plus a flash on the slice.
-  function resolveGlyphBumper(g: Glyph, bumper: Bumper) {
-    const cx = g.x + g.w / 2, cy = g.y + g.h / 2, radius = glyphRadius(g)
+  function resolveGlyphBumper(glyph: Glyph, bumper: Bumper) {
+    const cx = glyph.x + glyph.w / 2, cy = glyph.y + glyph.h / 2, radius = glyphRadius(glyph)
     // Line is infinite; clamp to the slice's own rect so its half-plane doesn't
     // reach across the whole viewport past the actual corner shape.
     if (cx < bumper.l - radius || cx > bumper.r + radius || cy < bumper.t - radius || cy > bumper.b + radius) return
     const d = (cx - bumper.p1x) * bumper.nx + (cy - bumper.p1y) * bumper.ny
     if (d <= -radius) return // fully on the open side, no overlap into the solid triangle
     const push = -radius - d
-    g.x += bumper.nx * push
-    g.y += bumper.ny * push
-    const vn = g.vx * bumper.nx + g.vy * bumper.ny
-    if (vn > 0) {
-      const j = (1 + BUMPER_KICK) * vn
-      g.vx -= j * bumper.nx
-      g.vy -= j * bumper.ny
-      const vt = -g.vx * bumper.ny + g.vy * bumper.nx
-      g.vr += vt * 0.15
+    glyph.x += bumper.nx * push
+    glyph.y += bumper.ny * push
+    const normalVelocity = glyph.vx * bumper.nx + glyph.vy * bumper.ny
+    if (normalVelocity > 0) {
+      const impulse = (1 + BUMPER_KICK) * normalVelocity
+      glyph.vx -= impulse * bumper.nx
+      glyph.vy -= impulse * bumper.ny
+      const tangentialVelocity = -glyph.vx * bumper.ny + glyph.vy * bumper.nx
+      glyph.vr += tangentialVelocity * 0.15
     }
-    pulseBumper(bumper.el)
+    pulseBumper(bumper.element)
   }
 
   function letterStep() {
-    const sec = sectionRect()
-    if (!sec) return
-    const W = sec.width, H = sec.height
+    const sectionBounds = sectionRect()
+    if (!sectionBounds) return
+    const containerWidth = sectionBounds.width, containerHeight = sectionBounds.height
 
     // Re-measure the corner slices each frame: they animate in from off-screen
     // on section enter (and shift on resize), so a one-time measurement would
@@ -626,80 +626,80 @@
     refreshGlyphBounds()
 
     // cursor velocity this frame (acts as a paddle)
-    const cvx = gPtr.x - gPtr.px
-    const cvy = gPtr.y - gPtr.py
-    gPtr.px = gPtr.x; gPtr.py = gPtr.y
-    const cspeed = Math.hypot(cvx, cvy)
+    const cursorVelocityX = glyphPointer.x - glyphPointer.px
+    const cursorVelocityY = glyphPointer.y - glyphPointer.py
+    glyphPointer.px = glyphPointer.x; glyphPointer.py = glyphPointer.y
+    const cursorSpeed = Math.hypot(cursorVelocityX, cursorVelocityY)
 
-    for (const g of glyphs) {
+    for (const glyph of glyphs) {
       // ── cursor collision: shove the glyph in the cursor's travel direction
       //    (plus radially away so it never sticks to the pointer) ──
-      const closestX = Math.max(g.x, Math.min(gPtr.x, g.x + g.w))
-      const closestY = Math.max(g.y, Math.min(gPtr.y, g.y + g.h))
-      const ox = gPtr.x - closestX, oy = gPtr.y - closestY
-      const od = Math.hypot(ox, oy)
-      if (od < G_CURSOR_R) {
-        let rx = (g.x + g.w / 2) - gPtr.x
-        let ry = (g.y + g.h / 2) - gPtr.y
-        const rd = Math.hypot(rx, ry) || 1
-        rx /= rd; ry /= rd
-        const mx = cspeed > 0.6 ? cvx / cspeed : rx
-        const my = cspeed > 0.6 ? cvy / cspeed : ry
-        const power = (Math.min(cspeed, 60) * 0.9 + 5) * 0.175
-        g.vx += mx * power * 0.7 + rx * power * 0.5
-        g.vy += my * power * 0.7 + ry * power * 0.5
+      const closestX = Math.max(glyph.x, Math.min(glyphPointer.x, glyph.x + glyph.w))
+      const closestY = Math.max(glyph.y, Math.min(glyphPointer.y, glyph.y + glyph.h))
+      const overlapX = glyphPointer.x - closestX, overlapY = glyphPointer.y - closestY
+      const overlapDistance = Math.hypot(overlapX, overlapY)
+      if (overlapDistance < G_CURSOR_R) {
+        let radialX = (glyph.x + glyph.w / 2) - glyphPointer.x
+        let radialY = (glyph.y + glyph.h / 2) - glyphPointer.y
+        const radialDistance = Math.hypot(radialX, radialY) || 1
+        radialX /= radialDistance; radialY /= radialDistance
+        const pushX = cursorSpeed > 0.6 ? cursorVelocityX / cursorSpeed : radialX
+        const pushY = cursorSpeed > 0.6 ? cursorVelocityY / cursorSpeed : radialY
+        const power = (Math.min(cursorSpeed, 60) * 0.9 + 5) * 0.175
+        glyph.vx += pushX * power * 0.7 + radialX * power * 0.5
+        glyph.vy += pushY * power * 0.7 + radialY * power * 0.5
         // off-centre hits spin the glyph: tangential component of the push
-        g.vr += (mx * ry - my * rx) * power * 0.24
+        glyph.vr += (pushX * radialY - pushY * radialX) * power * 0.24
         // nudge out of the cursor so repeated frames don't trap it
-        if (od > 0.001) { const push = G_CURSOR_R - od; g.x -= (ox / od) * push; g.y -= (oy / od) * push }
+        if (overlapDistance > 0.001) { const push = G_CURSOR_R - overlapDistance; glyph.x -= (overlapX / overlapDistance) * push; glyph.y -= (overlapY / overlapDistance) * push }
       }
 
       // ── module 03 black hole: while held, the well (at the cursor) draws the
       //    letters in, with the same distance falloff as the particles but half
       //    the strength ──
       if (pointer.down) {
-        const dx = gPtr.x - (g.x + g.w / 2), dy = gPtr.y - (g.y + g.h / 2)
+        const dx = glyphPointer.x - (glyph.x + glyph.w / 2), dy = glyphPointer.y - (glyph.y + glyph.h / 2)
         const d = Math.hypot(dx, dy) || 1
         const f = G_PULL * (60 / (60 + d))
-        g.vx += (dx / d) * f
-        g.vy += (dy / d) * f
+        glyph.vx += (dx / d) * f
+        glyph.vy += (dy / d) * f
       }
 
       // integrate (no gravity)
-      g.vx *= G_DRIFT; g.vy *= G_DRIFT
-      g.vx = Math.max(-G_MAXV, Math.min(G_MAXV, g.vx))
-      g.vy = Math.max(-G_MAXV, Math.min(G_MAXV, g.vy))
-      g.x += g.vx; g.y += g.vy
-      g.rot += g.vr; g.vr *= G_SPIN_FRICTION
-      g.vr = Math.max(-G_MAXVR, Math.min(G_MAXVR, g.vr))
+      glyph.vx *= G_DRIFT; glyph.vy *= G_DRIFT
+      glyph.vx = Math.max(-G_MAXV, Math.min(G_MAXV, glyph.vx))
+      glyph.vy = Math.max(-G_MAXV, Math.min(G_MAXV, glyph.vy))
+      glyph.x += glyph.vx; glyph.y += glyph.vy
+      glyph.rot += glyph.vr; glyph.vr *= G_SPIN_FRICTION
+      glyph.vr = Math.max(-G_MAXVR, Math.min(G_MAXVR, glyph.vr))
 
       // viewport walls; a wall bounce also kicks the glyph into a roll
-      if (g.x < 0) { g.x = 0; g.vx = -g.vx * G_REST; g.vr -= g.vy * 0.1 }
-      else if (g.x + g.w > W) { g.x = W - g.w; g.vx = -g.vx * G_REST; g.vr += g.vy * 0.1 }
-      if (g.y < 0) { g.y = 0; g.vy = -g.vy * G_REST; g.vr += g.vx * 0.1 }
-      else if (g.y + g.h > H) { g.y = H - g.h; g.vy = -g.vy * G_REST; g.vr -= g.vx * 0.1 }
+      if (glyph.x < 0) { glyph.x = 0; glyph.vx = -glyph.vx * G_REST; glyph.vr -= glyph.vy * 0.1 }
+      else if (glyph.x + glyph.w > containerWidth) { glyph.x = containerWidth - glyph.w; glyph.vx = -glyph.vx * G_REST; glyph.vr += glyph.vy * 0.1 }
+      if (glyph.y < 0) { glyph.y = 0; glyph.vy = -glyph.vy * G_REST; glyph.vr += glyph.vx * 0.1 }
+      else if (glyph.y + glyph.h > containerHeight) { glyph.y = containerHeight - glyph.h; glyph.vy = -glyph.vy * G_REST; glyph.vr -= glyph.vx * 0.1 }
 
       // corner background-slice bumpers
-      for (const bumper of glyphBumpers) resolveGlyphBumper(g, bumper)
+      for (const bumper of glyphBumpers) resolveGlyphBumper(glyph, bumper)
     }
 
     // glyph-vs-glyph: circular elastic collisions with spin transfer
-    for (let i = 0; i < glyphs.length; i++) {
-      for (let j = i + 1; j < glyphs.length; j++) {
-        const a = glyphs[i], c = glyphs[j]
-        const ax = a.x + a.w / 2, ay = a.y + a.h / 2, ar = glyphRadius(a)
-        const cx = c.x + c.w / 2, cy = c.y + c.h / 2, cr = glyphRadius(c)
-        const dx = cx - ax, dy = cy - ay, dist = Math.hypot(dx, dy), min = ar + cr
-        if (dist > 0 && dist < min) {
-          const nx = dx / dist, ny = dy / dist, overlap = (min - dist) / 2
-          a.x -= nx * overlap; a.y -= ny * overlap; c.x += nx * overlap; c.y += ny * overlap
-          const rvx = c.vx - a.vx, rvy = c.vy - a.vy, vn = rvx * nx + rvy * ny
-          if (vn < 0) {
-            const imp = -(1 + G_REST) * vn / 2
-            a.vx -= imp * nx; a.vy -= imp * ny; c.vx += imp * nx; c.vy += imp * ny
+    for (let index = 0; index < glyphs.length; index++) {
+      for (let otherIndex = index + 1; otherIndex < glyphs.length; otherIndex++) {
+        const first = glyphs[index], second = glyphs[otherIndex]
+        const firstX = first.x + first.w / 2, firstY = first.y + first.h / 2, firstRadius = glyphRadius(first)
+        const secondX = second.x + second.w / 2, secondY = second.y + second.h / 2, secondRadius = glyphRadius(second)
+        const dx = secondX - firstX, dy = secondY - firstY, distance = Math.hypot(dx, dy), minimumGap = firstRadius + secondRadius
+        if (distance > 0 && distance < minimumGap) {
+          const normalX = dx / distance, normalY = dy / distance, overlap = (minimumGap - distance) / 2
+          first.x -= normalX * overlap; first.y -= normalY * overlap; second.x += normalX * overlap; second.y += normalY * overlap
+          const relativeVx = second.vx - first.vx, relativeVy = second.vy - first.vy, normalVelocity = relativeVx * normalX + relativeVy * normalY
+          if (normalVelocity < 0) {
+            const impulse = -(1 + G_REST) * normalVelocity / 2
+            first.vx -= impulse * normalX; first.vy -= impulse * normalY; second.vx += impulse * normalX; second.vy += impulse * normalY
             // tangential rub spins them in opposite directions
-            const vt = -rvx * ny + rvy * nx
-            a.vr -= vt * 0.12; c.vr += vt * 0.12
+            const tangentialVelocity = -relativeVx * normalY + relativeVy * normalX
+            first.vr -= tangentialVelocity * 0.12; second.vr += tangentialVelocity * 0.12
           }
         }
       }
@@ -707,29 +707,29 @@
 
     // ── glyph-vs-shape: letters knock the module-03 particles around ──
     // Shapes live in gravRef-space; convert to section-space with this offset.
-    const gravR = gravRef.value?.getBoundingClientRect()
-    if (gravR && shapes.length) {
-      const offX = gravR.left - sec.left, offY = gravR.top - sec.top
-      for (const g of glyphs) {
-        const gx = g.x + g.w / 2, gy = g.y + g.h / 2, grad = glyphRadius(g)
-        for (const s of shapes) {
-          const sx = s.x + offX, sy = s.y + offY
-          const dx = sx - gx, dy = sy - gy
-          const dist = Math.hypot(dx, dy), min = grad + s.r
-          if (dist > 0 && dist < min) {
-            const nx = dx / dist, ny = dy / dist
+    const gravityBounds = gravRef.value?.getBoundingClientRect()
+    if (gravityBounds && shapes.length) {
+      const offsetX = gravityBounds.left - sectionBounds.left, offsetY = gravityBounds.top - sectionBounds.top
+      for (const glyph of glyphs) {
+        const glyphX = glyph.x + glyph.w / 2, glyphY = glyph.y + glyph.h / 2, glyphR = glyphRadius(glyph)
+        for (const shape of shapes) {
+          const shapeX = shape.x + offsetX, shapeY = shape.y + offsetY
+          const dx = shapeX - glyphX, dy = shapeY - glyphY
+          const distance = Math.hypot(dx, dy), minimumGap = glyphR + shape.r
+          if (distance > 0 && distance < minimumGap) {
+            const normalX = dx / distance, normalY = dy / distance
             // push the (light) shape clear of the glyph
-            s.x = gx + nx * min - offX
-            s.y = gy + ny * min - offY
-            const rvx = s.vx - g.vx, rvy = s.vy - g.vy
-            const vn = rvx * nx + rvy * ny
-            if (vn < 0) {
-              const imp = -(1 + REST) * vn
-              s.vx += imp * nx; s.vy += imp * ny
-              s.vr += vn * 2
+            shape.x = glyphX + normalX * minimumGap - offsetX
+            shape.y = glyphY + normalY * minimumGap - offsetY
+            const relativeVx = shape.vx - glyph.vx, relativeVy = shape.vy - glyph.vy
+            const normalVelocity = relativeVx * normalX + relativeVy * normalY
+            if (normalVelocity < 0) {
+              const impulse = -(1 + REST) * normalVelocity
+              shape.vx += impulse * normalX; shape.vy += impulse * normalY
+              shape.vr += normalVelocity * 2
               // tiny reaction back on the heavy glyph
-              g.vx -= nx * imp * 0.04
-              g.vy -= ny * imp * 0.04
+              glyph.vx -= normalX * impulse * 0.04
+              glyph.vy -= normalY * impulse * 0.04
             }
           }
         }
@@ -745,55 +745,55 @@
     // from wherever they currently sit.
     glyphsReleased = false
     const eyebrow = eyebrowRef.value
-    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
-    gsap.killTweensOf([eyebrow, ...wins, ...glyphs.map((g) => g.el)])
-    glyphs.forEach((g, i) => {
-      gsap.set(g.el, { x: g.x, y: g.y, rotation: g.rot })   // seed GSAP with the live physics position + spin
-      gsap.to(g.el, { y: g.y - sectionRect()!.height * 0.7, opacity: 0, duration: 0.3, ease: 'power3.in', delay: i * 0.02, overwrite: 'auto' })
+    const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
+    gsap.killTweensOf([eyebrow, ...windows, ...glyphs.map((glyph) => glyph.element)])
+    glyphs.forEach((glyph, index) => {
+      gsap.set(glyph.element, { x: glyph.x, y: glyph.y, rotation: glyph.rot })   // seed GSAP with the live physics position + spin
+      gsap.to(glyph.element, { y: glyph.y - sectionRect()!.height * 0.7, opacity: 0, duration: 0.3, ease: 'power3.in', delay: index * 0.02, overwrite: 'auto' })
     })
     // eyebrow note lifts away with the title
     gsap.to(eyebrow, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     // windows slide down off screen
-    gsap.to(wins, { y: '60vh', opacity: 0, duration: 0.22, stagger: 0.035, ease: 'power3.in', overwrite: 'auto' })
+    gsap.to(windows, { y: '60vh', opacity: 0, duration: 0.22, stagger: 0.035, ease: 'power3.in', overwrite: 'auto' })
   }
 
   // ── enter reveal (adapted from the design's playMicro) ──
   function playReveal() {
     const eyebrow = eyebrowRef.value
-    const wins = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
+    const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
     const items = listItemRefs.value
-    const btn = magBtnCompRef.value?.el ?? null
-    const chars = glyphs.map((g) => g.el)
+    const button = magBtnCompRef.value?.element ?? null
+    const chars = glyphs.map((glyph) => glyph.element)
 
     // Freeze the title physics and recompute its home row + the box geometry it
     // will later collide with (handles viewport resizes between visits).
     glyphsReleased = false
     refreshGlyphBounds()
     computeGlyphHome()
-    glyphs.forEach((g) => { g.x = g.hx; g.y = g.hy; g.vx = 0; g.vy = 0; g.rot = 0; g.vr = 0 })
+    glyphs.forEach((glyph) => { glyph.x = glyph.hx; glyph.y = glyph.hy; glyph.vx = 0; glyph.vy = 0; glyph.rot = 0; glyph.vr = 0 })
 
-    gsap.killTweensOf([eyebrow, ...wins, ...items, btn, ...chars])
+    gsap.killTweensOf([eyebrow, ...windows, ...items, button, ...chars])
     gsap.set(eyebrow, { y: -20, opacity: 0 })
-    gsap.set(wins, { opacity: 0, y: 36, scale: 0.96 })
+    gsap.set(windows, { opacity: 0, y: 36, scale: 0.96 })
     gsap.set(items, { opacity: 0, x: -40 })
-    gsap.set(btn, { scale: 0, opacity: 0 })
-    glyphs.forEach((g) => gsap.set(g.el, { x: g.hx, y: g.hy - 70, opacity: 0, scale: 0.5, rotation: () => Math.random() * 40 - 20 }))
+    gsap.set(button, { scale: 0, opacity: 0 })
+    glyphs.forEach((glyph) => gsap.set(glyph.element, { x: glyph.hx, y: glyph.hy - 70, opacity: 0, scale: 0.5, rotation: () => Math.random() * 40 - 20 }))
 
     // Wait for the section-cut curtain to fully close before revealing content,
     // so the reveal happens behind the curtain rather than alongside it.
-    const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
-    tl.to(eyebrow, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    tl.to(wins, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.6)' }, 0.15)
+    const timeline = gsap.timeline({ delay: SECTION_ENTER_DELAY })
+    timeline.to(eyebrow, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
+    timeline.to(windows, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.08, ease: 'back.out(1.6)' }, 0.15)
     // glyphs drop into their title slots, then physics takes over
-    glyphs.forEach((g, i) => {
-      tl.to(g.el, { x: g.hx, y: g.hy, opacity: 1, scale: 1, rotation: 0, duration: 0.7, ease: 'back.out(1.8)' }, 0.2 + i * 0.05)
+    glyphs.forEach((glyph, index) => {
+      timeline.to(glyph.element, { x: glyph.hx, y: glyph.hy, opacity: 1, scale: 1, rotation: 0, duration: 0.7, ease: 'back.out(1.8)' }, 0.2 + index * 0.05)
     })
-    tl.to(btn, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2.5)' }, 0.45)
-    tl.to(items, { opacity: 1, x: 0, duration: 0.5, stagger: 0.07, ease: 'power3.out' }, 0.5)
-    tl.add(() => {
-      glyphs.forEach((g) => { g.x = g.hx; g.y = g.hy; g.vx = 0; g.vy = 0; g.rot = 0; g.vr = 0; g.el.style.opacity = '1' })
+    timeline.to(button, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2.5)' }, 0.45)
+    timeline.to(items, { opacity: 1, x: 0, duration: 0.5, stagger: 0.07, ease: 'power3.out' }, 0.5)
+    timeline.add(() => {
+      glyphs.forEach((glyph) => { glyph.x = glyph.hx; glyph.y = glyph.hy; glyph.vx = 0; glyph.vy = 0; glyph.rot = 0; glyph.vr = 0; glyph.element.style.opacity = '1' })
       drawGlyphs()
-      gPtr.px = gPtr.x; gPtr.py = gPtr.y   // avoid a phantom kick on the first physics frame
+      glyphPointer.px = glyphPointer.x; glyphPointer.py = glyphPointer.y   // avoid a phantom kick on the first physics frame
       glyphsReleased = true
     }, 0.2 + glyphs.length * 0.05 + 0.7)
 
@@ -810,30 +810,30 @@
     refreshGlyphBounds()
     computeGlyphHome()
     // place the title at home immediately so it's not stacked at 0,0 before reveal
-    glyphs.forEach((g) => { g.x = g.hx; g.y = g.hy })
+    glyphs.forEach((glyph) => { glyph.x = glyph.hx; glyph.y = glyph.hy })
     drawGlyphs()
 
     // Track the cursor in section-space to drive the title kicking.
-    on(window, 'mousemove', (e) => {
-      const ev = e as MouseEvent
-      const sec = sectionRect()
-      if (!sec) return
-      gPtr.x = ev.clientX - sec.left
-      gPtr.y = ev.clientY - sec.top
+    on(window, 'mousemove', (event) => {
+      const mouseEvent = event as MouseEvent
+      const sectionBounds = sectionRect()
+      if (!sectionBounds) return
+      glyphPointer.x = mouseEvent.clientX - sectionBounds.left
+      glyphPointer.y = mouseEvent.clientY - sectionBounds.top
     })
     // Recompute box geometry + home row on resize; reflow the title if it hasn't
     // been kicked loose yet, otherwise just keep the glyphs inside the viewport.
     on(window, 'resize', () => {
       refreshGlyphBounds()
       computeGlyphHome()
-      const sec = sectionRect()
+      const sectionBounds = sectionRect()
       if (!glyphsReleased) {
-        glyphs.forEach((g) => { g.x = g.hx; g.y = g.hy })
+        glyphs.forEach((glyph) => { glyph.x = glyph.hx; glyph.y = glyph.hy })
         drawGlyphs()
-      } else if (sec) {
-        glyphs.forEach((g) => {
-          g.x = Math.max(0, Math.min(g.x, sec.width - g.w))
-          g.y = Math.max(0, Math.min(g.y, sec.height - g.h))
+      } else if (sectionBounds) {
+        glyphs.forEach((glyph) => {
+          glyph.x = Math.max(0, Math.min(glyph.x, sectionBounds.width - glyph.w))
+          glyph.y = Math.max(0, Math.min(glyph.y, sectionBounds.height - glyph.h))
         })
       }
     })
@@ -843,7 +843,7 @@
       document.fonts.ready.then(() => {
         if (glyphsReleased) return
         computeGlyphHome()
-        glyphs.forEach((g) => { g.x = g.hx; g.y = g.hy })
+        glyphs.forEach((glyph) => { glyph.x = glyph.hx; glyph.y = glyph.hy })
         drawGlyphs()
       })
     }
@@ -864,7 +864,7 @@
     clearTimeout(magResetTimer)
     stopSectionWatch?.()
     stopSectionWatch = null
-    pullTweens.forEach((t) => t.kill())
+    pullTweens.forEach((tween) => tween.kill())
     pullTweens = []
     gsap.killTweensOf([pullField, pullReticle, pullCore, ...pullRings])
     pullField = pullReticle = pullCore = null

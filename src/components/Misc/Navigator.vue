@@ -2,27 +2,27 @@
 	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isMobile ? 'is-mobile' : 'is-desktop', { 'dragging': isDragging && isMobile }]" :style="dragStyle">
 			<div class="line"></div>
 			<div v-if="isMobile" class="rect-container">
-				<template v-for="(section, i) in SECTIONS" :key="section.id + '-rect'">
+				<template v-for="(section, index) in SECTIONS" :key="section.id + '-rect'">
 					<div
-						v-if="!isSectionLocked(i)"
+						v-if="!isSectionLocked(index)"
 						class="rect"
-						:class="getEntryClasses(i)"
-						:style="getEntryDragStyle(i, 'rect')"
-						@click="onEntryClick(i)"
+						:class="getEntryClasses(index)"
+						:style="getEntryDragStyle(index, 'rect')"
+						@click="onEntryClick(index)"
 					></div>
 				</template>
 			</div>
-			<template v-for="(section, i) in SECTIONS" :key="section.id">
+			<template v-for="(section, index) in SECTIONS" :key="section.id">
 				<Transition :css="false" @enter="onNavEntryEnter">
 					<div
-						v-if="!isSectionLocked(i)"
+						v-if="!isSectionLocked(index)"
 						class="section-header-list"
-						:class="[`${section.id}-header-list`, getEntryClasses(i)]"
-						:style="[{ '--accent': section.color }, isMobile ? getEntryDragStyle(i, 'text') : getDesktopEntryStyle(i)]"
-						@click="onEntryClick(i)"
+						:class="[`${section.id}-header-list`, getEntryClasses(index)]"
+						:style="[{ '--accent': section.color }, isMobile ? getEntryDragStyle(index, 'text') : getDesktopEntryStyle(index)]"
+						@click="onEntryClick(index)"
 					>
 						<span class="shl-label">{{ section.label }}</span>
-						<span class="shl-index">{{ String(i + 1).padStart(2, '0') }}</span>
+						<span class="shl-index">{{ String(index + 1).padStart(2, '0') }}</span>
 						<span class="shl-marker"></span>
 					</div>
 				</Transition>
@@ -133,7 +133,7 @@
 	const DESKTOP_WINDOW_SPACING_REM = 2.9
 
 	const visibleSectionIndices = computed(() =>
-		SECTIONS.map((_, i) => i).filter((i) => !isSectionLocked(i))
+		SECTIONS.map((_, index) => index).filter((index) => !isSectionLocked(index))
 	)
 
 	const currentVisiblePos = computed(() =>
@@ -151,12 +151,12 @@
 	// entries themselves have shrunk - a flat per-step spacing would.
 	const cumulativeSpacingRem = (relative: number) => {
 		const steps = Math.abs(relative)
-		let sum = 0
+		let total = 0
 		for (let step = 1; step <= steps; step++) {
-			const avgScale = (scaleForDistance(step - 1) + scaleForDistance(step)) / 2
-			sum += DESKTOP_WINDOW_SPACING_REM * avgScale
+			const averageScale = (scaleForDistance(step - 1) + scaleForDistance(step)) / 2
+			total += DESKTOP_WINDOW_SPACING_REM * averageScale
 		}
-		return relative < 0 ? -sum : sum
+		return relative < 0 ? -total : total
 	}
 
 	// Every entry stays visible and moves as one vertical column, anchored on the

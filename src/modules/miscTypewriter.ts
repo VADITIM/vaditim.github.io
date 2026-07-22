@@ -30,23 +30,23 @@ const DEFAULTS: Required<TypewriterOptions> = {
 };
 
 interface Handle {
-  el: HTMLElement;
-  textEl: HTMLElement;
-  caretEl: HTMLElement;
+  element: HTMLElement;
+  textElement: HTMLElement;
+  caretElement: HTMLElement;
   full: string;
   reverse: boolean;
   blink: gsap.core.Tween | null;
   tween: gsap.core.Tween | null;
 }
 
-function resolve(opts?: TypewriterOptions): Required<TypewriterOptions> {
-  return { ...DEFAULTS, ...(opts ?? {}) };
+function resolve(options?: TypewriterOptions): Required<TypewriterOptions> {
+  return { ...DEFAULTS, ...(options ?? {}) };
 }
 
 // Reveal formula shared by type/clear: `count` visible characters, taken from
 // the start (normal) or the end (reverse, so growth reads right-to-left).
-function reveal(h: Handle, count: number) {
-  h.textEl.textContent = h.reverse ? h.full.slice(h.full.length - count) : h.full.slice(0, count);
+function reveal(handle: Handle, count: number) {
+  handle.textElement.textContent = handle.reverse ? handle.full.slice(handle.full.length - count) : handle.full.slice(0, count);
 }
 
 // Wire an element into a typewriter handle. `full` is the target text; the
@@ -54,20 +54,20 @@ function reveal(h: Handle, count: number) {
 // end of the string instead of the start, so it reads right-to-left; the
 // element needs a fixed width (see Typewriter.vue) so the text has a stable
 // right edge to grow from.
-export function createTypewriter(el: HTMLElement, full: string, reverse = false): Handle {
-  const textEl = el.querySelector<HTMLElement>('.tw-text')!;
-  const caretEl = el.querySelector<HTMLElement>('.tw-caret')!;
-  textEl.textContent = '';
-  gsap.set(caretEl, { opacity: 0 });
-  return { el, textEl, caretEl, full, reverse, blink: null, tween: null };
+export function createTypewriter(element: HTMLElement, full: string, reverse = false): Handle {
+  const textElement = element.querySelector<HTMLElement>('.tw-text')!;
+  const caretElement = element.querySelector<HTMLElement>('.tw-caret')!;
+  textElement.textContent = '';
+  gsap.set(caretElement, { opacity: 0 });
+  return { element, textElement, caretElement, full, reverse, blink: null, tween: null };
 }
 
-function startBlink(h: Handle, period: number) {
-  h.blink?.kill();
-  gsap.set(h.caretEl, { opacity: 1 });
+function startBlink(handle: Handle, period: number) {
+  handle.blink?.kill();
+  gsap.set(handle.caretElement, { opacity: 1 });
   // A blink at the collapsed time scale is a strobe; hold the caret solid instead.
-  if (prefersReducedMotion.value) { h.blink = null; return; }
-  h.blink = gsap.to(h.caretEl, {
+  if (prefersReducedMotion.value) { handle.blink = null; return; }
+  handle.blink = gsap.to(handle.caretElement, {
     opacity: 0,
     duration: period,
     repeat: -1,
@@ -76,31 +76,31 @@ function startBlink(h: Handle, period: number) {
   });
 }
 
-function stopBlink(h: Handle) {
-  h.blink?.kill();
-  h.blink = null;
+function stopBlink(handle: Handle) {
+  handle.blink?.kill();
+  handle.blink = null;
 }
 
 // Type the line out. Resolves the returned promise once fully typed.
-export function playType(h: Handle, opts?: TypewriterOptions): Promise<void> {
-  const o = resolve(opts);
-  h.tween?.kill();
-  startBlink(h, o.caretBlink);
-  const state = { i: 0 };
+export function playType(handle: Handle, options?: TypewriterOptions): Promise<void> {
+  const resolvedOptions = resolve(options);
+  handle.tween?.kill();
+  startBlink(handle, resolvedOptions.caretBlink);
+  const state = { visibleCount: 0 };
   return new Promise(resolve => {
     // Carved out of reduced motion: the typing IS the content here, and a line that
     // appears fully formed says nothing. See TASKS.md's reduced-motion exceptions.
-    h.tween = keepFullMotion(gsap.to(state, {
-      i: h.full.length,
-      duration: h.full.length * o.speed,
-      delay: o.delay,
-      ease: `steps(${Math.max(1, h.full.length)})`,
+    handle.tween = keepFullMotion(gsap.to(state, {
+      visibleCount: handle.full.length,
+      duration: handle.full.length * resolvedOptions.speed,
+      delay: resolvedOptions.delay,
+      ease: `steps(${Math.max(1, handle.full.length)})`,
       onUpdate: () => {
-        reveal(h, Math.round(state.i));
+        reveal(handle, Math.round(state.visibleCount));
       },
       onComplete: () => {
-        h.textEl.textContent = h.full;
-        if (!o.holdCaret) stopBlink(h);
+        handle.textElement.textContent = handle.full;
+        if (!resolvedOptions.holdCaret) stopBlink(handle);
         resolve();
       },
     }));
@@ -108,24 +108,24 @@ export function playType(h: Handle, opts?: TypewriterOptions): Promise<void> {
 }
 
 // Clear the line back to empty (used on section leave).
-export function playClear(h: Handle, opts?: TypewriterOptions): Promise<void> {
-  const o = resolve(opts);
-  h.tween?.kill();
-  startBlink(h, o.caretBlink);
-  const state = { i: h.textEl.textContent?.length ?? h.full.length };
+export function playClear(handle: Handle, options?: TypewriterOptions): Promise<void> {
+  const resolvedOptions = resolve(options);
+  handle.tween?.kill();
+  startBlink(handle, resolvedOptions.caretBlink);
+  const state = { visibleCount: handle.textElement.textContent?.length ?? handle.full.length };
   return new Promise(resolve => {
     // Not carved out of reduced motion the way typing is: the backspace is an exit,
     // and letting it run in real time would leave text on a section already gone.
-    h.tween = gsap.to(state, {
-      i: 0,
-      duration: state.i * o.clearSpeed,
-      ease: `steps(${Math.max(1, state.i)})`,
+    handle.tween = gsap.to(state, {
+      visibleCount: 0,
+      duration: state.visibleCount * resolvedOptions.clearSpeed,
+      ease: `steps(${Math.max(1, state.visibleCount)})`,
       onUpdate: () => {
-        reveal(h, Math.round(state.i));
+        reveal(handle, Math.round(state.visibleCount));
       },
       onComplete: () => {
-        h.textEl.textContent = '';
-        stopBlink(h);
+        handle.textElement.textContent = '';
+        stopBlink(handle);
         resolve();
       },
     });
@@ -133,14 +133,14 @@ export function playClear(h: Handle, opts?: TypewriterOptions): Promise<void> {
 }
 
 // Snap to the hidden/empty state with no animation (cold mount / reset).
-export function resetTypewriter(h: Handle) {
-  h.tween?.kill();
-  stopBlink(h);
-  h.textEl.textContent = '';
-  gsap.set(h.caretEl, { opacity: 0 });
+export function resetTypewriter(handle: Handle) {
+  handle.tween?.kill();
+  stopBlink(handle);
+  handle.textElement.textContent = '';
+  gsap.set(handle.caretElement, { opacity: 0 });
 }
 
-export function killTypewriter(h: Handle) {
-  h.tween?.kill();
-  stopBlink(h);
+export function killTypewriter(handle: Handle) {
+  handle.tween?.kill();
+  stopBlink(handle);
 }

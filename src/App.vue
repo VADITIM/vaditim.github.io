@@ -58,6 +58,7 @@
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { registerDebugCacheClear } from '@modules/miscDebugCacheClear';
   import { startUnlockSession, stopUnlockSession } from '@modules/classifiedUnlockSession';
+  import { recordHeatmapVisit } from '@modules/miscHeatmap';
   import { initializeReducedMotion } from '@modules/miscReducedMotion';
 
   setSectionCount(SECTIONS.length);
@@ -84,6 +85,8 @@
   if (!isMobile.value && !new URLSearchParams(window.location.search).has('unlock')) {
     void startUnlockSession();
   }
+
+  void recordHeatmapVisit();
 
   onBeforeUnmount(() => {
     cleanupSectionLayerStyle();

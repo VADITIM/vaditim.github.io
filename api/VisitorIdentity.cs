@@ -7,12 +7,20 @@ public static class VisitorIdentity
 {
     public const string CookieName = "visitorId";
 
-    public static string GetOrIssueVisitorCookie(this HttpContext http)
+    /// <summary>
+    /// Returns the caller's visitor id, issuing the cookie if they don't have one.
+    /// Pass <paramref name="adoptVisitorId"/> when a fingerprint lookup already
+    /// recognised them: re-issuing their old id is what stitches a cleared-cookie
+    /// visit back onto the comment, rating and unlock they already own.
+    /// </summary>
+    public static string GetOrIssueVisitorCookie(this HttpContext http, string? adoptVisitorId = null)
     {
         if (http.Request.Cookies.TryGetValue(CookieName, out var existing) && IsValidVisitorId(existing))
             return existing;
 
-        var visitorId = Guid.NewGuid().ToString("N");
+        var visitorId = adoptVisitorId is not null && IsValidVisitorId(adoptVisitorId)
+            ? adoptVisitorId
+            : Guid.NewGuid().ToString("N");
         http.Response.Cookies.Append(CookieName, visitorId, new CookieOptions
         {
             HttpOnly = true,

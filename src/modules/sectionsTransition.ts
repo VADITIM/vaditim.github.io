@@ -25,22 +25,22 @@ const HEADING_SELECTOR = '.section-transition-heading'
 
 /** Returns true if the hex colour is perceptually light (luminance > 0.5). */
 function isLightColor(hex: string): boolean {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  return (r * 0.299 + g * 0.587 + b * 0.114) / 255 > 0.5
+  const red = parseInt(hex.slice(1, 3), 16)
+  const green = parseInt(hex.slice(3, 5), 16)
+  const blue = parseInt(hex.slice(5, 7), 16)
+  return (red * 0.299 + green * 0.587 + blue * 0.114) / 255 > 0.5
 }
 
 /** Blend a hex colour toward grey by `amount` (0 = original, 1 = full grey). */
 function desaturate(hex: string, amount: number): string {
-  const r = parseInt(hex.slice(1, 3), 16)
-  const g = parseInt(hex.slice(3, 5), 16)
-  const b = parseInt(hex.slice(5, 7), 16)
-  const grey = r * 0.299 + g * 0.587 + b * 0.114
-  const nr = Math.round(r + (grey - r) * amount)
-  const ng = Math.round(g + (grey - g) * amount)
-  const nb = Math.round(b + (grey - b) * amount)
-  return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`
+  const red = parseInt(hex.slice(1, 3), 16)
+  const green = parseInt(hex.slice(3, 5), 16)
+  const blue = parseInt(hex.slice(5, 7), 16)
+  const grey = red * 0.299 + green * 0.587 + blue * 0.114
+  const greyedRed = Math.round(red + (grey - red) * amount)
+  const greyedGreen = Math.round(green + (grey - green) * amount)
+  const greyedBlue = Math.round(blue + (grey - blue) * amount)
+  return `#${greyedRed.toString(16).padStart(2, '0')}${greyedGreen.toString(16).padStart(2, '0')}${greyedBlue.toString(16).padStart(2, '0')}`
 }
 
 /**
@@ -78,7 +78,7 @@ function makeBarStaggers(): number[] {
   let guard = 0
   while (offsets.length < BAR_COUNT && guard++ < 1000) {
     const candidate = Math.random() * MAX_BAR_STAGGER
-    if (offsets.every((o) => Math.abs(o - candidate) >= MIN_BAR_GAP)) {
+    if (offsets.every((offset) => Math.abs(offset - candidate) >= MIN_BAR_GAP)) {
       offsets.push(candidate)
     }
   }
@@ -159,9 +159,9 @@ function play(meta: SectionTransitionMeta) {
   if (activeTimeline) activeTimeline.kill()
   gsap.killTweensOf([...shutters, kicker, heading])
   gsap.set(shutters, { scaleX: 0 })
-  shutters.forEach((s, i) => {
-    const col = i % 2 === 0 ? accent : accentMuted
-    gsap.set(s, { backgroundColor: col, borderColor: col })
+  shutters.forEach((shutter, index) => {
+    const barColor = index % 2 === 0 ? accent : accentMuted
+    gsap.set(shutter, { backgroundColor: barColor, borderColor: barColor })
   })
   gsap.set([kicker, heading], { opacity: 0 })
 
@@ -177,7 +177,7 @@ function play(meta: SectionTransitionMeta) {
   if (heading) heading.textContent = label
   if (kicker) kicker.textContent = kickerText
 
-  const tl = gsap.timeline({
+  const timeline = gsap.timeline({
     onComplete: () => {
       gsap.set(shutters, { scaleX: 0 })
       gsap.set([kicker, heading], { opacity: 0 })
@@ -187,25 +187,25 @@ function play(meta: SectionTransitionMeta) {
 
   // Close; sweep the bars across the screen to fully cover the swap.
   const closeStaggers = makeBarStaggers()
-  tl.to(shutters, { scaleX: 1, duration: CLOSE_DURATION, stagger: (i) => closeStaggers[i], ease: 'power3.in' }, 0)
+  timeline.to(shutters, { scaleX: 1, duration: CLOSE_DURATION, stagger: (index) => closeStaggers[index], ease: 'power3.in' }, 0)
 
   // Flash the incoming section's name on the closed curtain.
   if (kicker) {
     gsap.set(kicker, { yPercent: 110, skewY: 3, opacity: 1, color: labelColor })
-    tl.to(kicker, { yPercent: 0, skewY: 0, duration: 0.45, ease: 'expo.out' }, 0.44)
+    timeline.to(kicker, { yPercent: 0, skewY: 0, duration: 0.45, ease: 'expo.out' }, 0.44)
   }
   if (heading) {
     gsap.set(heading, { yPercent: 115, skewY: 5, color: labelColor, webkitTextStroke: `1px ${labelOutlineColor}` })
-    tl.to(heading, { opacity: 1, yPercent: 0, skewY: 0, duration: 0.5, ease: 'expo.out' }, 0.52)
+    timeline.to(heading, { opacity: 1, yPercent: 0, skewY: 0, duration: 0.5, ease: 'expo.out' }, 0.52)
   }
 
   // Clear the label and open the bars together, revealing the empty section.
-  if (heading) tl.to(heading, { opacity: 0, yPercent: -60, duration: 0.4, ease: 'power3.in' }, 0.9)
-  if (kicker) tl.to(kicker, { yPercent: -110, skewY: -2, duration: 0.3, ease: 'power3.in' }, 0.88)
+  if (heading) timeline.to(heading, { opacity: 0, yPercent: -60, duration: 0.4, ease: 'power3.in' }, 0.9)
+  if (kicker) timeline.to(kicker, { yPercent: -110, skewY: -2, duration: 0.3, ease: 'power3.in' }, 0.88)
   const openStaggers = makeBarStaggers()
-  tl.to(shutters, { scaleX: 0, duration: OPEN_DURATION, stagger: (i) => openStaggers[i], ease: 'power3.out' }, OPEN_AT)
+  timeline.to(shutters, { scaleX: 0, duration: OPEN_DURATION, stagger: (index) => openStaggers[index], ease: 'power3.out' }, OPEN_AT)
 
-  activeTimeline = tl
+  activeTimeline = timeline
 }
 
 /**

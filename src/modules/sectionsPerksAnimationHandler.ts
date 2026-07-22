@@ -38,10 +38,10 @@ type SkillsDesktopVariant = {
 	lineEnterX: number;
 };
 
-function RegisterSkillsM(
+function RegisterSkillsMobile(
 	config: SkillsMobileVariant,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean,
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean,
 	initialSection: number
 ) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
@@ -119,10 +119,10 @@ function RegisterSkillsM(
 	});
 }
 
-function RegisterSkillsD(
+function RegisterSkillsDesktop(
 	config: SkillsDesktopVariant,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean,
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean,
 	initialSection: number
 ) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
@@ -204,8 +204,8 @@ function RegisterSkillsD(
 
 function SkillsMobile(
 	initialSection: number,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean
 ) {
 	const mobileVariants: SkillsMobileVariant[] = [
 		{
@@ -224,13 +224,13 @@ function SkillsMobile(
 		},
 	];
 
-	mobileVariants.forEach(v => RegisterSkillsM(v, isEnter, isLeave, initialSection));
+	mobileVariants.forEach(variant => RegisterSkillsMobile(variant, isEnter, isLeave, initialSection));
 }
 
 function SkillsDesktop(
 	initialSection: number,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean
 ) {
 	const desktopVariants: SkillsDesktopVariant[] = [
 		{
@@ -250,7 +250,7 @@ function SkillsDesktop(
 		},
 	];
 
-	desktopVariants.forEach(v => RegisterSkillsD(v, isEnter, isLeave, initialSection));
+	desktopVariants.forEach(variant => RegisterSkillsDesktop(variant, isEnter, isLeave, initialSection));
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -269,10 +269,10 @@ type NameDesktopVariant = {
 	enterRight: string;
 };
 
-function RegisterNameM(
+function RegisterNameMobile(
 	config: NameMobileVariant,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean,
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean,
 	initialSection: number
 ) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
@@ -320,10 +320,10 @@ function RegisterNameM(
 	});
 }
 
-function RegisterNameD(
+function RegisterNameDesktop(
 	config: NameDesktopVariant,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean,
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean,
 	initialSection: number
 ) {
 	gsap.matchMedia().add(config.mediaQuery, () => {
@@ -371,8 +371,8 @@ function RegisterNameD(
 
 function NameMobile(
 	initialSection: number,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean
 ) {
 	const mobileVariants: NameMobileVariant[] = [
 		{
@@ -393,13 +393,13 @@ function NameMobile(
 		},
 	];
 
-	mobileVariants.forEach(v => RegisterNameM(v, isEnter, isLeave, initialSection));
+	mobileVariants.forEach(variant => RegisterNameMobile(variant, isEnter, isLeave, initialSection));
 }
 
 function NameDesktop(
 	initialSection: number,
-	isEnter: (m: SectionTransitionMeta) => boolean,
-	isLeave: (m: SectionTransitionMeta) => boolean
+	isEnter: (meta: SectionTransitionMeta) => boolean,
+	isLeave: (meta: SectionTransitionMeta) => boolean
 ) {
 	const desktopVariants: NameDesktopVariant[] = [
 		{
@@ -416,5 +416,5 @@ function NameDesktop(
 		},
 	];
 
-	desktopVariants.forEach(v => RegisterNameD(v, isEnter, isLeave, initialSection));
+	desktopVariants.forEach(variant => RegisterNameDesktop(variant, isEnter, isLeave, initialSection));
 }

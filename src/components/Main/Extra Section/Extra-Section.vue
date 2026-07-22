@@ -258,23 +258,23 @@
 
   // ── enter / leave ──
   function playReveal() {
-    const commentsEl = commentsPanelRef.value?.el ?? null,
-      ratingEl = ratingPanelRef.value?.el ?? null,
-      contactEl = contactPanelRef.value?.el ?? null
+    const commentsEl = commentsPanelRef.value?.element ?? null,
+      ratingEl = ratingPanelRef.value?.element ?? null,
+      contactEl = contactPanelRef.value?.element ?? null
     gsap.killTweensOf([eyebrowRef.value, commentsEl, ratingEl, contactEl])
 
-    const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
-    tl.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    tl.fromTo(commentsEl, { x: '-28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
-    tl.fromTo(contactEl, { x: '28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
-    tl.fromTo(ratingEl, { y: '24vh', opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.26)
+    const timeline = gsap.timeline({ delay: SECTION_ENTER_DELAY })
+    timeline.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
+    timeline.fromTo(commentsEl, { x: '-28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
+    timeline.fromTo(contactEl, { x: '28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
+    timeline.fromTo(ratingEl, { y: '24vh', opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.26)
     sheetRef.value?.reveal(SECTION_ENTER_DELAY + 0.35)
   }
 
   function playLeave() {
-    const commentsEl = commentsPanelRef.value?.el ?? null,
-      ratingEl = ratingPanelRef.value?.el ?? null,
-      contactEl = contactPanelRef.value?.el ?? null
+    const commentsEl = commentsPanelRef.value?.element ?? null,
+      ratingEl = ratingPanelRef.value?.element ?? null,
+      contactEl = contactPanelRef.value?.element ?? null
     gsap.killTweensOf([eyebrowRef.value, commentsEl, ratingEl, contactEl])
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     gsap.to(commentsEl, { x: '-28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })

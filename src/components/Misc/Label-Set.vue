@@ -65,7 +65,7 @@
   let labelEls: HTMLElement[] = [];
   let cleanupStates: (() => void) | null = null;
 
-  const sectionIdx = getSectionIndexById(props.sectionId);
+  const sectionIndex = getSectionIndexById(props.sectionId);
 
   function setup() {
     if (!root.value) return;
@@ -76,12 +76,12 @@
     hideLabels(labelEls);
 
     cleanupStates = onSectionStatesChange((meta: SectionTransitionMeta) => {
-      if (meta.isEnteringSection(sectionIdx)) playLabelReveals(labelEls, SECTION_ENTER_DELAY + props.delay);
-      else if (meta.isLeavingSection(sectionIdx)) playLabelLeave(labelEls);
+      if (meta.isEnteringSection(sectionIndex)) playLabelReveals(labelEls, SECTION_ENTER_DELAY + props.delay);
+      else if (meta.isLeavingSection(sectionIndex)) playLabelLeave(labelEls);
     });
 
     // Cold-mount case: if this section is already active, reveal immediately.
-    if (currentSection.value === sectionIdx) playLabelReveals(labelEls, SECTION_ENTER_DELAY + props.delay);
+    if (currentSection.value === sectionIndex) playLabelReveals(labelEls, SECTION_ENTER_DELAY + props.delay);
   }
 
   onMounted(setup);

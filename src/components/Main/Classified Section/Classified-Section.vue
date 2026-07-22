@@ -104,33 +104,33 @@
 
   // ── enter / leave ──
   function playReveal() {
-    const panelEl = panelRef.value?.el ?? null
-    const pongEl = pongPanelRef.value?.el ?? null
-    const qrEl = qrPanelRef.value?.el ?? null
+    const panelEl = panelRef.value?.element ?? null
+    const pongEl = pongPanelRef.value?.element ?? null
+    const qrElement = qrPanelRef.value?.element ?? null
     const loreEl = lorePanelRef.value
     const redactEls = loreEl?.querySelectorAll<HTMLElement>('.sc-redact') ?? []
-    gsap.killTweensOf([eyebrowRef.value, panelEl, pongEl, qrEl, loreEl, ...redactEls])
+    gsap.killTweensOf([eyebrowRef.value, panelEl, pongEl, qrElement, loreEl, ...redactEls])
 
-    const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
-    tl.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    tl.fromTo(loreEl, { x: '-20vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.3)' }, 0.14)
-    tl.fromTo(qrEl, { x: '20vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.3)' }, 0.14)
-    tl.fromTo(panelEl, { y: '20vh', opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.3)' }, 0.18)
-    tl.fromTo(pongEl, { y: '20vh', opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.3)' }, 0.28)
-    tl.fromTo(redactEls, { '--redact-cover': 0 }, { '--redact-cover': 1, duration: 0.4, ease: 'power2.out', stagger: 0.04 }, 0.4)
+    const timeline = gsap.timeline({ delay: SECTION_ENTER_DELAY })
+    timeline.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
+    timeline.fromTo(loreEl, { x: '-20vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.3)' }, 0.14)
+    timeline.fromTo(qrElement, { x: '20vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.3)' }, 0.14)
+    timeline.fromTo(panelEl, { y: '20vh', opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.3)' }, 0.18)
+    timeline.fromTo(pongEl, { y: '20vh', opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.3)' }, 0.28)
+    timeline.fromTo(redactEls, { '--redact-cover': 0 }, { '--redact-cover': 1, duration: 0.4, ease: 'power2.out', stagger: 0.04 }, 0.4)
     pongGameRef.value?.start()
   }
 
   function playLeave() {
-    const panelEl = panelRef.value?.el ?? null
-    const pongEl = pongPanelRef.value?.el ?? null
-    const qrEl = qrPanelRef.value?.el ?? null
+    const panelEl = panelRef.value?.element ?? null
+    const pongEl = pongPanelRef.value?.element ?? null
+    const qrElement = qrPanelRef.value?.element ?? null
     const loreEl = lorePanelRef.value
     const redactEls = loreEl?.querySelectorAll<HTMLElement>('.sc-redact') ?? []
-    gsap.killTweensOf([eyebrowRef.value, panelEl, pongEl, qrEl, loreEl, ...redactEls])
+    gsap.killTweensOf([eyebrowRef.value, panelEl, pongEl, qrElement, loreEl, ...redactEls])
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     gsap.to(loreEl, { x: '-20vw', opacity: 0, duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
-    gsap.to(qrEl, { x: '20vw', opacity: 0, duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
+    gsap.to(qrElement, { x: '20vw', opacity: 0, duration: 0.25, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(panelEl, { y: '20vh', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(pongEl, { y: '20vh', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(redactEls, { '--redact-cover': 0, duration: 0.2, ease: 'power2.in', overwrite: 'auto' })
@@ -175,16 +175,16 @@
   }
 
   onMounted(() => {
-    const panelEl = panelRef.value?.el ?? null
-    const qrEl = qrPanelRef.value?.el ?? null
+    const panelEl = panelRef.value?.element ?? null
+    const qrElement = qrPanelRef.value?.element ?? null
     splitWordsForGlitch([
       eyebrowRef.value,
       lorePanelRef.value?.querySelector<HTMLElement>('.sc-lore-text'),
       panelEl?.querySelector<HTMLElement>('.sc-note'),
       panelEl?.querySelector<HTMLElement>('.module-display-label'),
       panelEl?.querySelector<HTMLElement>('.module-display-caption'),
-      qrEl?.querySelector<HTMLElement>('.module-display-label'),
-      qrEl?.querySelector<HTMLElement>('.module-display-caption'),
+      qrElement?.querySelector<HTMLElement>('.module-display-label'),
+      qrElement?.querySelector<HTMLElement>('.module-display-caption'),
     ])
 
     stopSectionWatch = onSectionStatesChange((meta) => {

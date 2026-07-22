@@ -13,18 +13,18 @@
          card alone narrows its image and reveals a tech-icon module beside it -->
     <div ref="fanRef" class="proj-fan">
       <div
-        v-for="(project, i) in projects"
+        v-for="(project, index) in projects"
         :key="project.name"
         ref="cardRefs"
         class="proj-card"
-        :class="{ 'proj-card--active': fanOffset(i) === 0 }"
-        :data-i="i"
-        @click="onCardClick(i)"
+        :class="{ 'proj-card--active': fanOffset(index) === 0 }"
+        :data-i="index"
+        @click="onCardClick(index)"
       >
         <!-- static-visible on every nested module: their opacity is governed by
              the outer .proj-card's own GSAP-driven fan opacity, not by
              ModuleDisplay's own default container-tween reveal. -->
-        <ModuleDisplay :label="`${String(i + 1).padStart(2, '0')} · PROJECT`" accent="#dc143c" :animate-height="false" static-visible class="proj-card-module">
+        <ModuleDisplay :label="`${String(index + 1).padStart(2, '0')} · PROJECT`" accent="#dc143c" :animate-height="false" static-visible class="proj-card-module">
           <div class="proj-card-body">
             <ModuleDisplay label="" :animate-height="false" static-visible class="proj-card-image">
               <div class="proj-card-img" :style="{ backgroundImage: `url(${project.img})` }"></div>
@@ -43,7 +43,7 @@
 
     <!-- info window; name / description / year for the centred card.
          The panel enter/leave (container fade) is animated on our own plain
-         DOM ref (infoPanelRef), not on ModuleDisplay's internal exposed el -
+         DOM ref (infoPanelRef), not on ModuleDisplay's internal exposed element -
          so the panel's own tween can never gate or interfere with the name's
          independent label-reveal animation underneath. -->
     <div ref="infoPanelRef" class="proj-info proj-info-grid">
@@ -91,11 +91,11 @@
     <!-- controls -->
     <div class="proj-dots">
       <div
-        v-for="(project, i) in projects"
+        v-for="(project, index) in projects"
         :key="project.name + '-dot'"
         class="proj-dot"
-        :class="{ active: i === fanCenter }"
-        @click="centerOn(i)"
+        :class="{ active: index === fanCenter }"
+        @click="centerOn(index)"
       ></div>
     </div>
 
@@ -119,7 +119,7 @@
   import { rippleProjectHelix } from '@modules/miscProjectHelixCanvas'
   import { keepFullMotion } from '@modules/miscReducedMotion'
 
-  const N = projects.length
+  const projectCount = projects.length
   const projectsIndex = getSectionIndexById('projects')
 
   const PROJECT_LABELS = [
@@ -139,7 +139,7 @@
   const fanRef = ref<HTMLElement | null>(null)
   const cardRefs = ref<HTMLElement[]>([])
 
-  const fanCenter = ref(Math.floor(N / 2))
+  const fanCenter = ref(Math.floor(projectCount / 2))
   // The info labels render from displayedIndex, not fanCenter: fanCenter moves
   // the instant a project is selected (the fan must react immediately), but the
   // label text may only swap once the leave animation has fully hidden it -
@@ -162,9 +162,9 @@
   // in on top of the leave when the section is exited before SECTION_ENTER_DELAY.
   let feedTl: gsap.core.Timeline | null = null
 
-  function on(target: Window | HTMLElement, type: string, handler: EventListenerOrEventListenerObject, opts?: AddEventListenerOptions) {
-    target.addEventListener(type, handler, opts)
-    listeners.push(() => target.removeEventListener(type, handler, opts))
+  function on(target: Window | HTMLElement, type: string, handler: EventListenerOrEventListenerObject, options?: AddEventListenerOptions) {
+    target.addEventListener(type, handler, options)
+    listeners.push(() => target.removeEventListener(type, handler, options))
   }
 
   // ── fan geometry ──
@@ -172,27 +172,27 @@
     // Fixed slot spacing, not a fan spread; only the centre ± one neighbour
     // are ever visible (see reference image), so this is just the gap between
     // those three flat slots, proportional to viewport width.
-    return { SX: window.innerWidth * 0.27 }
+    return { slotSpacing: window.innerWidth * 0.27 }
   }
 
-  function fanOffset(k: number) {
-    let d = k - fanCenter.value
-    d = ((d % N) + N) % N
-    if (d > N / 2) d -= N
-    return d
+  function fanOffset(cardIndex: number) {
+    let offset = cardIndex - fanCenter.value
+    offset = ((offset % projectCount) + projectCount) % projectCount
+    if (offset > projectCount / 2) offset -= projectCount
+    return offset
   }
 
   // Three flat, evenly-sized slots (left / centre / right); no rotation,
   // no scale falloff, no vertical cascade. Anything beyond the immediate
   // neighbours is fully hidden off-slot, not faded into a deep fan.
-  function fanTarget(o: number) {
-    const ao = Math.abs(o)
+  function fanTarget(offset: number) {
+    const distance = Math.abs(offset)
     // Cards beyond the visible ±1 neighbours travel to a fixed off-screen rest
     // position (viewport edge + 20vw) rather than growing proportionally with
     // their fan offset; otherwise a card several slots away drifts to an
     // arbitrary point mid-transition and fades out short of the actual edge.
     const offscreenX = window.innerWidth * 0.5 + window.innerWidth * 0.2
-    const x = ao > 1 ? Math.sign(o) * offscreenX : o * fanDims().SX
+    const x = distance > 1 ? Math.sign(offset) * offscreenX : offset * fanDims().slotSpacing
     return {
       xPercent: -50,
       yPercent: -50,
@@ -200,25 +200,25 @@
       y: 0,
       rotation: 0,
       scale: 1,
-      opacity: ao > 1 ? 0 : 1,
+      opacity: distance > 1 ? 0 : 1,
     }
   }
 
-  function fanStyle(card: HTMLElement, o: number) {
-    const ao = Math.abs(o)
-    card.style.zIndex = String(100 - ao * 10)
-    card.style.borderColor = ao === 0 ? '#DC143C' : 'transparent'
-    card.style.boxShadow = ao === 0 ? '0 30px 72px rgba(220,20,60,0.42)' : '0 22px 56px rgba(0,0,0,0.55)'
-    card.style.pointerEvents = ao > 1 ? 'none' : 'auto'
+  function fanStyle(card: HTMLElement, offset: number) {
+    const distance = Math.abs(offset)
+    card.style.zIndex = String(100 - distance * 10)
+    card.style.borderColor = distance === 0 ? '#DC143C' : 'transparent'
+    card.style.boxShadow = distance === 0 ? '0 30px 72px rgba(220,20,60,0.42)' : '0 22px 56px rgba(0,0,0,0.55)'
+    card.style.pointerEvents = distance > 1 ? 'none' : 'auto'
   }
 
   function layoutFan(animate: boolean) {
     cardRefs.value.forEach((card) => {
-      const o = fanOffset(Number(card.getAttribute('data-i')))
-      fanStyle(card, o)
-      const t = fanTarget(o)
-      if (animate) gsap.to(card, { ...t, duration: 1.0, ease: 'expo.out', transformOrigin: 'center bottom', overwrite: 'auto' })
-      else gsap.set(card, { ...t, transformOrigin: 'center bottom' })
+      const offset = fanOffset(Number(card.getAttribute('data-i')))
+      fanStyle(card, offset)
+      const target = fanTarget(offset)
+      if (animate) gsap.to(card, { ...target, duration: 1.0, ease: 'expo.out', transformOrigin: 'center bottom', overwrite: 'auto' })
+      else gsap.set(card, { ...target, transformOrigin: 'center bottom' })
     })
   }
 
@@ -234,15 +234,15 @@
     gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
     // Modules 01-03 are carved out of reduced motion (see TASKS.md) — the bar sweep
     // is how the project's name changes hands, not decoration around it.
-    const tl = keepFullMotion(gsap.timeline({ delay }))
-    tl.to(bar, { scaleX: 1, duration: 0.3, ease: 'power3.inOut' })
+    const timeline = keepFullMotion(gsap.timeline({ delay }))
+    timeline.to(bar, { scaleX: 1, duration: 0.3, ease: 'power3.inOut' })
       .set(text, { clipPath: 'inset(0 0% 0 0)' })
       .set(bar, { transformOrigin: 'right center' })
       .to(bar, { scaleX: 0, duration: 0.36, ease: 'power3.inOut' })
       .set(bar, { opacity: 0 })
   }
 
-  const HEADING_LEAVE_DUR = 0.25
+  const HEADING_LEAVE_DURATION = 0.25
 
   // Leave re-collapses instantly, no stagger; per the enter/leave asymmetry rule.
   // Returns the leave duration so callers can gate the next reveal on it.
@@ -251,7 +251,7 @@
     const bar = headingBarRef.value
     if (!text || !bar) return
     gsap.killTweensOf([text, bar])
-    keepFullMotion(gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: HEADING_LEAVE_DUR, ease: 'power2.in', overwrite: 'auto' }))
+    keepFullMotion(gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: HEADING_LEAVE_DURATION, ease: 'power2.in', overwrite: 'auto' }))
     gsap.set(bar, { opacity: 0 })
   }
 
@@ -268,8 +268,8 @@
       gsap.killTweensOf([text, bar])
       gsap.set(text, { clipPath: 'inset(0 100% 0 0)' })
       gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
-      const tl = keepFullMotion(gsap.timeline({ delay: delay + i * 0.08 }))
-      tl.to(bar, { scaleX: 1, duration: 0.36, ease: 'power3.inOut' })
+      const timeline = keepFullMotion(gsap.timeline({ delay: delay + i * 0.08 }))
+      timeline.to(bar, { scaleX: 1, duration: 0.36, ease: 'power3.inOut' })
         .set(text, { clipPath: 'inset(0 0% 0 0)' })
         .set(bar, { transformOrigin: 'right center' })
         .to(bar, { scaleX: 0, duration: 0.42, ease: 'power3.inOut' })
@@ -278,10 +278,10 @@
   }
 
   function playSubLeave() {
-    const els = [descRef.value, yearRef.value, genreRef.value]
+    const elements = [descRef.value, yearRef.value, genreRef.value]
     const bars = [descBarRef.value, yearBarRef.value, genreBarRef.value]
-    gsap.killTweensOf([...els, ...bars])
-    els.forEach((text) => { if (text) keepFullMotion(gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' })) })
+    gsap.killTweensOf([...elements, ...bars])
+    elements.forEach((text) => { if (text) keepFullMotion(gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' })) })
     bars.forEach((bar) => { if (bar) gsap.set(bar, { opacity: 0 }) })
   }
 
@@ -293,8 +293,8 @@
   // so rapid cycling stays continuous instead of snapping or hiding.
   let labelRequestToken = 0
 
-  function centerOn(i: number) {
-    const next = ((i % N) + N) % N
+  function centerOn(targetIndex: number) {
+    const next = ((targetIndex % projectCount) + projectCount) % projectCount
     if (next === fanCenter.value) return
 
     // Cards move the instant the switch is triggered; the fan is the primary
@@ -309,7 +309,7 @@
     playSubLeave()
     // Exempt alongside the leave it waits on: a collapsed delay against a real-time
     // leave would swap the text while the old value is still on screen.
-    keepFullMotion(gsap.delayedCall(HEADING_LEAVE_DUR, () => {
+    keepFullMotion(gsap.delayedCall(HEADING_LEAVE_DURATION, () => {
       if (token !== labelRequestToken) return
       // Leave finished with the old values fully hidden; only now swap the
       // rendered text to the newly selected project, then reveal it.
@@ -327,13 +327,13 @@
   // ── pointer tilt + parallax (ported from the Sandbox section) ──
   function initCardTilt() {
     cardRefs.value.forEach((card) => {
-      on(card, 'mousemove', (e) => {
-        const ev = e as MouseEvent
-        const r = card.getBoundingClientRect()
-        const px = (ev.clientX - (r.left + r.width / 2)) / (r.width / 2)
-        const py = (ev.clientY - (r.top + r.height / 2)) / (r.height / 2)
+      on(card, 'mousemove', (event) => {
+        const mouseEvent = event as MouseEvent
+        const bounds = card.getBoundingClientRect()
+        const pointerX = (mouseEvent.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2)
+        const pointerY = (mouseEvent.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2)
         // tilt toward the cursor; fan layout owns x/y/scale/rotationZ, so no overwrite
-        gsap.to(card, { rotationY: px * 14, rotationX: -py * 14, duration: 0.4, ease: 'power3.out' })
+        gsap.to(card, { rotationY: pointerX * 14, rotationX: -pointerY * 14, duration: 0.4, ease: 'power3.out' })
       })
       on(card, 'mouseleave', () => {
         gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1,0.4)' })
@@ -341,11 +341,11 @@
     })
   }
 
-  function onCardClick(i: number) {
+  function onCardClick(cardIndex: number) {
     if (dragMoved) return
     // Off-centre card → bring it to the front. Centre card → open the detail window.
-    if (fanOffset(i) !== 0) { centerOn(i); return }
-    activeProjectIndex.value = i
+    if (fanOffset(cardIndex) !== 0) { centerOn(cardIndex); return }
+    activeProjectIndex.value = cardIndex
   }
 
   // ── enter reveal (adapted from the design's playFeed) ──
@@ -354,7 +354,7 @@
     const panel = infoPanelRef.value
     const cards = cardRefs.value
 
-    fanCenter.value = Math.floor(N / 2)
+    fanCenter.value = Math.floor(projectCount / 2)
     // Section enter starts from a fully hidden state; sync the rendered label
     // values immediately and invalidate any pending centerOn label sequence.
     displayedIndex.value = fanCenter.value
@@ -368,20 +368,20 @@
 
     // Wait for the section-cut curtain to fully close before fanning the feed in,
     // so the reveal happens behind the curtain rather than alongside it.
-    const tl = gsap.timeline({ delay: SECTION_ENTER_DELAY })
-    feedTl = tl
-    tl.to(eyebrow, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
-    tl.to(panel, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.6)' }, 0.18)
-    tl.add(() => playHeadingReveal(0), 0.32)
-    tl.add(() => playSubReveal(0.1), 0.32)
-    tl.add(() => {
+    const timeline = gsap.timeline({ delay: SECTION_ENTER_DELAY })
+    feedTl = timeline
+    timeline.to(eyebrow, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
+    timeline.to(panel, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.6)' }, 0.18)
+    timeline.add(() => playHeadingReveal(0), 0.32)
+    timeline.add(() => playSubReveal(0.1), 0.32)
+    timeline.add(() => {
       const ordered = cards.slice().sort(
-        (a, b) => Math.abs(fanOffset(Number(a.getAttribute('data-i')))) - Math.abs(fanOffset(Number(b.getAttribute('data-i'))))
+        (first, second) => Math.abs(fanOffset(Number(first.getAttribute('data-i')))) - Math.abs(fanOffset(Number(second.getAttribute('data-i'))))
       )
-      ordered.forEach((card, idx) => {
-        const o = fanOffset(Number(card.getAttribute('data-i')))
-        fanStyle(card, o)
-        gsap.to(card, { ...fanTarget(o), duration: 0.7, ease: 'back.out(1.4)', delay: idx * 0.06, transformOrigin: 'center bottom' })
+      ordered.forEach((card, index) => {
+        const offset = fanOffset(Number(card.getAttribute('data-i')))
+        fanStyle(card, offset)
+        gsap.to(card, { ...fanTarget(offset), duration: 0.7, ease: 'back.out(1.4)', delay: index * 0.06, transformOrigin: 'center bottom' })
       })
     }, 0.35)
   }
@@ -410,26 +410,26 @@
   function initDrag() {
     const fan = fanRef.value
     if (!fan) return
-    on(fan, 'mousedown', (e) => {
+    on(fan, 'mousedown', (event) => {
       dragging = true
       dragMoved = false
-      dragStartX = (e as MouseEvent).clientX
+      dragStartX = (event as MouseEvent).clientX
     })
-    on(window, 'mousemove', (e) => {
+    on(window, 'mousemove', (event) => {
       if (!dragging) return
-      if (Math.abs((e as MouseEvent).clientX - dragStartX) > 6) dragMoved = true
+      if (Math.abs((event as MouseEvent).clientX - dragStartX) > 6) dragMoved = true
     })
-    on(window, 'mouseup', (e) => {
+    on(window, 'mouseup', (event) => {
       if (!dragging) return
       dragging = false
-      const dx = (e as MouseEvent).clientX - dragStartX
-      if (dx > 45) feedPrev()
-      else if (dx < -45) feedNext()
+      const dragDistanceX = (event as MouseEvent).clientX - dragStartX
+      if (dragDistanceX > 45) feedPrev()
+      else if (dragDistanceX < -45) feedNext()
     })
-    on(window, 'keydown', (e) => {
+    on(window, 'keydown', (event) => {
       if (currentSection.value !== projectsIndex) return
       if (activeProjectIndex.value !== null) return
-      const key = (e as KeyboardEvent).key
+      const key = (event as KeyboardEvent).key
       if (key === 'ArrowLeft') feedPrev()
       else if (key === 'ArrowRight') feedNext()
     })

@@ -17,19 +17,19 @@ export function hideLabels(labelEls: HTMLElement[]) {
 // one-off choreographies (e.g. the landing page) that sequence labels inside a
 // master timeline instead of via the positional stagger.
 export function buildLabelReveal(label: HTMLElement): gsap.core.Timeline {
-  const tl = gsap.timeline();
+  const timeline = gsap.timeline();
   const text = label.querySelector('.pc-label-text');
   const bar = label.querySelector('.pc-label-bar');
-  if (!text || !bar) return tl;
+  if (!text || !bar) return timeline;
   gsap.killTweensOf([text, bar]);
   gsap.set(text, { clipPath: 'inset(0 100% 0 0)' });
   gsap.set(bar, { scaleX: 0, x: '0%', opacity: 1, transformOrigin: 'left center' });
-  tl.to(bar, { scaleX: 1, duration: 0.42, ease: 'power3.inOut' })
+  timeline.to(bar, { scaleX: 1, duration: 0.42, ease: 'power3.inOut' })
     .set(text, { clipPath: 'inset(0 0% 0 0)' })
     .set(bar, { transformOrigin: 'right center' })
     .to(bar, { scaleX: 0, duration: 0.5, ease: 'power3.inOut' })
     .set(bar, { opacity: 0 });
-  return tl;
+  return timeline;
 }
 
 // Each label: a thin bar grows to the right to cover the text, then slides out

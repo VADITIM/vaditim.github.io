@@ -16,18 +16,18 @@ const BACK_CARD_SELECTOR = ".back-card1, .back-card2, .back-card3, .back-card4";
 // enter/leave animations internally. This handler only owns the mobile
 // (< smallDesktop) card-stack layout.
 export function registerLogsAnimations() {
-  const logsIdx = getSectionIndexById('logs');
+  const logsIndex = getSectionIndexById('logs');
 
-  const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(logsIdx);
-  const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(logsIdx);
+  const isEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(logsIndex);
+  const isLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(logsIndex);
 
-  LogsMobile(logsIdx, isEnter, isLeave);
+  LogsMobile(logsIndex, isEnter, isLeave);
 }
 
-function RegisterLogsM(
+function RegisterLogsMobile(
   config: { mediaQuery: string; selector: string },
-  isEnter: (m: SectionTransitionMeta) => boolean,
-  isLeave: (m: SectionTransitionMeta) => boolean,
+  isEnter: (meta: SectionTransitionMeta) => boolean,
+  isLeave: (meta: SectionTransitionMeta) => boolean,
   initialSection: number
 ) {
   gsap.matchMedia().add(config.mediaQuery, () => {
@@ -78,9 +78,9 @@ function RegisterLogsM(
 }
 
 function LogsMobile(
-  logsIdx: number,
-  isEnter: (m: SectionTransitionMeta) => boolean,
-  isLeave: (m: SectionTransitionMeta) => boolean
+  logsIndex: number,
+  isEnter: (meta: SectionTransitionMeta) => boolean,
+  isLeave: (meta: SectionTransitionMeta) => boolean
 ) {
   const mobileVariants = [
     {
@@ -89,5 +89,5 @@ function LogsMobile(
     },
   ];
 
-  mobileVariants.forEach(v => RegisterLogsM(v, isEnter, isLeave, logsIdx));
+  mobileVariants.forEach(variant => RegisterLogsMobile(variant, isEnter, isLeave, logsIndex));
 }

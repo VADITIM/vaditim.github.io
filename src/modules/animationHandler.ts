@@ -16,7 +16,7 @@ export type {
 gsap.defaults({ immediateRender: false });
 
 export function PageAnimations(sections: SectionDefinition[]) {
-	sections.forEach(s => s.registerAnimations());
+	sections.forEach(section => section.registerAnimations());
 }
 
 export const breakpoints = {

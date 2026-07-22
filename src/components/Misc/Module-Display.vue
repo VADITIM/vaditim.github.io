@@ -38,25 +38,25 @@
   const root = ref<HTMLElement | null>(null);
   const listeners: Array<() => void> = [];
   let resizeObserver: ResizeObserver | null = null;
-  let prevHeight: number | null = null;
+  let previousHeight: number | null = null;
 
-  defineExpose({ get el() { return root.value; } });
+  defineExpose({ get element() { return root.value; } });
 
   onMounted(() => {
     if (!root.value) return;
-    const el = root.value;
-    const glow = el.querySelector<HTMLElement>('.module-display-hue');
+    const element = root.value;
+    const glow = element.querySelector<HTMLElement>('.module-display-hue');
     if (glow) {
-      const onMove = (e: MouseEvent) => {
-        const r = el.getBoundingClientRect();
-        glow.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        glow.style.setProperty('--my', `${e.clientY - r.top}px`);
+      const onMove = (event: MouseEvent) => {
+        const bounds = element.getBoundingClientRect();
+        glow.style.setProperty('--mx', `${event.clientX - bounds.left}px`);
+        glow.style.setProperty('--my', `${event.clientY - bounds.top}px`);
         glow.style.opacity = '1';
       };
       const onLeave = () => { glow.style.opacity = '0'; };
-      el.addEventListener('mousemove', onMove);
-      el.addEventListener('mouseleave', onLeave);
-      listeners.push(() => el.removeEventListener('mousemove', onMove), () => el.removeEventListener('mouseleave', onLeave));
+      element.addEventListener('mousemove', onMove);
+      element.addEventListener('mouseleave', onLeave);
+      listeners.push(() => element.removeEventListener('mousemove', onMove), () => element.removeEventListener('mouseleave', onLeave));
     }
 
     // ── height scaling transition ──
@@ -66,14 +66,14 @@
     // modules whose height is pinned by a parent grid track (Sandbox/Extra),
     // since those never report a size change here.
     if (props.animateHeight) {
-      prevHeight = el.offsetHeight;
+      previousHeight = element.offsetHeight;
       resizeObserver = new ResizeObserver(() => {
         if (!root.value) return;
         const newHeight = root.value.offsetHeight;
-        if (prevHeight === null) { prevHeight = newHeight; return; }
-        if (Math.abs(newHeight - prevHeight) < 1) return;
-        const from = prevHeight;
-        prevHeight = newHeight;
+        if (previousHeight === null) { previousHeight = newHeight; return; }
+        if (Math.abs(newHeight - previousHeight) < 1) return;
+        const from = previousHeight;
+        previousHeight = newHeight;
         resizeObserver?.unobserve(root.value);
         gsap.fromTo(root.value, { height: from }, {
           height: newHeight,
@@ -87,7 +87,7 @@
           },
         });
       });
-      resizeObserver.observe(el);
+      resizeObserver.observe(element);
     }
   });
 
@@ -116,12 +116,16 @@
     will-change: transform, opacity;
     transition: border-color 0.25s ease;
 
+    // Dim base tint on hover; the hue layer supplies the bright falloff around
+    // the cursor so the ring reads as one glow with a hot spot, not two states.
     &:hover {
-      border-color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 30%, #262626);
     }
   }
 
-  // Cursor-following accent glow, masked to only show on the box's border ring.
+  // Accent glow masked to only show on the box's border ring. The whole ring
+  // lights up on hover, but the gradient's final stop keeps everything past the
+  // cursor's radius at a low hue so the pointer still has a bright hot spot.
   // `--mx` / `--my` are updated per-box from the pointer on mousemove.
   .module-display-hue {
     position: absolute;
@@ -131,9 +135,10 @@
     pointer-events: none;
     z-index: 4;
     background: radial-gradient(
-      150px circle at var(--mx, 50%) var(--my, 50%),
-      color-mix(in srgb, var(--accent) 85%, transparent),
-      transparent 70%
+      180px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--accent) 95%, transparent),
+      color-mix(in srgb, var(--accent) 50%, transparent) 45%,
+      color-mix(in srgb, var(--accent) 20%, transparent) 100%
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,

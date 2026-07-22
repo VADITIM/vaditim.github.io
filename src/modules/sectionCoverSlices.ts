@@ -45,119 +45,119 @@ const COVER_SLICE_TARGETS = [
 ]
 
 function DragTransition(buildTimeline: (timeline: gsap.core.Timeline) => void) {
-  const els = gsap.utils.toArray(COVER_SLICE_TARGETS)
-  els.forEach((el: any) => el.classList && el.classList.add('gsap--no-transition'))
+  const elements = gsap.utils.toArray(COVER_SLICE_TARGETS)
+  elements.forEach((element: any) => element.classList && element.classList.add('gsap--no-transition'))
 
-  const tl = gsap.timeline({
+  const timeline = gsap.timeline({
     onComplete: () => {
-      els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition'))
+      elements.forEach((element: any) => element.classList && element.classList.remove('gsap--no-transition'))
       vibrateOnComplete()
     },
-    onInterrupt: () => els.forEach((el: any) => el.classList && el.classList.remove('gsap--no-transition')),
+    onInterrupt: () => elements.forEach((element: any) => element.classList && element.classList.remove('gsap--no-transition')),
   })
 
-  buildTimeline(tl)
+  buildTimeline(timeline)
 }
 
 function playPerksEnterDesktop() {
   gsap.killTweensOf(['.perks-back', '.perks-front'])
-  DragTransition((tl) => {
-    tl.to('.perks-back', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.perks-front', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
+  DragTransition((timeline) => {
+    timeline.to('.perks-back', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.perks-front', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
 }
 
 function playPerksLeaveDesktop() {
   gsap.killTweensOf(['.perks-back', '.perks-front'])
-  DragTransition((tl) => {
-    tl.to('.perks-back', { left: '-30%', top: '0%', ease: 'back.in', duration: DURATION, overwrite: 'auto', onComplete: vibrateOnComplete }, 0)
-    tl.to('.perks-front', { left: '-30%', top: '0%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
+  DragTransition((timeline) => {
+    timeline.to('.perks-back', { left: '-30%', top: '0%', ease: 'back.in', duration: DURATION, overwrite: 'auto', onComplete: vibrateOnComplete }, 0)
+    timeline.to('.perks-front', { left: '-30%', top: '0%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
 }
 
 function playLogsEnterDesktop() {
   gsap.killTweensOf(['.logs-back', '.logs-front'])
-  DragTransition((tl) => {
-    tl.to('.logs-back', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.logs-front', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
+  DragTransition((timeline) => {
+    timeline.to('.logs-back', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.logs-front', { left: '-10%', top: '-5%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
 }
 
 function playLogsLeaveDesktop() {
   gsap.killTweensOf(['.logs-back', '.logs-front'])
-  DragTransition((tl) => {
-    tl.to('.logs-back', { left: '-30%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.logs-front', { left: '-30%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
+  DragTransition((timeline) => {
+    timeline.to('.logs-back', { left: '-30%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.logs-front', { left: '-30%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
 }
 
 function playProjectsEnterDesktop() {
   gsap.killTweensOf(['.projects-back', '.projects-front'])
-  DragTransition((tl) => {
-    tl.to('.projects-back', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.projects-front', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
+  DragTransition((timeline) => {
+    timeline.to('.projects-back', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.projects-front', { right: '-10%', ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY + FRONT_LAYER_OFFSET)
   })
   showProjectHelix(SECTION_ENTER_DELAY)
 }
 
 function playProjectsLeaveDesktop() {
   gsap.killTweensOf(['.projects-back', '.projects-front'])
-  DragTransition((tl) => {
-    tl.to('.projects-back', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.projects-front', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
+  DragTransition((timeline) => {
+    timeline.to('.projects-back', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.projects-front', { right: '-40%', ease: 'back.in', duration: DURATION, overwrite: 'auto' }, FRONT_LAYER_OFFSET)
   })
   hideProjectHelix()
 }
 
 function playExtraEnterDesktop() {
   gsap.killTweensOf(['.extra-tr', '.extra-bl'])
-  DragTransition((tl) => {
-    tl.to('.extra-tr', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.extra-bl', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.to('.extra-tr', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.extra-bl', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playExtraLeaveDesktop() {
   gsap.killTweensOf(['.extra-tr', '.extra-bl'])
-  DragTransition((tl) => {
-    tl.to('.extra-tr', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.extra-bl', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+  DragTransition((timeline) => {
+    timeline.to('.extra-tr', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.extra-bl', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
   })
 }
 
 function playSandboxEnterDesktop() {
   gsap.killTweensOf(['.sandbox-tl', '.sandbox-tr', '.sandbox-bl', '.sandbox-br'])
-  DragTransition((tl) => {
-    tl.to('.sandbox-tl', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.sandbox-tr', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.sandbox-bl', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.sandbox-br', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.to('.sandbox-tl', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.sandbox-tr', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.sandbox-bl', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.sandbox-br', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playSandboxLeaveDesktop() {
   gsap.killTweensOf(['.sandbox-tl', '.sandbox-tr', '.sandbox-bl', '.sandbox-br'])
-  DragTransition((tl) => {
-    tl.to('.sandbox-tl', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.sandbox-tr', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.sandbox-bl', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.sandbox-br', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+  DragTransition((timeline) => {
+    timeline.to('.sandbox-tl', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.sandbox-tr', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.sandbox-bl', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.sandbox-br', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
   })
 }
 
 function playClassifiedEnterDesktop() {
   gsap.killTweensOf(['.classified-tl', '.classified-br'])
-  DragTransition((tl) => {
-    tl.to('.classified-tl', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
-    tl.to('.classified-br', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.to('.classified-tl', { top: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
+    timeline.to('.classified-br', { bottom: CORNER_REVEAL, ease: 'back.out', duration: DURATION, overwrite: 'auto' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playClassifiedLeaveDesktop() {
   gsap.killTweensOf(['.classified-tl', '.classified-br'])
-  DragTransition((tl) => {
-    tl.to('.classified-tl', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
-    tl.to('.classified-br', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+  DragTransition((timeline) => {
+    timeline.to('.classified-tl', { top: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
+    timeline.to('.classified-br', { bottom: CORNER_HIDDEN, ease: 'back.in', duration: DURATION, overwrite: 'auto' }, 0)
   })
 }
 
@@ -186,169 +186,169 @@ function initMobileBackgroundState() {
 }
 
 function playPerksEnterMobile() {
-  DragTransition((tl) => {
-    tl.set('.perks-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.set('.perks-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.perks-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.perks-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.set('.perks-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.set('.perks-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.to('.perks-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.perks-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playLogsEnterMobile() {
-  DragTransition((tl) => {
-    tl.set('.logs-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.set('.logs-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.logs-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.logs-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.set('.logs-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.set('.logs-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.to('.logs-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.logs-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playProjectsEnterMobile() {
-  DragTransition((tl) => {
-    tl.set('.projects-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.set('.projects-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.projects-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.projects-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.set('.projects-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.set('.projects-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.to('.projects-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.projects-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playExtraEnterMobile() {
-  DragTransition((tl) => {
-    tl.set('.extra-tr', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.set('.extra-bl', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-    tl.to('.extra-tr', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.extra-bl', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.set('.extra-tr', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.set('.extra-bl', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+    timeline.to('.extra-tr', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.extra-bl', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playSandboxEnterMobile() {
-  DragTransition((tl) => {
-    tl.set(['.sandbox-tl', '.sandbox-tr'], { top: CORNER_HIDDEN }, 0)
-    tl.set(['.sandbox-bl', '.sandbox-br'], { bottom: CORNER_HIDDEN }, 0)
-    tl.to('.sandbox-tl', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.sandbox-tr', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.sandbox-bl', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
-    tl.to('.sandbox-br', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+  DragTransition((timeline) => {
+    timeline.set(['.sandbox-tl', '.sandbox-tr'], { top: CORNER_HIDDEN }, 0)
+    timeline.set(['.sandbox-bl', '.sandbox-br'], { bottom: CORNER_HIDDEN }, 0)
+    timeline.to('.sandbox-tl', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.sandbox-tr', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.sandbox-bl', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
+    timeline.to('.sandbox-br', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, SECTION_ENTER_DELAY)
   })
 }
 
 function playMobileBackgroundTransition(
   meta: SectionTransitionMeta,
-  perksIdx: number,
-  logsIdx: number,
-  projectsIdx: number,
-  extraIdx: number,
-  sandboxIdx: number
+  perksIndex: number,
+  logsIndex: number,
+  projectsIndex: number,
+  extraIndex: number,
+  sandboxIndex: number
 ) {
   const enterAt = SECTION_ENTER_DELAY
 
-  DragTransition((tl) => {
+  DragTransition((timeline) => {
     // PERKS
-    if (meta.isEnteringSection(perksIdx) && meta.isFromSection(-1)) {
-      tl.set('.perks-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.set('.perks-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.to('.perks-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.perks-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-    } else if (meta.isEnteringSection(perksIdx)) {
-      tl.set('.perks-back', { top: MOBILE_LEAVE_TOP }, 0)
-      tl.set('.perks-front', { top: MOBILE_LEAVE_TOP }, 0)
-      tl.to('.perks-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.perks-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    if (meta.isEnteringSection(perksIndex) && meta.isFromSection(-1)) {
+      timeline.set('.perks-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.set('.perks-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.to('.perks-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.perks-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    } else if (meta.isEnteringSection(perksIndex)) {
+      timeline.set('.perks-back', { top: MOBILE_LEAVE_TOP }, 0)
+      timeline.set('.perks-front', { top: MOBILE_LEAVE_TOP }, 0)
+      timeline.to('.perks-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.perks-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (meta.isLeavingSection(perksIdx)) {
-      tl.to('.perks-back', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
-      tl.to('.perks-front', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    if (meta.isLeavingSection(perksIndex)) {
+      timeline.to('.perks-back', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      timeline.to('.perks-front', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
     // LOGS; entering from below (perks) vs. entering from above (projects)
-    if (meta.isEnteringSection(logsIdx) && !meta.isFromSection(projectsIdx)) {
-      tl.set('.logs-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.set('.logs-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.to('.logs-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.logs-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-    } else if (meta.isEnteringSection(logsIdx) && meta.isFromSection(projectsIdx)) {
-      tl.set('.logs-back', { top: MOBILE_LEAVE_TOP }, 0)
-      tl.set('.logs-front', { top: MOBILE_LEAVE_TOP }, 0)
-      tl.to('.logs-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.logs-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    if (meta.isEnteringSection(logsIndex) && !meta.isFromSection(projectsIndex)) {
+      timeline.set('.logs-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.set('.logs-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.to('.logs-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.logs-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    } else if (meta.isEnteringSection(logsIndex) && meta.isFromSection(projectsIndex)) {
+      timeline.set('.logs-back', { top: MOBILE_LEAVE_TOP }, 0)
+      timeline.set('.logs-front', { top: MOBILE_LEAVE_TOP }, 0)
+      timeline.to('.logs-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.logs-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (meta.isLeavingSection(logsIdx) && meta.isToSection(perksIdx)) {
-      tl.to('.logs-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
-      tl.to('.logs-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    if (meta.isLeavingSection(logsIndex) && meta.isToSection(perksIndex)) {
+      timeline.to('.logs-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      timeline.to('.logs-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
-    if (meta.isLeavingSection(logsIdx) && meta.isToSection(projectsIdx)) {
-      tl.to('.logs-back', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
-      tl.to('.logs-front', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    if (meta.isLeavingSection(logsIndex) && meta.isToSection(projectsIndex)) {
+      timeline.to('.logs-back', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      timeline.to('.logs-front', { top: MOBILE_LEAVE_TOP, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
     // PROJECTS
-    if (meta.isEnteringSection(projectsIdx)) {
-      tl.set('.projects-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.set('.projects-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.to('.projects-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.projects-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    if (meta.isEnteringSection(projectsIndex)) {
+      timeline.set('.projects-back', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.set('.projects-front', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.to('.projects-back', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.projects-front', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (meta.isLeavingSection(projectsIdx)) {
-      tl.to('.projects-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
-      tl.to('.projects-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    if (meta.isLeavingSection(projectsIndex)) {
+      timeline.to('.projects-back', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      timeline.to('.projects-front', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
     // EXTRA
-    if (meta.isEnteringSection(extraIdx)) {
-      tl.set('.extra-tr', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.set('.extra-bl', { top: MOBILE_BOTTOM_HIDDEN }, 0)
-      tl.to('.extra-tr', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.extra-bl', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    if (meta.isEnteringSection(extraIndex)) {
+      timeline.set('.extra-tr', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.set('.extra-bl', { top: MOBILE_BOTTOM_HIDDEN }, 0)
+      timeline.to('.extra-tr', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.extra-bl', { top: MOBILE_ENTER_TOP, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (meta.isLeavingSection(extraIdx)) {
-      tl.to('.extra-tr', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
-      tl.to('.extra-bl', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    if (meta.isLeavingSection(extraIndex)) {
+      timeline.to('.extra-tr', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      timeline.to('.extra-bl', { top: MOBILE_BOTTOM_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
 
     // SANDBOX
-    if (meta.isEnteringSection(sandboxIdx)) {
-      tl.set(['.sandbox-tl', '.sandbox-tr'], { top: CORNER_HIDDEN }, 0)
-      tl.set(['.sandbox-bl', '.sandbox-br'], { bottom: CORNER_HIDDEN }, 0)
-      tl.to('.sandbox-tl', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.sandbox-tr', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.sandbox-bl', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
-      tl.to('.sandbox-br', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+    if (meta.isEnteringSection(sandboxIndex)) {
+      timeline.set(['.sandbox-tl', '.sandbox-tr'], { top: CORNER_HIDDEN }, 0)
+      timeline.set(['.sandbox-bl', '.sandbox-br'], { bottom: CORNER_HIDDEN }, 0)
+      timeline.to('.sandbox-tl', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.sandbox-tr', { top: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.sandbox-bl', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
+      timeline.to('.sandbox-br', { bottom: CORNER_REVEAL, duration: MOBILE_DURATION, ease: 'back.out' }, enterAt)
     }
 
-    if (meta.isLeavingSection(sandboxIdx)) {
-      tl.to('.sandbox-tl', { top: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
-      tl.to('.sandbox-tr', { top: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
-      tl.to('.sandbox-bl', { bottom: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
-      tl.to('.sandbox-br', { bottom: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+    if (meta.isLeavingSection(sandboxIndex)) {
+      timeline.to('.sandbox-tl', { top: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut', onComplete: vibrateOnComplete }, 0)
+      timeline.to('.sandbox-tr', { top: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+      timeline.to('.sandbox-bl', { bottom: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
+      timeline.to('.sandbox-br', { bottom: CORNER_HIDDEN, duration: MOBILE_DURATION, ease: 'back.inOut' }, 0)
     }
   })
 }
 
 export function ScrollBackgroundSections() {
-  const perksIdx     = getSectionIndexById('perks')
-  const logsIdx   = getSectionIndexById('logs')
-  const projectsIdx  = getSectionIndexById('projects')
-  const extraIdx     = getSectionIndexById('extra')
-  const sandboxIdx = getSectionIndexById('sandbox')
-  const classifiedIdx = getSectionIndexById('classified')
+  const perksIndex     = getSectionIndexById('perks')
+  const logsIndex   = getSectionIndexById('logs')
+  const projectsIndex  = getSectionIndexById('projects')
+  const extraIndex     = getSectionIndexById('extra')
+  const sandboxIndex = getSectionIndexById('sandbox')
+  const classifiedIndex = getSectionIndexById('classified')
 
-  const isPerksEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(perksIdx)
-  const isPerksLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(perksIdx)
-  const isLogsEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(logsIdx)
-  const isLogsLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(logsIdx)
-  const isProjectsEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(projectsIdx)
-  const isProjectsLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(projectsIdx)
-  const isExtraEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(extraIdx)
-  const isExtraLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(extraIdx)
-  const isSandboxEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(sandboxIdx)
-  const isSandboxLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(sandboxIdx)
-  const isClassifiedEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(classifiedIdx)
-  const isClassifiedLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(classifiedIdx)
+  const isPerksEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(perksIndex)
+  const isPerksLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(perksIndex)
+  const isLogsEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(logsIndex)
+  const isLogsLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(logsIndex)
+  const isProjectsEnter = (meta: SectionTransitionMeta) => meta.isEnteringSection(projectsIndex)
+  const isProjectsLeave = (meta: SectionTransitionMeta) => meta.isLeavingSection(projectsIndex)
+  const isExtraEnter    = (meta: SectionTransitionMeta) => meta.isEnteringSection(extraIndex)
+  const isExtraLeave    = (meta: SectionTransitionMeta) => meta.isLeavingSection(extraIndex)
+  const isSandboxEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(sandboxIndex)
+  const isSandboxLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(sandboxIndex)
+  const isClassifiedEnter  = (meta: SectionTransitionMeta) => meta.isEnteringSection(classifiedIndex)
+  const isClassifiedLeave  = (meta: SectionTransitionMeta) => meta.isLeavingSection(classifiedIndex)
 
   const MatchMedia = gsap.matchMedia()
 
@@ -373,7 +373,7 @@ export function ScrollBackgroundSections() {
       isLeave: isPerksLeave,
       onEnter: playPerksEnterDesktop,
       onLeave: playPerksLeaveDesktop,
-      initialSection: perksIdx,
+      initialSection: perksIndex,
     })
 
     const cleanupLogs = onSectionEnterLeaveAnimation({
@@ -381,7 +381,7 @@ export function ScrollBackgroundSections() {
       isLeave: isLogsLeave,
       onEnter: playLogsEnterDesktop,
       onLeave: playLogsLeaveDesktop,
-      initialSection: logsIdx,
+      initialSection: logsIndex,
     })
 
     const cleanupProjects = onSectionEnterLeaveAnimation({
@@ -389,7 +389,7 @@ export function ScrollBackgroundSections() {
       isLeave: isProjectsLeave,
       onEnter: playProjectsEnterDesktop,
       onLeave: playProjectsLeaveDesktop,
-      initialSection: projectsIdx,
+      initialSection: projectsIndex,
     })
 
     const cleanupExtra = onSectionEnterLeaveAnimation({
@@ -397,7 +397,7 @@ export function ScrollBackgroundSections() {
       isLeave: isExtraLeave,
       onEnter: playExtraEnterDesktop,
       onLeave: playExtraLeaveDesktop,
-      initialSection: extraIdx,
+      initialSection: extraIndex,
     })
 
     const cleanupSandbox = onSectionEnterLeaveAnimation({
@@ -405,7 +405,7 @@ export function ScrollBackgroundSections() {
       isLeave: isSandboxLeave,
       onEnter: playSandboxEnterDesktop,
       onLeave: playSandboxLeaveDesktop,
-      initialSection: sandboxIdx,
+      initialSection: sandboxIndex,
     })
 
     const cleanupClassified = onSectionEnterLeaveAnimation({
@@ -413,7 +413,7 @@ export function ScrollBackgroundSections() {
       isLeave: isClassifiedLeave,
       onEnter: playClassifiedEnterDesktop,
       onLeave: playClassifiedLeaveDesktop,
-      initialSection: classifiedIdx,
+      initialSection: classifiedIndex,
     })
 
     return () => {
@@ -435,14 +435,14 @@ export function ScrollBackgroundSections() {
 
     initMobileBackgroundState()
 
-    if (currentSection.value === perksIdx) playPerksEnterMobile()
-    else if (currentSection.value === logsIdx) playLogsEnterMobile()
-    else if (currentSection.value === projectsIdx) playProjectsEnterMobile()
-    else if (currentSection.value === extraIdx) playExtraEnterMobile()
-    else if (currentSection.value === sandboxIdx) playSandboxEnterMobile()
+    if (currentSection.value === perksIndex) playPerksEnterMobile()
+    else if (currentSection.value === logsIndex) playLogsEnterMobile()
+    else if (currentSection.value === projectsIndex) playProjectsEnterMobile()
+    else if (currentSection.value === extraIndex) playExtraEnterMobile()
+    else if (currentSection.value === sandboxIndex) playSandboxEnterMobile()
 
     const cleanupMobile = onSectionStatesChange((meta) => {
-      playMobileBackgroundTransition(meta, perksIdx, logsIdx, projectsIdx, extraIdx, sandboxIdx)
+      playMobileBackgroundTransition(meta, perksIndex, logsIndex, projectsIndex, extraIndex, sandboxIndex)
     })
 
     return () => {

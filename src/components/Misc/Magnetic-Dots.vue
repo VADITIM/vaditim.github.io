@@ -53,14 +53,14 @@
   let resizeRaf = 0;
   let rootFontSize = 16;
 
-  function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  function hexToRgb(hex: string): { red: number; green: number; blue: number } | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex.trim());
-    return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+    return result ? { red: parseInt(result[1], 16), green: parseInt(result[2], 16), blue: parseInt(result[3], 16) } : null;
   }
 
   // Start at the loading color and lerp toward the current section color each frame
-  let currentRgb = { r: 91, g: 253, b: 91 };
-  let targetRgb  = { r: 91, g: 253, b: 91 };
+  let currentRgb = { red: 91, green: 253, blue: 91 };
+  let targetRgb  = { red: 91, green: 253, blue: 91 };
 
   // Perks' bright yellow reads too hot at the same alpha range as the other
   // sections' dot fields; dim it specifically for that section.
@@ -75,22 +75,22 @@
     const gapPx = rootFontSize * gapRem;
     const step = dotSizePx + gapPx;
 
-    const w = canvas.offsetWidth;
-    const h = canvas.offsetHeight;
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    const ctx = canvas.getContext('2d');
-    if (ctx) ctx.scale(dpr, dpr);
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    const pixelRatio = window.devicePixelRatio || 1;
+    canvas.width = width * pixelRatio;
+    canvas.height = height * pixelRatio;
+    const context = canvas.getContext('2d');
+    if (context) context.scale(pixelRatio, pixelRatio);
 
-    const cols = Math.max(0, Math.floor((w + gapPx) / step));
-    const rows = Math.max(0, Math.floor((h + gapPx) / step));
+    const columnCount = Math.max(0, Math.floor((width + gapPx) / step));
+    const rowCount = Math.max(0, Math.floor((height + gapPx) / step));
 
     dotStates = [];
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const baseX = c * step + dotSizePx / 2;
-        const baseY = r * step + dotSizePx / 2;
+    for (let row = 0; row < rowCount; row++) {
+      for (let column = 0; column < columnCount; column++) {
+        const baseX = column * step + dotSizePx / 2;
+        const baseY = row * step + dotSizePx / 2;
         dotStates.push({ baseX, baseY, x: 0, y: 0, vx: 0, vy: 0, scale: 1, alpha: minAlpha });
       }
     }
@@ -99,12 +99,12 @@
   const animateDots = () => {
     const canvas = canvasRef.value;
     if (!canvas) { animationRaf = requestAnimationFrame(animateDots); return; }
-    const ctx = canvas.getContext('2d');
-    if (!ctx) { animationRaf = requestAnimationFrame(animateDots); return; }
+    const context = canvas.getContext('2d');
+    if (!context) { animationRaf = requestAnimationFrame(animateDots); return; }
 
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.width / dpr;
-    const h = canvas.height / dpr;
+    const pixelRatio = window.devicePixelRatio || 1;
+    const width = canvas.width / pixelRatio;
+    const height = canvas.height / pixelRatio;
 
     const cssColor = getComputedStyle(document.documentElement).getPropertyValue('--section-color');
     const parsed = hexToRgb(cssColor);
@@ -122,24 +122,24 @@
       currentRgb = { ...targetRgb };
       colorSwapPending = false;
     }
-    const dotR = Math.round(currentRgb.r);
-    const dotG = Math.round(currentRgb.g);
-    const dotB = Math.round(currentRgb.b);
+    const dotRed = Math.round(currentRgb.red);
+    const dotGreen = Math.round(currentRgb.green);
+    const dotBlue = Math.round(currentRgb.blue);
 
     const dragRadiusPx = rootFontSize * dragRadius;
     const scaleRadiusPx = rootFontSize * scaleRadius;
     const brightnessRadiusPx = rootFontSize * brightnessRadius;
-    const r = dotSizePx / 2;
+    const dotRadius = dotSizePx / 2;
 
-    ctx.clearRect(0, 0, w, h);
+    context.clearRect(0, 0, width, height);
 
-    for (let i = 0; i < dotStates.length; i++) {
-      const s = dotStates[i];
+    for (let index = 0; index < dotStates.length; index++) {
+      const dot = dotStates[index];
       let targetX = 0, targetY = 0, targetScale = 1, targetAlpha = minAlpha;
 
       if (mouse.active) {
-        const dx = mouse.x - s.baseX;
-        const dy = mouse.y - s.baseY;
+        const dx = mouse.x - dot.baseX;
+        const dy = mouse.y - dot.baseY;
         const dist = Math.hypot(dx, dy);
 
         if (dist < dragRadiusPx && dist > 0) {
@@ -155,43 +155,43 @@
         }
       }
 
-      s.vx += (targetX - s.x) * stiffness;
-      s.vx *= damping;
-      s.x += s.vx;
+      dot.vx += (targetX - dot.x) * stiffness;
+      dot.vx *= damping;
+      dot.x += dot.vx;
 
-      s.vy += (targetY - s.y) * stiffness;
-      s.vy *= damping;
-      s.y += s.vy;
+      dot.vy += (targetY - dot.y) * stiffness;
+      dot.vy *= damping;
+      dot.y += dot.vy;
 
-      s.scale += (targetScale - s.scale) * scaleLerp;
-      s.alpha += (targetAlpha - s.alpha) * alphaLerp;
+      dot.scale += (targetScale - dot.scale) * scaleLerp;
+      dot.alpha += (targetAlpha - dot.alpha) * alphaLerp;
 
-      const cx = s.baseX + s.x;
-      const cy = s.baseY + s.y;
-      const sr = r * s.scale;
+      const centerX = dot.baseX + dot.x;
+      const centerY = dot.baseY + dot.y;
+      const scaledRadius = dotRadius * dot.scale;
 
       const sectionDim = currentSection.value === perksSectionIndex ? perksBrightness : 1;
 
-      ctx.beginPath();
-      ctx.arc(cx, cy, sr, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${dotR},${dotG},${dotB},${s.alpha * fieldAlpha * sectionDim})`;
-      ctx.fill();
+      context.beginPath();
+      context.arc(centerX, centerY, scaledRadius, 0, Math.PI * 2);
+      context.fillStyle = `rgba(${dotRed},${dotGreen},${dotBlue},${dot.alpha * fieldAlpha * sectionDim})`;
+      context.fill();
     }
 
     animationRaf = requestAnimationFrame(animateDots);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = (event: MouseEvent) => {
     const canvas = canvasRef.value;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
+    mouse.x = event.clientX - rect.left;
+    mouse.y = event.clientY - rect.top;
     mouse.active =
-      e.clientX >= rect.left && e.clientX <= rect.right &&
-      e.clientY >= rect.top  && e.clientY <= rect.bottom;
+      event.clientX >= rect.left && event.clientX <= rect.right &&
+      event.clientY >= rect.top  && event.clientY <= rect.bottom;
 
-    if (hueHeld) positionHue(e.clientX, e.clientY);
+    if (hueHeld) positionHue(event.clientX, event.clientY);
   };
 
   const handleMouseLeave = () => { mouse.active = false; };
@@ -208,10 +208,10 @@
     hue.style.setProperty('--hue-y', `${y}px`);
   };
 
-  const showHue = (e: MouseEvent) => {
+  const showHue = (event: MouseEvent) => {
     hueHeld = true;
     mouse.pressed = true;
-    positionHue(e.clientX, e.clientY);
+    positionHue(event.clientX, event.clientY);
     hueRef.value?.classList.add('held');
   };
 

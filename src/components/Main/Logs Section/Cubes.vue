@@ -63,18 +63,18 @@
     { name: 'MINDSET',      color: '#9532e6', bg: 'rgba(149,50,230,0.20)', tokens: ['FOCUS', 'CURIOUS', 'DRIVEN', 'GRIT', 'OPEN', 'CALM'] },
   ];
 
-  const cubes: CubeDef[] = cubeData.map(c => ({
-    name: c.name,
-    color: c.color,
-    bg: c.bg,
-    faces: faceDefs.map((d, i) => ({ tf: d.tf, token: c.tokens[i] || '' })),
+  const cubes: CubeDef[] = cubeData.map(cube => ({
+    name: cube.name,
+    color: cube.color,
+    bg: cube.bg,
+    faces: faceDefs.map((face, index) => ({ tf: face.tf, token: cube.tokens[index] || '' })),
   }));
 
-  function faceStyle(c: CubeDef, tf: string) {
+  function faceStyle(cube: CubeDef, tf: string) {
     return {
-      border: `2px solid ${c.color}`,
+      border: `2px solid ${cube.color}`,
       transform: tf,
-      boxShadow: `inset 0 0 30px ${c.bg}, 0 0 12px ${c.bg}`,
+      boxShadow: `inset 0 0 30px ${cube.bg}, 0 0 12px ${cube.bg}`,
     };
   }
 
@@ -89,20 +89,20 @@
   // rotates around the screen axes, not the cube's local axes. This means
   // "drag right always spins right" regardless of current orientation.
   interface Q { w: number; x: number; y: number; z: number }
-  const qMul = (a: Q, b: Q): Q => ({
-    w: a.w*b.w - a.x*b.x - a.y*b.y - a.z*b.z,
-    x: a.w*b.x + a.x*b.w + a.y*b.z - a.z*b.y,
-    y: a.w*b.y - a.x*b.z + a.y*b.w + a.z*b.x,
-    z: a.w*b.z + a.x*b.y - a.y*b.x + a.z*b.w,
+  const qMul = (left: Q, right: Q): Q => ({
+    w: left.w*right.w - left.x*right.x - left.y*right.y - left.z*right.z,
+    x: left.w*right.x + left.x*right.w + left.y*right.z - left.z*right.y,
+    y: left.w*right.y - left.x*right.z + left.y*right.w + left.z*right.x,
+    z: left.w*right.z + left.x*right.y - left.y*right.x + left.z*right.w,
   });
-  const qNorm = (q: Q): Q => {
-    const l = Math.sqrt(q.w**2 + q.x**2 + q.y**2 + q.z**2) || 1;
-    return { w: q.w/l, x: q.x/l, y: q.y/l, z: q.z/l };
+  const qNorm = (quaternion: Q): Q => {
+    const length = Math.sqrt(quaternion.w**2 + quaternion.x**2 + quaternion.y**2 + quaternion.z**2) || 1;
+    return { w: quaternion.w/length, x: quaternion.x/length, y: quaternion.y/length, z: quaternion.z/length };
   };
-  const qFromAxis = (ax: number, ay: number, az: number, deg: number): Q => {
-    const h = deg * Math.PI / 360;
-    const s = Math.sin(h);
-    return { w: Math.cos(h), x: ax*s, y: ay*s, z: az*s };
+  const qFromAxis = (axisX: number, axisY: number, axisZ: number, degrees: number): Q => {
+    const halfAngle = degrees * Math.PI / 360;
+    const sine = Math.sin(halfAngle);
+    return { w: Math.cos(halfAngle), x: axisX*sine, y: axisY*sine, z: axisZ*sine };
   };
   // Column-major matrix3d for CSS; perspective on .pc-scene still applies.
   const qToCSS = ({ w, x, y, z }: Q) =>
@@ -114,7 +114,7 @@
   const Q0 = () => qNorm(qMul(qFromAxis(0,1,0,-28), qFromAxis(1,0,0,-20)));
 
   interface CubeState {
-    el: HTMLElement;
+    element: HTMLElement;
     q: Q;
     vX: number; vY: number;       // angular velocity (deg/frame) around world X / Y
     idleVX: number; idleVY: number;
@@ -126,11 +126,11 @@
   let shadowEls: HTMLElement[] = [];
   let nameEls: HTMLElement[] = [];
   let states: CubeState[] = [];
-  let raf = 0;
+  let animationFrame = 0;
   let cleanupStates: (() => void) | null = null;
   const detachers: Array<() => void> = [];
 
-  const logsIdx = getSectionIndexById('logs');
+  const logsIndex = getSectionIndexById('logs');
 
   function setup() {
     if (!root.value) return;
@@ -140,10 +140,10 @@
 
     // Reduced motion parks the idle spin at zero rather than stopping the loop:
     // dragging a cube still works, it just comes to rest instead of drifting on.
-    states = cubeEls.map(el => {
+    states = cubeEls.map(element => {
       const idleVX = prefersReducedMotion.value ? 0 : gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.07);
       const idleVY = prefersReducedMotion.value ? 0 : gsap.utils.random([-1, 1]) * gsap.utils.random(0.08, 0.2);
-      return { el, q: Q0(), vX: idleVX, vY: idleVY, idleVX, idleVY, dragging: false, building: false };
+      return { element, q: Q0(), vX: idleVX, vY: idleVY, idleVX, idleVY, dragging: false, building: false };
     });
 
     cubeEls.forEach((cube, i) => attachDrag(cube.closest('.pc-scene') as HTMLElement, states[i]));
@@ -151,34 +151,34 @@
     hideAll();
     startIdleBob();
 
-    const tick = () => { spinStep(); raf = requestAnimationFrame(tick); };
-    raf = requestAnimationFrame(tick);
+    const tick = () => { spinStep(); animationFrame = requestAnimationFrame(tick); };
+    animationFrame = requestAnimationFrame(tick);
 
     cleanupStates = onSectionStatesChange((meta: SectionTransitionMeta) => {
-      if (meta.isEnteringSection(logsIdx)) playAll();
-      else if (meta.isLeavingSection(logsIdx)) playLeave();
+      if (meta.isEnteringSection(logsIndex)) playAll();
+      else if (meta.isLeavingSection(logsIndex)) playLeave();
     });
 
     // Cold-mount case: if Logs is already the active section, build immediately.
-    if (currentSection.value === logsIdx) playAll();
+    if (currentSection.value === logsIndex) playAll();
   }
 
   function spinStep() {
-    for (const c of states) {
-      if (!c.dragging && !c.building) {
-        c.q = qNorm(qMul(qFromAxis(0,1,0, c.vY), qMul(qFromAxis(1,0,0, c.vX), c.q)));
-        c.vX += (c.idleVX - c.vX) * 0.02;
-        c.vY += (c.idleVY - c.vY) * 0.02;
+    for (const cube of states) {
+      if (!cube.dragging && !cube.building) {
+        cube.q = qNorm(qMul(qFromAxis(0,1,0, cube.vY), qMul(qFromAxis(1,0,0, cube.vX), cube.q)));
+        cube.vX += (cube.idleVX - cube.vX) * 0.02;
+        cube.vY += (cube.idleVY - cube.vY) * 0.02;
       }
-      c.el.style.transform = qToCSS(c.q);
+      cube.element.style.transform = qToCSS(cube.q);
     }
   }
 
   function attachDrag(scene: HTMLElement, cube: CubeState) {
     let lastX = 0, lastY = 0;
-    const move = (e: PointerEvent) => {
-      const dx = e.clientX - lastX, dy = e.clientY - lastY;
-      lastX = e.clientX; lastY = e.clientY;
+    const move = (event: PointerEvent) => {
+      const dx = event.clientX - lastX, dy = event.clientY - lastY;
+      lastX = event.clientX; lastY = event.clientY;
       cube.q = qNorm(qMul(qFromAxis(0,1,0, dx * 0.5), qMul(qFromAxis(1,0,0, -dy * 0.5), cube.q)));
       cube.vX = -dy * 0.5; cube.vY = dx * 0.5;
     };
@@ -187,12 +187,12 @@
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
     };
-    const down = (e: PointerEvent) => {
+    const down = (event: PointerEvent) => {
       cube.dragging = true; scene.style.cursor = 'grabbing';
-      lastX = e.clientX; lastY = e.clientY;
+      lastX = event.clientX; lastY = event.clientY;
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', up);
-      e.preventDefault();
+      event.preventDefault();
     };
     const shadow = scene.parentElement?.querySelector('.pc-shadow') ?? null;
     const enter = () => {
@@ -273,7 +273,7 @@
 
   function buildCube(cube: HTMLElement, delay: number) {
     const faces = cube.querySelectorAll<HTMLElement>('.pc-face-anim');
-    const state = states.find(c => c.el === cube);
+    const state = states.find(c => c.element === cube);
     if (state) {
       state.building = true;
       const rxDeg = gsap.utils.random(-40, 20);
@@ -286,17 +286,17 @@
     gsap.killTweensOf(faces);
     const rect = cube.getBoundingClientRect();
     const fromTop = -(rect.top + rect.height + 80);
-    const order = gsap.utils.shuffle([...faces].map((_, i) => i));
+    const order = gsap.utils.shuffle([...faces].map((_, index) => index));
     let last = 0;
-    order.forEach((fi, step) => {
-      const f = faces[fi];
+    order.forEach((faceIndex, step) => {
+      const face = faces[faceIndex];
       const start = step * FACE_STAGGER + gsap.utils.random(0, FACE_STAGGER * 0.9);
-      const dur = gsap.utils.random(0.26, 0.42);
-      last = Math.max(last, delay + start + dur);
-      gsap.set(f, { opacity: 0, y: fromTop, x: gsap.utils.random(-40, 40), rotationZ: gsap.utils.random(-18, 18) });
-      const tl = gsap.timeline({ delay: delay + start });
-      tl.to(f, { opacity: 1, duration: 0.1, ease: 'none' }, 0)
-        .to(f, { y: 0, x: 0, rotationZ: 0, duration: dur, ease: 'power4.out' }, 0);
+      const duration = gsap.utils.random(0.26, 0.42);
+      last = Math.max(last, delay + start + duration);
+      gsap.set(face, { opacity: 0, y: fromTop, x: gsap.utils.random(-40, 40), rotationZ: gsap.utils.random(-18, 18) });
+      const timeline = gsap.timeline({ delay: delay + start });
+      timeline.to(face, { opacity: 1, duration: 0.1, ease: 'none' }, 0)
+        .to(face, { y: 0, x: 0, rotationZ: 0, duration: duration, ease: 'power4.out' }, 0);
     });
     // Shadow blooms while the faces rain down, then pulses once the last face
     // lands; sells the impact of the completed cube.
@@ -304,8 +304,8 @@
     if (shadow) {
       gsap.killTweensOf(shadow);
       gsap.set(shadow, { opacity: 0, scaleX: 0.5 });
-      const stl = gsap.timeline({ delay });
-      stl.to(shadow, { opacity: 0.85, scaleX: 1, duration: last - delay, ease: 'power2.out' }, 0)
+      const shadowTimeline = gsap.timeline({ delay });
+      shadowTimeline.to(shadow, { opacity: 0.85, scaleX: 1, duration: last - delay, ease: 'power2.out' }, 0)
          .to(shadow, { scaleX: 1.25, opacity: 1, duration: 0.09, ease: 'power2.out' }, last - delay)
          .to(shadow, { scaleX: 1, opacity: 0.85, duration: 0.4, ease: 'power2.out' }, last - delay + 0.09);
     }
@@ -332,7 +332,7 @@
   onMounted(setup);
 
   onBeforeUnmount(() => {
-    if (raf) cancelAnimationFrame(raf);
+    if (animationFrame) cancelAnimationFrame(animationFrame);
     if (cleanupStates) cleanupStates();
     detachers.forEach(fn => fn());
   });

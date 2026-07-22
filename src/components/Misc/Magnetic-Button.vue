@@ -39,23 +39,23 @@
   const wrapRef = ref<HTMLElement | null>(null)
   const btnRef  = ref<HTMLElement | null>(null)
 
-  defineExpose({ get el() { return btnRef.value } })
+  defineExpose({ get element() { return btnRef.value } })
 
-  const onMove = (e: MouseEvent) => {
-    const wrap = wrapRef.value, btn = btnRef.value
-    if (!wrap || !btn) return
-    const r  = wrap.getBoundingClientRect()
-    const dx = e.clientX - (r.left + r.width  / 2)
-    const dy = e.clientY - (r.top  + r.height / 2)
-    gsap.to(btn, { x: dx * props.strength, y: dy * props.strength, duration: 0.4, ease: 'power3.out' })
+  const onMove = (event: MouseEvent) => {
+    const wrap = wrapRef.value, button = btnRef.value
+    if (!wrap || !button) return
+    const bounds  = wrap.getBoundingClientRect()
+    const dx = event.clientX - (bounds.left + bounds.width  / 2)
+    const dy = event.clientY - (bounds.top  + bounds.height / 2)
+    gsap.to(button, { x: dx * props.strength, y: dy * props.strength, duration: 0.4, ease: 'power3.out' })
   }
 
   const onLeave = () => {
     if (btnRef.value) gsap.to(btnRef.value, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.3)' })
   }
 
-  const onClick = (e: MouseEvent) => {
-    if (!props.disabled) emit('click', e)
+  const onClick = (event: MouseEvent) => {
+    if (!props.disabled) emit('click', event)
   }
 </script>
 

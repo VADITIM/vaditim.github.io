@@ -128,70 +128,70 @@
 
   // ── enter: window slides + scales in, then every element animates in turn ──
   function playOpen() {
-    const t = targets()
+    const targetElements = targets()
     openTl?.kill()
-    gsap.killTweensOf(Object.values(t).flat())
+    gsap.killTweensOf(Object.values(targetElements).flat())
 
     gsap.set(rootRef.value, { autoAlpha: 1, pointerEvents: 'auto' })
     gsap.set(scrimRef.value, { autoAlpha: 0 })
-    gsap.set(t.win, { autoAlpha: 0, y: 60, scale: 0.9, transformOrigin: 'center bottom' })
-    gsap.set(t.border, { '--draw': 0 })
-    gsap.set(t.close, { autoAlpha: 0, scale: 0, rotate: -90 })
-    gsap.set(t.kicker, { autoAlpha: 0, x: -24 })
-    gsap.set(t.title, { yPercent: 120, skewY: 6 })
-    gsap.set(t.main, { autoAlpha: 0, x: -70, scale: 0.94 })
-    gsap.set(t.side, { autoAlpha: 0, x: 70, scale: 0.94 })
-    gsap.set(t.tech, { autoAlpha: 0, x: 40 })
-    gsap.set(t.desc, { autoAlpha: 0, y: 28 })
-    gsap.set(t.ghub, { autoAlpha: 0, scale: 0 })
+    gsap.set(targetElements.win, { autoAlpha: 0, y: 60, scale: 0.9, transformOrigin: 'center bottom' })
+    gsap.set(targetElements.border, { '--draw': 0 })
+    gsap.set(targetElements.close, { autoAlpha: 0, scale: 0, rotate: -90 })
+    gsap.set(targetElements.kicker, { autoAlpha: 0, x: -24 })
+    gsap.set(targetElements.title, { yPercent: 120, skewY: 6 })
+    gsap.set(targetElements.main, { autoAlpha: 0, x: -70, scale: 0.94 })
+    gsap.set(targetElements.side, { autoAlpha: 0, x: 70, scale: 0.94 })
+    gsap.set(targetElements.tech, { autoAlpha: 0, x: 40 })
+    gsap.set(targetElements.desc, { autoAlpha: 0, y: 28 })
+    gsap.set(targetElements.ghub, { autoAlpha: 0, scale: 0 })
 
     openTl = gsap.timeline()
     openTl.to(scrimRef.value, { autoAlpha: 1, duration: 0.35, ease: 'power2.out' }, 0)
-    openTl.to(t.win, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: 'back.out(1.5)' }, 0.05)
+    openTl.to(targetElements.win, { autoAlpha: 1, y: 0, scale: 1, duration: 0.7, ease: 'back.out(1.5)' }, 0.05)
     // the red border draws itself around the frame
-    openTl.to(t.border, { '--draw': 1, duration: 0.6, ease: 'power2.inOut' }, 0.2)
-    openTl.to(t.title, { yPercent: 0, skewY: 0, duration: 0.7, ease: 'expo.out' }, 0.3)
-    openTl.to(t.kicker, { autoAlpha: 1, x: 0, duration: 0.5, ease: 'power3.out' }, 0.35)
-    openTl.to(t.main, { autoAlpha: 1, x: 0, scale: 1, duration: 0.7, ease: 'back.out(1.3)' }, 0.38)
-    openTl.to(t.side, { autoAlpha: 1, x: 0, scale: 1, duration: 0.7, ease: 'back.out(1.3)' }, 0.46)
-    openTl.to(t.tech, { autoAlpha: 1, x: 0, duration: 0.55, ease: 'back.out(1.8)', stagger: 0.1 }, 0.5)
-    openTl.to(t.desc, { autoAlpha: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 0.6)
-    openTl.to(t.ghub, { autoAlpha: 1, scale: 1, duration: 0.5, ease: 'back.out(2.4)' }, 0.7)
-    openTl.to(t.close, { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.5, ease: 'back.out(2.2)' }, 0.75)
+    openTl.to(targetElements.border, { '--draw': 1, duration: 0.6, ease: 'power2.inOut' }, 0.2)
+    openTl.to(targetElements.title, { yPercent: 0, skewY: 0, duration: 0.7, ease: 'expo.out' }, 0.3)
+    openTl.to(targetElements.kicker, { autoAlpha: 1, x: 0, duration: 0.5, ease: 'power3.out' }, 0.35)
+    openTl.to(targetElements.main, { autoAlpha: 1, x: 0, scale: 1, duration: 0.7, ease: 'back.out(1.3)' }, 0.38)
+    openTl.to(targetElements.side, { autoAlpha: 1, x: 0, scale: 1, duration: 0.7, ease: 'back.out(1.3)' }, 0.46)
+    openTl.to(targetElements.tech, { autoAlpha: 1, x: 0, duration: 0.55, ease: 'back.out(1.8)', stagger: 0.1 }, 0.5)
+    openTl.to(targetElements.desc, { autoAlpha: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 0.6)
+    openTl.to(targetElements.ghub, { autoAlpha: 1, scale: 1, duration: 0.5, ease: 'back.out(2.4)' }, 0.7)
+    openTl.to(targetElements.close, { autoAlpha: 1, scale: 1, rotate: 0, duration: 0.5, ease: 'back.out(2.2)' }, 0.75)
   }
 
   // ── leave: snappy reverse; every element exits, then the window drops away ──
   function playClose() {
-    const t = targets()
+    const targetElements = targets()
     openTl?.kill()
-    gsap.killTweensOf(Object.values(t).flat())
+    gsap.killTweensOf(Object.values(targetElements).flat())
 
-    const tl = gsap.timeline({
+    const timeline = gsap.timeline({
       onComplete: () => { gsap.set(rootRef.value, { autoAlpha: 0, pointerEvents: 'none' }) },
     })
-    tl.to(t.ghub, { autoAlpha: 0, scale: 0, duration: 0.18, ease: 'power2.in' }, 0)
-    tl.to(t.close, { autoAlpha: 0, scale: 0, rotate: -90, duration: 0.18, ease: 'power2.in' }, 0)
-    tl.to(t.tech, { autoAlpha: 0, x: 40, duration: 0.2, ease: 'power2.in', stagger: { each: 0.05, from: 'end' } }, 0)
-    tl.to(t.desc, { autoAlpha: 0, y: 28, duration: 0.2, ease: 'power2.in' }, 0)
-    tl.to(t.main, { autoAlpha: 0, x: -70, duration: 0.22, ease: 'power2.in' }, 0.04)
-    tl.to(t.side, { autoAlpha: 0, x: 70, duration: 0.22, ease: 'power2.in' }, 0.04)
-    tl.to(t.title, { yPercent: -120, skewY: -4, duration: 0.24, ease: 'power2.in' }, 0.06)
-    tl.to(t.border, { '--draw': 0, duration: 0.25, ease: 'power2.in' }, 0.06)
-    tl.to(t.win, { autoAlpha: 0, y: 60, scale: 0.9, duration: 0.3, ease: 'power3.in' }, 0.12)
-    tl.to(scrimRef.value, { autoAlpha: 0, duration: 0.3, ease: 'power2.in' }, 0.16)
+    timeline.to(targetElements.ghub, { autoAlpha: 0, scale: 0, duration: 0.18, ease: 'power2.in' }, 0)
+    timeline.to(targetElements.close, { autoAlpha: 0, scale: 0, rotate: -90, duration: 0.18, ease: 'power2.in' }, 0)
+    timeline.to(targetElements.tech, { autoAlpha: 0, x: 40, duration: 0.2, ease: 'power2.in', stagger: { each: 0.05, from: 'end' } }, 0)
+    timeline.to(targetElements.desc, { autoAlpha: 0, y: 28, duration: 0.2, ease: 'power2.in' }, 0)
+    timeline.to(targetElements.main, { autoAlpha: 0, x: -70, duration: 0.22, ease: 'power2.in' }, 0.04)
+    timeline.to(targetElements.side, { autoAlpha: 0, x: 70, duration: 0.22, ease: 'power2.in' }, 0.04)
+    timeline.to(targetElements.title, { yPercent: -120, skewY: -4, duration: 0.24, ease: 'power2.in' }, 0.06)
+    timeline.to(targetElements.border, { '--draw': 0, duration: 0.25, ease: 'power2.in' }, 0.06)
+    timeline.to(targetElements.win, { autoAlpha: 0, y: 60, scale: 0.9, duration: 0.3, ease: 'power3.in' }, 0.12)
+    timeline.to(scrimRef.value, { autoAlpha: 0, duration: 0.3, ease: 'power2.in' }, 0.16)
   }
 
   function close() {
     activeProjectIndex.value = null
   }
 
-  function onKey(e: KeyboardEvent) {
-    if (e.key === 'Escape' && activeProjectIndex.value !== null) close()
+  function onKey(event: KeyboardEvent) {
+    if (event.key === 'Escape' && activeProjectIndex.value !== null) close()
   }
 
-  watch(activeProjectIndex, (idx) => {
-    if (idx !== null) {
-      shownIndex.value = idx
+  watch(activeProjectIndex, (index) => {
+    if (index !== null) {
+      shownIndex.value = index
       playOpen()
     } else {
       playClose()

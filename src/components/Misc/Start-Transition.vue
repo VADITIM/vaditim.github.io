@@ -35,7 +35,7 @@
 	// Expose the inner button element so Start-Section.vue can drive its
 	// enter/exit GSAP tweens (the `.explore-button` selector is gone).
 	defineExpose({
-		get exploreEl() { return exploreBtnRef.value?.el ?? null }
+		get exploreEl() { return exploreBtnRef.value?.element ?? null }
 	});
 
 	async function OnExploreClick() {

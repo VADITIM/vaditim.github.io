@@ -113,7 +113,7 @@
     window.removeEventListener('pointerdown', handleOutsidePress)
   })
 
-  defineExpose({ el: sheetRef, reveal, hide })
+  defineExpose({ element: sheetRef, reveal, hide })
 </script>
 
 <style scoped lang="scss">

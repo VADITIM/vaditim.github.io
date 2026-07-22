@@ -103,62 +103,62 @@
 		gsap.set('.rv-ul', { scaleX: 0 });
 		gsap.set('.explore-mag-pos .mag-btn', { scale: 0, opacity: 0 });
 
-		const tl = gsap.timeline({ delay: baseDelay });
-		enterTl = tl;
+		const timeline = gsap.timeline({ delay: baseDelay });
+		enterTl = timeline;
 		// Dev-only hook so the intro choreography can be scrubbed/inspected.
-		if (import.meta.env.DEV) (window as any).__introTl = tl;
+		if (import.meta.env.DEV) (window as any).__introTl = timeline;
 
 		// Collapse a single label back to hidden (clip + bar), independent of the
 		// shared playLabelLeave helper since these two lines cycle through the
 		// same on-screen slot one at a time rather than leaving together.
 		// No killTweensOf here; the reveal is long finished by leave time, and
 		// a kill scheduled at the same position would cancel this very tween.
-		function leaveOne(label: HTMLElement | null, at: number, dur: number) {
+		function leaveOne(label: HTMLElement | null, at: number, duration: number) {
 			if (!label) return;
 			const text = label.querySelector('.pc-label-text');
 			const bar = label.querySelector('.pc-label-bar');
 			const line = label.closest('.greet-line');
 			if (!text || !bar) return;
-			tl.to(text, { clipPath: 'inset(0 100% 0 0)', duration: dur, ease: 'power2.in' }, at);
-			tl.set(bar, { opacity: 0 }, at);
-			if (line) tl.to(line, { y: -20, opacity: 0, duration: dur, ease: 'power2.in' }, at);
+			timeline.to(text, { clipPath: 'inset(0 100% 0 0)', duration: duration, ease: 'power2.in' }, at);
+			timeline.set(bar, { opacity: 0 }, at);
+			if (line) timeline.to(line, { y: -20, opacity: 0, duration: duration, ease: 'power2.in' }, at);
 		}
 
 		// 1. "Greetings User." reveals, holds a full second, then fully leaves; only
 		// after that leave has finished, and a 0.35s beat of empty slot, does the
 		// second line cycle into the same position, hold its own second, and leave
 		// too. Only then does the rest of the intro proceed.
-		const revealDur = (0.42 + 0.5) / 2; // buildLabelReveal at timeScale(2)
+		const revealDuration = (0.42 + 0.5) / 2; // buildLabelReveal at timeScale(2)
 		const hold = 1;
 		const gap = 0.35;
-		const leaveDur = 0.15;
+		const leaveDuration = 0.15;
 
 		const greet1RevealAt = 0;
-		if (greet1) tl.add(buildLabelReveal(greet1).timeScale(2), greet1RevealAt);
-		const greet1LeaveAt = greet1RevealAt + revealDur + hold;
-		leaveOne(greet1, greet1LeaveAt, leaveDur);
+		if (greet1) timeline.add(buildLabelReveal(greet1).timeScale(2), greet1RevealAt);
+		const greet1LeaveAt = greet1RevealAt + revealDuration + hold;
+		leaveOne(greet1, greet1LeaveAt, leaveDuration);
 
-		const greet2RevealAt = greet1LeaveAt + leaveDur + gap;
-		if (greet2) tl.add(buildLabelReveal(greet2).timeScale(2), greet2RevealAt);
-		const greet2LeaveAt = greet2RevealAt + revealDur + hold;
-		leaveOne(greet2, greet2LeaveAt, leaveDur);
+		const greet2RevealAt = greet1LeaveAt + leaveDuration + gap;
+		if (greet2) timeline.add(buildLabelReveal(greet2).timeScale(2), greet2RevealAt);
+		const greet2LeaveAt = greet2RevealAt + revealDuration + hold;
+		leaveOne(greet2, greet2LeaveAt, leaveDuration);
 
 		// 2. only now; after a little extra breathing room; does PORTFOLIO pop in
 		// one character at a time…
-		const portfolioStart = greet2LeaveAt + leaveDur + 0.3;
-		tl.to(chars, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(3)' }, portfolioStart);
+		const portfolioStart = greet2LeaveAt + leaveDuration + 0.3;
+		timeline.to(chars, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(3)' }, portfolioStart);
 
 		// …and the subtitle + credit uncover via the label-reveal bar sweep as
 		// PORTFOLIO becomes visible; top line first, the credit (lowest and
 		// right-anchored) last, matching the pattern's top-left-first ordering.
-		if (rv1) tl.add(buildLabelReveal(rv1), portfolioStart);
-		if (rv2) tl.add(buildLabelReveal(rv2), portfolioStart + 0.15);
-		tl.to('.rv-ul', { scaleX: 1, duration: 0.6, ease: 'power3.inOut' }, portfolioStart + 0.2);
+		if (rv1) timeline.add(buildLabelReveal(rv1), portfolioStart);
+		if (rv2) timeline.add(buildLabelReveal(rv2), portfolioStart + 0.15);
+		timeline.to('.rv-ul', { scaleX: 1, duration: 0.6, ease: 'power3.inOut' }, portfolioStart + 0.2);
 
-		if (credit) tl.add(buildLabelReveal(credit), portfolioStart + 0.35);
+		if (credit) timeline.add(buildLabelReveal(credit), portfolioStart + 0.35);
 
 		// 4. EXPLORE button snaps in last (rendered by Start-Transition)
-		tl.fromTo('.explore-mag-pos .mag-btn',
+		timeline.fromTo('.explore-mag-pos .mag-btn',
 			{ scale: 0, opacity: 0, y: 12 },
 			{ scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'back.out(3.5)' },
 			portfolioStart + 0.85
@@ -205,8 +205,8 @@
 	// wherever it currently is (regardless of how far each element's timeline
 	// has progressed) and jumps straight to the leave animation; makes
 	// iterating on later sections much faster without waiting out the intro.
-	function handleSkipKeydown(e: KeyboardEvent) {
-		if (e.key.toLowerCase() !== 's') return;
+	function handleSkipKeydown(event: KeyboardEvent) {
+		if (event.key.toLowerCase() !== 's') return;
 		if (finished.value) return; // already left, nothing to skip
 
 		const now = performance.now();

@@ -68,10 +68,10 @@
   // ── pointer tilt; the whole stage sits in real 3D space and leans toward
   // the cursor; the two planes' differing translateZ makes them shift against
   // each other (true parallax depth, not layered copies).
-  function onPointerMove(e: MouseEvent) {
+  function onPointerMove(event: MouseEvent) {
     if (!stageRef.value) return
-    const px = e.clientX / window.innerWidth - 0.5
-    const py = e.clientY / window.innerHeight - 0.5
+    const px = event.clientX / window.innerWidth - 0.5
+    const py = event.clientY / window.innerHeight - 0.5
     gsap.to(stageRef.value, {
       rotationY: -14 + px * -10,
       rotationX: -6 + py * 10,

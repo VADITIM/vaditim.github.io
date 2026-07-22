@@ -36,7 +36,7 @@
 		if (!isVisible.value) return;
 
 		nextTick(() => {
-			const panel = panelRef.value?.el;
+			const panel = panelRef.value?.element;
 			if (!panel) return;
 			gsap.fromTo(
 				panel,

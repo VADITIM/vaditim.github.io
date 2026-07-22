@@ -21,7 +21,7 @@
   const confirmRef = ref<InstanceType<typeof MagneticButton> | null>(null)
 
   function playReveal() {
-    const confirmEl = confirmRef.value?.el ?? null
+    const confirmEl = confirmRef.value?.element ?? null
     if (!overlayRef.value || !cardRef.value) return
     gsap.killTweensOf([overlayRef.value, cardRef.value, confirmEl])
     gsap.fromTo(overlayRef.value, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' })
@@ -32,7 +32,7 @@
   // The button leaves first and on its own — it is the thing that was pressed, so it
   // has to read as consumed before the card it sits in follows it out.
   function dismiss() {
-    const confirmEl = confirmRef.value?.el ?? null
+    const confirmEl = confirmRef.value?.element ?? null
     if (!overlayRef.value || !cardRef.value) return
     gsap.killTweensOf([overlayRef.value, cardRef.value, confirmEl])
     gsap.to(confirmEl, { y: 10, opacity: 0, scale: 0.92, duration: 0.18, ease: 'power2.in' })
