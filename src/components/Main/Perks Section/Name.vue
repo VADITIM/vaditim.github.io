@@ -48,6 +48,7 @@
   import { currentSection } from '@modules/sectionsCore'
   import { finished } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
+  import { keepFullMotion } from '@modules/miscReducedMotion'
 
   gsap.defaults({ immediateRender: false })
 
@@ -94,11 +95,13 @@
     // VADITIM's plane slides in from the right (the name's side of the
     // screen); the "vadim niedental" suffix stays put and only ever animates
     // via its own typewriter reveal, never a container move.
-    gsap.fromTo(mainPlaneRef.value,
+    // The Perks info module is carved out of reduced motion (see TASKS.md), so its
+    // planes and the typewriters underneath keep real-time playback.
+    keepFullMotion(gsap.fromTo(mainPlaneRef.value,
       { x: '40%', opacity: 0 },
       { x: '0%', opacity: 1, duration: 0.5, delay: SECTION_ENTER_DELAY, ease: 'back.out(1.2)', overwrite: 'auto' }
-    )
-    gsap.to([subPlaneRef.value, titlePlaneRef.value], { opacity: 1, duration: 0.35, delay: SECTION_ENTER_DELAY, ease: 'power2.out', overwrite: 'auto' })
+    ))
+    keepFullMotion(gsap.to([subPlaneRef.value, titlePlaneRef.value], { opacity: 1, duration: 0.35, delay: SECTION_ENTER_DELAY, ease: 'power2.out', overwrite: 'auto' }))
     // …then the typewriters run: VADITIM first, the suffix follows.
     typeCall = gsap.delayedCall(SECTION_ENTER_DELAY + 0.35, async () => {
       await mainTw.value?.type()

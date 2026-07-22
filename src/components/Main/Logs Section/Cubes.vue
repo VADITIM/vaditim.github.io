@@ -39,6 +39,7 @@
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition';
   import { hideLabels, playLabelReveals, playLabelLeave } from '@modules/miscLabelReveal';
   import ModuleDisplay from '@components/Misc/Module-Display.vue';
+  import { prefersReducedMotion } from '@modules/miscReducedMotion';
 
   gsap.defaults({ immediateRender: false });
 
@@ -137,9 +138,11 @@
     shadowEls = [...root.value.querySelectorAll<HTMLElement>('.pc-shadow')];
     nameEls = [...root.value.querySelectorAll<HTMLElement>('.pc-name')];
 
+    // Reduced motion parks the idle spin at zero rather than stopping the loop:
+    // dragging a cube still works, it just comes to rest instead of drifting on.
     states = cubeEls.map(el => {
-      const idleVX = gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.07);
-      const idleVY = gsap.utils.random([-1, 1]) * gsap.utils.random(0.08, 0.2);
+      const idleVX = prefersReducedMotion.value ? 0 : gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.07);
+      const idleVY = prefersReducedMotion.value ? 0 : gsap.utils.random([-1, 1]) * gsap.utils.random(0.08, 0.2);
       return { el, q: Q0(), vX: idleVX, vY: idleVY, idleVX, idleVY, dragging: false, building: false };
     });
 
@@ -225,6 +228,8 @@
   // reads as mechanically synced. Runs for the component's whole life.
   function startIdleBob() {
     if (!root.value) return;
+    // An endless bob is ambience; at the reduced-motion time scale it would judder.
+    if (prefersReducedMotion.value) return;
     root.value.querySelectorAll<HTMLElement>('.pc-scene').forEach(scene => {
       gsap.to(scene, {
         y: gsap.utils.random(6, 11),
@@ -274,8 +279,8 @@
       const rxDeg = gsap.utils.random(-40, 20);
       const ryDeg = gsap.utils.random(-360, 360);
       state.q = qNorm(qMul(qFromAxis(0,1,0, ryDeg), qFromAxis(1,0,0, rxDeg)));
-      state.idleVX = gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.08);
-      state.idleVY = gsap.utils.random([-1, 1]) * gsap.utils.random(0.07, 0.22);
+      state.idleVX = prefersReducedMotion.value ? 0 : gsap.utils.random([-1, 1]) * gsap.utils.random(0.02, 0.08);
+      state.idleVY = prefersReducedMotion.value ? 0 : gsap.utils.random([-1, 1]) * gsap.utils.random(0.07, 0.22);
       state.vX = state.idleVX; state.vY = state.idleVY;
     }
     gsap.killTweensOf(faces);

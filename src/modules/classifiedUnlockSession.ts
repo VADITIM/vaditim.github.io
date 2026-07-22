@@ -4,6 +4,8 @@ import QRCode from 'qrcode'
 
 import { API_BASE_URL } from './apiBaseUrl'
 import { isClassifiedUnlocked, triggerClassifiedUnlock } from './sectionsClassifiedUnlock'
+import { computeCoarseFingerprint, computeFingerprint } from './visitorFingerprint'
+import { resolveVisitorSession } from './visitorSession'
 
 /** Must stay under the server's 15-minute session lifetime so the QR is never dead on screen. */
 const SESSION_REFRESH_MS = 14 * 60 * 1000
@@ -23,15 +25,20 @@ let refreshTimer = 0
 export async function startUnlockSession(): Promise<void> {
   if (isClassifiedUnlocked.value || connection) return
 
+  // The server, not the cached flag, decides whether this visitor still needs to scan;
+  // minting a session first would flash a QR at someone who unlocked months ago.
+  await resolveVisitorSession()
+  if (isClassifiedUnlocked.value || connection) return
+
   connection = new HubConnectionBuilder()
     .withUrl(`${API_BASE_URL}/unlock-hub`)
     .withAutomaticReconnect()
     .configureLogging(LogLevel.None)
     .build()
 
-  connection.on('unlocked', () => {
+  connection.on('unlocked', (claimToken: string) => {
     stopUnlockSession()
-    triggerClassifiedUnlock()
+    void persistUnlockForVisitor(claimToken)
   })
 
   // A reconnect drops the server-side group membership, so re-subscribe every time.
@@ -71,6 +78,33 @@ export async function claimUnlockFromUrl(): Promise<boolean | null> {
     console.error('[unlock] claim failed', error)
     return false
   }
+}
+
+/**
+ * The phone claimed the session, but the unlock belongs to this machine — so the
+ * desktop writes the row itself, against its own cookie and fingerprints. The
+ * one-time token from the push is what authorizes the write; without it the
+ * endpoint would be a free "unlock me" for anyone who found it.
+ */
+async function persistUnlockForVisitor(claimToken: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/unlock/claim`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        claimToken,
+        fingerprint: computeFingerprint(),
+        coarseFingerprint: computeCoarseFingerprint(),
+      }),
+    })
+    if (!response.ok) throw new Error(`Unlock claim responded ${response.status}`)
+  } catch (error) {
+    // The visitor scanned and earned it; a failed write only costs them the
+    // persistence, so unlock anyway and let the next scan try again.
+    console.error('[unlock] persisting the claim failed', error)
+  }
+  triggerClassifiedUnlock()
 }
 
 async function rotateSession(): Promise<void> {

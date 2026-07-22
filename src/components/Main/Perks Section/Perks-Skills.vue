@@ -15,9 +15,8 @@
         <button
           v-for="perk in perkGraph"
           :key="perk.id"
-          class="perk-category"
+          class="perk-category pc-label--pressable"
           :class="{ selected: selectedCategory === perk.id }"
-          :style="{ '--accent': perk.color }"
           @click="onCategoryClick(perk)"
         >
           <span class="pc-label-inner">
@@ -349,6 +348,9 @@
   // button itself carries no opacity animation — the clip-path and the underline
   // scale are what bring it in.
   .perk-category {
+    // Section main colour, shared by all three headlines. The per-category hues
+    // in `perkGraph` still drive the crystal and the detail panel, but the
+    // headlines themselves read as one set.
     --accent: #ffdd1b;
     position: relative;
     appearance: none;
@@ -361,8 +363,6 @@
     font-size: clamp(18px, 1.7vw, 28px);
     letter-spacing: 4px;
     color: #e8e8e8;
-    cursor: pointer;
-    pointer-events: auto;
     @extend .disable-selection;
 
     transition:
@@ -378,6 +378,13 @@
         background: var(--accent);
       }
     }
+  }
+
+  // Same opt-in as Label-Set's pressable labels: label-pattern text is inert
+  // unless it is wired to an action.
+  .pc-label--pressable {
+    pointer-events: auto;
+    cursor: pointer;
   }
 
   .pc-label-inner {

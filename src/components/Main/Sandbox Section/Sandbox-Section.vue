@@ -85,6 +85,7 @@
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import { isClassifiedUnlocked } from '@modules/sectionsClassifiedUnlock'
   import { unlockQrDataUrl } from '@modules/classifiedUnlockSession'
+  import { prefersReducedMotion } from '@modules/miscReducedMotion'
 
 
   const LIST_ITEMS = ['NEBULA UI', 'HELIX', 'PULSE', 'ARCADE']
@@ -398,11 +399,16 @@
     // reticle fades in and rotates slowly, forever
     gsap.set(pullReticle, { scale: 0.85 })
     gsap.to(pullReticle, { scale: 1, opacity: 1, duration: 0.4, ease: 'power2.out' })
-    pullTweens.push(gsap.to(pullReticle, { rotation: 360, duration: 9, ease: 'none', repeat: -1 }))
 
     // core pops in and keeps a gentle pulse
     gsap.set(pullCore, { scale: 0 })
     gsap.to(pullCore, { scale: 1, duration: 0.4, ease: 'back.out(2)' })
+
+    // The field's perpetual loops read as a strobe at the reduced-motion time
+    // scale; the field still appears, it just holds still once it has.
+    if (prefersReducedMotion.value) return
+
+    pullTweens.push(gsap.to(pullReticle, { rotation: 360, duration: 9, ease: 'none', repeat: -1 }))
     pullTweens.push(gsap.to(pullCore, { scale: 1.28, duration: 0.7, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: 0.4 }))
 
     // rings fall inward on a staggered loop; a perpetual "pulling in" cadence

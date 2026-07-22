@@ -2,7 +2,7 @@
   <!-- Reusable panel "window": a box/border frame with a label header,
        section-accent aware. Shared by Sandbox, Extra, and the Logs cubes -
        see CLAUDE.md Current Task 3. -->
-  <div ref="root" class="module-display" :style="staticVisible ? { '--accent': accent, opacity: 1 } : { '--accent': accent }">
+  <div ref="root" class="module-display" :style="[accent ? { '--accent': accent } : {}, staticVisible ? { opacity: 1 } : {}]">
     <div class="module-display-hue"></div>
     <div class="module-display-label" :class="{ 'module-display-label--over': labelOver }">
       <slot name="label">{{ label }}</slot>
@@ -20,6 +20,7 @@
 
   const props = withDefaults(defineProps<{
     label?: string;
+    /** Overrides the live section colour; leave unset so the box follows the section. */
     accent?: string;
     labelOver?: boolean;    // label floats above overlay content (z-index, no pointer events)
     staticVisible?: boolean; // skip the default opacity:0; use when content reveals itself internally rather than via a container-level enter tween
@@ -27,7 +28,7 @@
     animateHeight?: boolean; // smoothly tween the box height when its content's natural height changes (e.g. text re-wrapping) instead of snapping
   }>(), {
     label: '',
-    accent: '#5bfd5b',
+    accent: '',
     labelOver: false,
     staticVisible: false,
     caption: '',
@@ -102,6 +103,9 @@
   .module-display {
     position: relative;
     z-index: 7;
+    // Follows the section it is rendered in unless the consumer names a colour;
+    // App.vue keeps --section-color pointed at the active section's accent.
+    --accent: var(--section-color, #5bfd5b);
     border: 1px solid #262626;
     border-radius: 12px;
     background: rgba(18, 18, 18, 0.85);
@@ -110,6 +114,11 @@
     flex-direction: column;
     opacity: 0;
     will-change: transform, opacity;
+    transition: border-color 0.25s ease;
+
+    &:hover {
+      border-color: var(--accent);
+    }
   }
 
   // Cursor-following accent glow, masked to only show on the box's border ring.

@@ -10,6 +10,7 @@
 // fading), so the cost off-section is zero.
 
 import type { PerkGraphNode } from './sectionsPerksGraph'
+import { prefersReducedMotion } from './miscReducedMotion'
 
 // ── geometry ──
 // Kept close to the crystal's own max projected extent (radius * max
@@ -92,6 +93,11 @@ const IDLE_SETTLE_RATE = 0.045
 const CATEGORY_SPIN_KICK_X = -1.2
 const CATEGORY_SPIN_KICK_Y = 3
 
+// Reduced motion parks the base rotation at zero: the crystal still renders and
+// still turns under the pointer, it just stops spinning of its own accord.
+function idleSpinX() { return prefersReducedMotion.value ? 0 : IDLE_VELOCITY_X }
+function idleSpinY() { return prefersReducedMotion.value ? 0 : IDLE_VELOCITY_Y }
+
 type Vector3 = [number, number, number]
 
 interface Quaternion { w: number; x: number; y: number; z: number }
@@ -110,10 +116,8 @@ const listeners: Array<() => void> = []
 
 // ── crystal state ──
 let orientation: Quaternion = { w: 1, x: 0, y: 0, z: 0 }
-let angularVelocityX = IDLE_VELOCITY_X
-let angularVelocityY = IDLE_VELOCITY_Y
-let idleVelocityX = IDLE_VELOCITY_X
-let idleVelocityY = IDLE_VELOCITY_Y
+let angularVelocityX = idleSpinX()
+let angularVelocityY = idleSpinY()
 let isDragging = false
 let sparks: Spark[] = []
 let shellColor = CRYSTAL_COLOR
@@ -372,8 +376,8 @@ function drawFrame(now: number) {
       quaternionFromAxis(0, 1, 0, angularVelocityY),
       multiplyQuaternions(quaternionFromAxis(1, 0, 0, angularVelocityX), orientation),
     ))
-    angularVelocityX += (idleVelocityX - angularVelocityX) * IDLE_SETTLE_RATE
-    angularVelocityY += (idleVelocityY - angularVelocityY) * IDLE_SETTLE_RATE
+    angularVelocityX += (idleSpinX() - angularVelocityX) * IDLE_SETTLE_RATE
+    angularVelocityY += (idleSpinY() - angularVelocityY) * IDLE_SETTLE_RATE
   }
 
   const bob = Math.sin(now / 900) * BOB_AMPLITUDE

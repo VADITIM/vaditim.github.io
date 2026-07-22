@@ -124,6 +124,12 @@
     inset: 0;
     z-index: 0;
     pointer-events: none;
+
+    // style.scss rounds every element by default via `*`; the slices are cut by
+    // their clip-path polygons and a radius only nicks their corners.
+    &, * {
+      border-radius: 0;
+    }
   }
 
   .perks-front {
@@ -143,7 +149,6 @@
       height: 150dvh;
       background: linear-gradient(360deg,rgba(255, 221, 27, 1) 0%, rgba(102, 89, 22, 1) 100%);
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 68%);
-      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -164,7 +169,6 @@
       height: 150dvh;
       background: linear-gradient(360deg, rgba(153, 132, 16, 1) 15%, rgba(255, 221, 27, 1) 85%);
       clip-path: polygon(0 0, 100% 0, 100% 54%, 0 80%);
-      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -188,7 +192,6 @@
       height: 150dvh;
       background: linear-gradient(180deg,rgba(17, 56, 89, 1) 15%, rgba(0, 64, 255, 1) 85%);
       clip-path: polygon(0 0, 100% 0, 100% 62%, 0 80%);
-      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -213,7 +216,6 @@
       height: 150dvh;
       background: linear-gradient(180deg,rgb(13, 40, 62) 15%, rgba(0, 64, 255, 1) 85%);
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 54%);
-      border-radius: 30px 30px 0 0;
     }
   }
 
@@ -247,7 +249,6 @@
       width: 100vw;
       height: 150dvh;
       background: linear-gradient(180deg,rgb(93, 26, 40) 15%, rgba(163, 9, 38, 1) 85%);
-      border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 33%, 0 80%);
 
     }
@@ -283,7 +284,6 @@
       width: 100vw;
       height: 150dvh;
       background: linear-gradient(180deg,rgba(105, 17, 34, 1) 15%, rgba(163, 9, 38, 1) 85%);
-      border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
 
     }
@@ -326,7 +326,6 @@
       width: 100vw;
       height: 150dvh;
       background: linear-gradient(180deg, rgb(92, 55, 12) 15%, rgba(178, 104, 24, 1) 85%);
-      border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 33%, 0 80%);
     }
   }
@@ -349,7 +348,6 @@
       width: 100vw;
       height: 150dvh;
       background: linear-gradient(180deg, rgba(120, 70, 16, 1) 15%, rgba(240, 155, 58, 1) 85%);
-      border-radius: 30px 30px 0 0;
       clip-path: polygon(0 0, 100% 0, 100% 80%, 0 60%);
     }
   }

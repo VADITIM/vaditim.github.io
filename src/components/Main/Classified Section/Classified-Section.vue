@@ -35,7 +35,8 @@
         <template #label>01 · CLASSIFIED</template>
         <div class="sc-body sc-log">
           <p class="sc-note">
-            FILE 003-A · SUBJECT: VISITOR<br />
+            FILE 003-A · SUBJECT: VISITOR - {{ (visitorName ?? 'UNIDENTIFIED').toUpperCase() }} -
+            <span class="sc-redact">{{ visitorSignature }}</span><br />
             STATUS: <span class="sc-redact">FULLY COMPROMISED</span><br />
             LAST SEEN: querying <span class="sc-redact">classified-section-unlocked</span><br />
             CLEARANCE: <span class="sc-redact">NONE - SCANNED A STICKER ANYWAY</span><br />
@@ -67,6 +68,8 @@
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import PongGame from './Pong-Game.vue'
   import { deleteAllVisitorData } from '@modules/visitorDataReset'
+  import { visitorName } from '@modules/extraComments'
+  import { visitorSignature } from '@modules/visitorSignature'
   import rickrollQr from '@assets/images/rickroll-qr.png'
 
   const CLASSIFIED_LABELS = [

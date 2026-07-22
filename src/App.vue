@@ -58,6 +58,7 @@
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { registerDebugCacheClear } from '@modules/miscDebugCacheClear';
   import { startUnlockSession, stopUnlockSession } from '@modules/classifiedUnlockSession';
+  import { initializeReducedMotion } from '@modules/miscReducedMotion';
 
   setSectionCount(SECTIONS.length);
 
@@ -77,6 +78,7 @@
   });
 
   const cleanupDebugCacheClear = registerDebugCacheClear();
+  const cleanupReducedMotion = initializeReducedMotion();
 
   // The phone that scans the QR loads this same page; it must not open a session of its own.
   if (!isMobile.value && !new URLSearchParams(window.location.search).has('unlock')) {
@@ -86,6 +88,7 @@
   onBeforeUnmount(() => {
     cleanupSectionLayerStyle();
     cleanupDebugCacheClear();
+    cleanupReducedMotion();
     stopUnlockSession();
   });
 

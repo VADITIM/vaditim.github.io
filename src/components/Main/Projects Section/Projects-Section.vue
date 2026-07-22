@@ -117,6 +117,7 @@
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
   import { rippleProjectHelix } from '@modules/miscProjectHelixCanvas'
+  import { keepFullMotion } from '@modules/miscReducedMotion'
 
   const N = projects.length
   const projectsIndex = getSectionIndexById('projects')
@@ -231,7 +232,9 @@
     gsap.killTweensOf([text, bar])
     gsap.set(text, { clipPath: 'inset(0 100% 0 0)' })
     gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
-    const tl = gsap.timeline({ delay })
+    // Modules 01-03 are carved out of reduced motion (see TASKS.md) — the bar sweep
+    // is how the project's name changes hands, not decoration around it.
+    const tl = keepFullMotion(gsap.timeline({ delay }))
     tl.to(bar, { scaleX: 1, duration: 0.3, ease: 'power3.inOut' })
       .set(text, { clipPath: 'inset(0 0% 0 0)' })
       .set(bar, { transformOrigin: 'right center' })
@@ -248,7 +251,7 @@
     const bar = headingBarRef.value
     if (!text || !bar) return
     gsap.killTweensOf([text, bar])
-    gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: HEADING_LEAVE_DUR, ease: 'power2.in', overwrite: 'auto' })
+    keepFullMotion(gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: HEADING_LEAVE_DUR, ease: 'power2.in', overwrite: 'auto' }))
     gsap.set(bar, { opacity: 0 })
   }
 
@@ -265,7 +268,7 @@
       gsap.killTweensOf([text, bar])
       gsap.set(text, { clipPath: 'inset(0 100% 0 0)' })
       gsap.set(bar, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
-      const tl = gsap.timeline({ delay: delay + i * 0.08 })
+      const tl = keepFullMotion(gsap.timeline({ delay: delay + i * 0.08 }))
       tl.to(bar, { scaleX: 1, duration: 0.36, ease: 'power3.inOut' })
         .set(text, { clipPath: 'inset(0 0% 0 0)' })
         .set(bar, { transformOrigin: 'right center' })
@@ -278,7 +281,7 @@
     const els = [descRef.value, yearRef.value, genreRef.value]
     const bars = [descBarRef.value, yearBarRef.value, genreBarRef.value]
     gsap.killTweensOf([...els, ...bars])
-    els.forEach((text) => { if (text) gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' }) })
+    els.forEach((text) => { if (text) keepFullMotion(gsap.to(text, { clipPath: 'inset(0 100% 0 0)', duration: 0.25, ease: 'power2.in', overwrite: 'auto' })) })
     bars.forEach((bar) => { if (bar) gsap.set(bar, { opacity: 0 }) })
   }
 
@@ -304,7 +307,9 @@
     const token = ++labelRequestToken
     playHeadingLeave()
     playSubLeave()
-    gsap.delayedCall(HEADING_LEAVE_DUR, () => {
+    // Exempt alongside the leave it waits on: a collapsed delay against a real-time
+    // leave would swap the text while the old value is still on screen.
+    keepFullMotion(gsap.delayedCall(HEADING_LEAVE_DUR, () => {
       if (token !== labelRequestToken) return
       // Leave finished with the old values fully hidden; only now swap the
       // rendered text to the newly selected project, then reveal it.
@@ -314,7 +319,7 @@
         playHeadingReveal(0)
         playSubReveal(0.08)
       })
-    })
+    }))
   }
   function feedNext() { centerOn(fanCenter.value + 1) }
   function feedPrev() { centerOn(fanCenter.value - 1) }
@@ -664,9 +669,16 @@
     // flattened and the card tilts as one flat plane instead of layers popping
     // at their own depth.
     transform-style: preserve-3d;
+    // ModuleDisplay clips its content by default, and any overflow other than
+    // visible forces transform-style back to flat — which is what was killing
+    // the parallax. The card's own rounded frame does the clipping instead.
+    overflow: visible;
 
     :deep(.module-display-content) {
       padding: 32px 8px 8px;
+      // Sits between the frame and .proj-card-body in the 3D chain; a flat link
+      // anywhere along it collapses every depth below.
+      transform-style: preserve-3d;
     }
 
     :deep(.module-display-label) {

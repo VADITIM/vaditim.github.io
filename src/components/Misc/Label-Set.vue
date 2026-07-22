@@ -2,7 +2,14 @@
   <!-- Reusable corner/edge label set; see "Label Reveal Pattern" in CLAUDE.md.
        Any section can drop this in with its own labels/accent/sectionId. -->
   <div ref="root" class="label-set" :class="{ 'label-set--glitch': glitch }">
-    <div v-for="(label, i) in labels" :key="'label-' + i" class="pc-label" :style="label.pos">
+    <div
+      v-for="(label, i) in labels"
+      :key="'label-' + i"
+      class="pc-label"
+      :class="{ 'pc-label--pressable': label.press }"
+      :style="label.pos"
+      @click="label.press && emit('press', i)"
+    >
       <!-- wrap: each word becomes its own stacked line, revealed as an
            independent label (own bar sweep + own positional delay). -->
       <template v-if="label.wrap">
@@ -40,7 +47,7 @@
   gsap.defaults({ immediateRender: false });
 
   const props = withDefaults(defineProps<{
-    labels: { text: string; pos: CSSProperties; wrap?: boolean; stretch?: boolean }[];
+    labels: { text: string; pos: CSSProperties; wrap?: boolean; stretch?: boolean; press?: boolean }[];
     sectionId: string;
     accent: string;
     textColor?: string;
@@ -51,6 +58,8 @@
     delay: 0.2,
     glitch: false,
   });
+
+  const emit = defineEmits<{ press: [index: number] }>();
 
   const root = ref<HTMLElement | null>(null);
   let labelEls: HTMLElement[] = [];
@@ -94,6 +103,12 @@
   .pc-label {
     position: absolute;
     pointer-events: none;
+  }
+
+  // Opt-in: the only labels that take pointer input are those wired to an action.
+  .pc-label--pressable {
+    pointer-events: auto;
+    cursor: pointer;
   }
 
   // Wrapped labels: one line per word, stacked flush under the label's anchor.

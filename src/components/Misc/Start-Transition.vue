@@ -20,6 +20,7 @@
 	import fullscreenIcon from '@assets/images/icons/fullscreen.png';
 	import minimiseIcon from '@assets/images/icons/minimise.png';
 	import MagneticButton from '@components/Misc/Magnetic-Button.vue';
+	import { resolveVisitorSession } from '@modules/visitorSession';
 
 	interface Props {
 		showLoadingPage: boolean;
@@ -38,6 +39,10 @@
 	});
 
 	async function OnExploreClick() {
+		// The intro choreography is several seconds of free cover; ask who the visitor
+		// is now so the answer is in memory long before they scroll to the Extra section.
+		void resolveVisitorSession();
+
 		if (props.isMobile && props.containerElement) {
 			try {
 				if (props.containerElement.requestFullscreen) {

@@ -174,7 +174,9 @@
 		const opacity = Math.max(0.4, 1 - distance * 0.16)
 		return {
 			'--dist-scale': scale,
-			transform: `translate(${archX}rem, calc(-50% + ${cumulativeSpacingRem(relative)}rem))`,
+			// --enter-x is the slide-in offset owned by onNavEntryEnter; composing it here
+			// keeps the windowed layout the single author of the transform.
+			transform: `translate(calc(${archX}rem + var(--enter-x, 0px)), calc(-50% + ${cumulativeSpacingRem(relative)}rem))`,
 			opacity,
 			zIndex: 10 - distance,
 		}
@@ -259,13 +261,33 @@
 		ChangeToSectionID(sectionIndex);
 	};
 
-	// Newly unlocked nav entries (currently just Classified) mount straight into
-	// the list. On mobile they slide in from off-screen; on desktop the windowed
-	// layout owns each entry's transform (see getDesktopEntryStyle), so a gsap
-	// tween would fight it — let CSS fade it into the window instead.
-	const onNavEntryEnter = (el: Element, done: () => void) => {
-		if (!isMobile.value) { done(); return }
-		gsap.fromTo(el, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.5)', onComplete: done, overwrite: 'auto' })
+	// Newly unlocked nav entries (currently just Classified) mount straight into the
+	// list and slide in from beyond the right edge. On desktop the windowed layout
+	// owns each entry's transform, so the slide travels through --enter-x, which that
+	// transform composes in; the layout's own transform transition is suspended for
+	// the tween so it doesn't chase every frame and smear the landing.
+	const onNavEntryEnter = (element: Element, done: () => void) => {
+		if (isMobile.value) {
+			gsap.fromTo(element, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.5)', onComplete: done, overwrite: 'auto' })
+			return
+		}
+
+		// Measured rather than guessed, so the entry starts just past the edge whatever
+		// the label's width or the viewport's size.
+		const offscreenX = window.innerWidth - element.getBoundingClientRect().left
+		element.classList.add('is-entering')
+		gsap.fromTo(element,
+			{ '--enter-x': `${offscreenX}px` },
+			{
+				'--enter-x': '0px',
+				duration: 0.65,
+				ease: 'back.out(1.4)',
+				overwrite: 'auto',
+				onComplete: () => {
+					element.classList.remove('is-entering')
+					done()
+				},
+			})
 	};
 
 	onMounted(() => {
@@ -456,6 +478,10 @@
 			transform: rotate(45deg);
 			transition: width .35s cubic-bezier(0.22, 1, 0.36, 1), height .35s cubic-bezier(0.22, 1, 0.36, 1), background .3s ease, border-color .3s ease, box-shadow .3s ease;
 		}
+
+		// While a newly unlocked entry slides in, GSAP drives the offset frame by frame;
+		// the transition would lag a third of a second behind every one of them.
+		&.is-entering { transition: opacity .4s ease, color .3s ease; }
 
 		// hover; brighten the name + diamond + number (transform is owned by the window)
 		&:hover:not(.active) {

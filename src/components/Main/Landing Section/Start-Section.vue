@@ -6,7 +6,7 @@
 		<div class="landing-greeting">
 			<div class="greet-line greet-1">
 				<div class="pc-label-inner">
-					<div class="pc-label-text">Greetings User.</div>
+					<div class="pc-label-text">Greetings {{ visitorName ?? 'User' }}.</div>
 					<div class="pc-label-bar"></div>
 				</div>
 			</div>
@@ -57,6 +57,7 @@
 	import { getSectionIndexById } from '@modules/sectionLookup';
 	import { isMobile } from '@modules/miscIsMobile';
 	import { buildLabelReveal, playLabelLeave } from '@modules/miscLabelReveal';
+	import { visitorName } from '@modules/extraComments';
 
 	const loadingContainer = ref<HTMLElement | null>(null);
 	let enterTl: gsap.core.Timeline | null = null;
@@ -123,13 +124,13 @@
 			if (line) tl.to(line, { y: -20, opacity: 0, duration: dur, ease: 'power2.in' }, at);
 		}
 
-		// 1. "Greetings User." reveals, holds, then fully leaves; only after its
-		// leave has finished does "Explore your experience!" cycle into the same
-		// slot, hold, and leave too; then the rest of the intro proceeds.
-		// All greeting timings run at half their original length.
+		// 1. "Greetings User." reveals, holds a full second, then fully leaves; only
+		// after that leave has finished, and a 0.35s beat of empty slot, does the
+		// second line cycle into the same position, hold its own second, and leave
+		// too. Only then does the rest of the intro proceed.
 		const revealDur = (0.42 + 0.5) / 2; // buildLabelReveal at timeScale(2)
-		const hold = 0.5;
-		const gap = 0.175;
+		const hold = 1;
+		const gap = 0.35;
 		const leaveDur = 0.15;
 
 		const greet1RevealAt = 0;
@@ -252,6 +253,12 @@
 		min-height: 100dvh;
 		background-color: #181818;
 		z-index: 300;
+
+		// style.scss rounds every element by default via `*`; the landing page is
+		// built from hard edges — full-bleed curtains and bars — so it opts out.
+		&, * {
+			border-radius: 0;
+		}
 	}
 
 	.landing-content {

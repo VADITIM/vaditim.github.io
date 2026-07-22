@@ -4,7 +4,7 @@
       <div class="sup-eyebrow">CLASSIFIED SECTION</div>
       <div class="sup-title">UNLOCKED!</div>
       <p class="sup-note">A new entry just landed at the bottom of the nav.</p>
-      <MagneticButton type="button" class="sup-confirm-wrap" :zone="18" @click="dismiss">GOT IT</MagneticButton>
+      <MagneticButton ref="confirmRef" type="button" class="sup-confirm-wrap" :zone="18" @click="dismiss">GOT IT</MagneticButton>
     </div>
   </div>
 </template>
@@ -12,31 +12,40 @@
 <script setup lang="ts">
   import { nextTick, ref, watch } from 'vue'
   import { gsap } from 'gsap'
-  import { showUnlockPopup } from '@modules/sectionsClassifiedUnlock'
+  import { confirmClassifiedUnlock, showUnlockPopup } from '@modules/sectionsClassifiedUnlock'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
 
   const mounted = ref(false)
   const overlayRef = ref<HTMLElement | null>(null)
   const cardRef = ref<HTMLElement | null>(null)
+  const confirmRef = ref<InstanceType<typeof MagneticButton> | null>(null)
 
   function playReveal() {
+    const confirmEl = confirmRef.value?.el ?? null
     if (!overlayRef.value || !cardRef.value) return
-    gsap.killTweensOf([overlayRef.value, cardRef.value])
+    gsap.killTweensOf([overlayRef.value, cardRef.value, confirmEl])
     gsap.fromTo(overlayRef.value, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' })
     gsap.fromTo(cardRef.value, { y: 24, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.6)', delay: 0.05 })
+    gsap.fromTo(confirmEl, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.8)', delay: 0.3 })
   }
 
+  // The button leaves first and on its own — it is the thing that was pressed, so it
+  // has to read as consumed before the card it sits in follows it out.
   function dismiss() {
+    const confirmEl = confirmRef.value?.el ?? null
     if (!overlayRef.value || !cardRef.value) return
-    gsap.killTweensOf([overlayRef.value, cardRef.value])
-    gsap.to(cardRef.value, { y: 16, opacity: 0, scale: 0.96, duration: 0.22, ease: 'power2.in' })
+    gsap.killTweensOf([overlayRef.value, cardRef.value, confirmEl])
+    gsap.to(confirmEl, { y: 10, opacity: 0, scale: 0.92, duration: 0.18, ease: 'power2.in' })
+    gsap.to(cardRef.value, { y: 16, opacity: 0, scale: 0.96, duration: 0.22, ease: 'power2.in', delay: 0.08 })
     gsap.to(overlayRef.value, {
       opacity: 0,
       duration: 0.25,
       ease: 'power2.in',
+      delay: 0.08,
       onComplete: () => {
         mounted.value = false
-        showUnlockPopup.value = false
+        // Activates the section only now, so its nav entry slides in against a clear screen.
+        confirmClassifiedUnlock()
       },
     })
   }

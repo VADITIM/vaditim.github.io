@@ -1,6 +1,7 @@
 import { gsap } from 'gsap'
 import { onSectionStatesChange, type SectionTransitionMeta } from '@modules/sectionsStateMachine'
 import { SECTIONS } from '@modules/sectionsRegistry'
+import { prefersReducedMotion } from '@modules/miscReducedMotion'
 
 /**
  * Section-swap "Section Cut" transition.
@@ -131,6 +132,11 @@ function play(meta: SectionTransitionMeta) {
   // outgoing section). Don't play the curtain there; the loading exit already
   // covers that moment; the first section should just appear.
   if (meta.previous === -1) return
+
+  // Reduced motion drops the curtain entirely rather than sweeping it at the
+  // collapsed time scale — six bars flashing across the screen in one frame is
+  // the exact strobe the preference exists to avoid.
+  if (prefersReducedMotion.value) return
 
   const shutters = gsap.utils.toArray<HTMLElement>(SHUTTER_SELECTOR)
   if (shutters.length === 0) return

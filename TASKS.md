@@ -86,11 +86,73 @@ Open questions:
 - Whether flagged comments start hidden or visible.
 - Admin surface: bare endpoints + REST client is enough, or a tiny hidden admin page.
 
+### Extra Section — edit your comment once
+
+A visitor who has posted may edit their name and message **exactly once**.
+
+**UI:** once a comment exists, the SEND button becomes **EDIT** in the same slot. Pressing it re-enables the inputs pre-filled with the visitor's stored name and text, and turns into SAVE. After the edit is spent the inputs stay disabled. Adds a third state next to the existing `hasPosted`: `canEdit`.
+
+**Backend:** `Comment` gains `EditCount`; `PUT /comments/mine` (already exists, cookie-authorized) caps it at one and returns 409 on a second attempt — never trust the client to hide the button. `CommentOutput` exposes the remaining-edit state. The `PUT` currently resolves the visitor by cookie alone and 404s without one; it needs the same layered lookup as the unlock (cookie → fingerprint → coarse fingerprint + IP), or a cleared-cookie visitor can't edit a comment the fingerprint proves is theirs.
+
+**Identity prefetch:** fire identity resolution when the **EXPLORE button is pressed** (`OnExploreClick` in `Misc/Start-Transition.vue`) instead of in `Extra-Section.vue`'s `onMounted`, so the answer is in memory before the visitor scrolls there — the intro choreography is several seconds of free cover.
+
+One request, not three: `POST /visitor/session` takes the full + coarse fingerprints and returns `{ visitorId, comment, rating, isUnlocked, canEditComment }`, and issues/refreshes the cookie so every later request hits the exact-match path. One resolution, one authoritative answer, no chance of the three features disagreeing about who the visitor is. This is also what keeps the QR from reappearing (`startUnlockSession()` already no-ops when `isClassifiedUnlocked` — it just needs the server's answer before it runs) and keeps classified unlocked across restarts.
+
+**Caveat:** a *different device* is the one case the coarse fingerprint cannot honestly match — a phone and a desktop share no screen metrics, DPR or core count. Cross-device leaves only the cookie (per-browser) and the IP hash (shared by the whole network, so never a match on its own). "Always unlocked elsewhere" holds for another browser on the same machine and for the same browser after a data wipe, not for a genuinely new device; rescan stays the fallback. Where identity resolves only via the weak path, show an empty form rather than pre-filling what might be someone else's name and message.
+
+### Extra Section — RATING module (backed by a database)
+
+**Progress (2026-07-22): frontend done, backend not started.** The Extra section was re-laid out into three modules — `01 · COMMENTS` / `02 · RATING` / `03 · CONTACT` on a `50fr 30fr 20fr` grid. The rating module renders a vertical star column (5 at the top, fill grows upwards) filled with a shared SVG gradient in the section colour; hover previews, click commits. The pick currently lives in a local `ref` in `Extra-Section.vue` marked with a `TODO(vaditim)` — nothing is persisted and no average is shown yet.
+
+Also landed with it: posted comments slide in from the panel's left edge (GSAP hooks on a `TransitionGroup`, matching leave tween), comment rows sized up, and the contact container re-scaled to the narrow 20% column.
+
+**Backend to build** — same host/DB as comments, identity layered exactly like `POST /comments` (cookie → fingerprint hash → salted IP hash):
+
+- `Rating` entity: `Id`, `Value` (1–5), `VisitorId`, `FingerprintHash`, `IpHash`, `CreatedAtUtc`, `UpdatedAtUtc`. Unique index on `VisitorId`, plain index on `FingerprintHash` / `IpHash`.
+- `GET /ratings/summary` → `{ average, count, distribution }` (count per star, for a future breakdown bar). Rate-limited `read-comments`.
+- `GET /ratings/mine` → own value or `null`, resolved from the cookie. Mirrors `/comments/mine`: `Results.Json`, never a bare 404.
+- `POST /ratings` `{ value, fingerprint }` → **upsert, not insert-once**. Unlike a comment, a visitor may change their rating; the cookie/fingerprint match updates the existing row instead of returning 409. Reject values outside 1–5. Rate-limited (new `post-ratings` policy, looser than comments — changing your mind is legitimate).
+- `DELETE /visitor` must also drop the caller's rating row.
+
+**Frontend to wire:** new `src/modules/extraRating.ts` mirroring `extraComments.ts` (`ratingSummary`, `ownRating`, `loadRating()`, `submitRating()`, reusing the same fingerprint helper — extract `computeFingerprint` into a shared module rather than duplicating it). The stars then show the visitor's own pick; the numeric readout shows the community average with the vote count beside it.
+
+**Trap:** `db.Database.EnsureCreated()` in `Program.cs` does **not** add tables to a database that already exists. The Azure SQL database is already created with `Comments`, so a new `Ratings` entity will not appear on its own — this needs an explicit migration step (see the shared note at the bottom of the Classified task).
+
 ### Classified Section — QR code unlock (realtime)
 
 **Status: unlock mechanic implemented; nav/section-registration half still open.** Hosting is settled (Azure Container Apps, shared with the comments API — App Service was abandoned after the new-subscription VM quota block). The realtime channel is live: `UnlockHub` + `POST /unlock/{sessionId}` in `api/Unlock/`, client in `src/modules/classifiedUnlockSession.ts`, phone splash in `Unlock-Scan-Splash.vue`. Session flow, TTL, single-use claiming and the single-replica constraint are documented in [`api/DEPLOY.md`](api/DEPLOY.md).
 
-**Still to do here:** step 5 below — the confirm button's leave animation, activating the section in the registry, and the nav label sliding in from the right with the list reflowing. `Classified-Unlock-Popup.vue` currently only shows the popup.
+**Still to do here:** step 5 below — the confirm button's leave animation, activating the section in the registry, and the nav label sliding in from the right with the list reflowing. `Classified-Unlock-Popup.vue` currently only shows the popup. Plus the unlock persistence rework below.
+
+#### Persist the unlock server-side, keyed to the visitor (2026-07-22)
+
+Today the unlock lives **only** in `localStorage` (`classified-section-unlocked`, in `sectionsClassifiedUnlock.ts`). Clearing site data or opening another browser re-locks the section and forces a rescan. It has to become visitor data on the server, like the comment, so it survives sessions and follows the visitor across browsers.
+
+**The flow has to change first.** `POST /unlock/{sessionId}` is called by the *phone*, but the unlock belongs to the *desktop* — persisting on that request would store the phone's cookie and fingerprint, which is the wrong identity. So:
+
+1. Phone claims as it does now; the hub pushes `unlocked` to the desktop's group, and the push carries a **one-time claim token** minted alongside the session in `UnlockSessionStore`.
+2. Desktop, on receiving the push, calls `POST /unlock/claim` with `credentials: 'include'`, its own `fingerprint`, and that token. The server validates and burns the token, then writes the unlock row against the **desktop's** `visitorId` (issuing the cookie if absent), fingerprint hash and IP hash.
+3. Without the token the endpoint is a free "unlock me" for anyone who finds it — the token is what authorizes the write, not the cookie.
+
+**Lookup on load:** `POST /unlock/mine` (POST, not GET — the fingerprint travels in the body instead of a query string that lands in access logs) resolves in order:
+
+1. `visitorId` cookie matches an unlock row → unlocked. Exact, same-browser.
+2. `FingerprintHash` matches → unlocked. Same browser, cleared cookies.
+3. `CoarseFingerprintHash` **and** `IpHash` both match → unlocked. This is the cross-browser case.
+
+`isClassifiedUnlocked` keeps reading `localStorage` synchronously at module load so the section doesn't flash locked, then the server answer overwrites it — cache, not source of truth.
+
+**Cross-browser needs a second, coarser fingerprint.** The existing `computeFingerprint()` mixes in the WebGL renderer string and `navigator.platform`, which differ between Chrome and Firefox on the same machine — a strict fingerprint match will never carry across browsers. Add a `computeCoarseFingerprint()` over browser-independent signals only: `screen.width × height × colorDepth`, `devicePixelRatio`, timezone, `hardwareConcurrency`. Both hashes get stored on the row.
+
+That coarse hash is deliberately weak, so it must **never** match alone — require the IP hash alongside it. Even then it's best-effort: two visitors on the same network with identically specced laptops can inherit each other's unlock, and a changed IP (mobile network, new DHCP lease) silently drops the visitor back to a rescan. Both are acceptable at these stakes — the prize is a portfolio section, not an account — but the cross-browser promise is "usually", not "guaranteed". A rescan is always the fallback and costs the visitor nothing.
+
+**Entity:** `VisitorUnlock` — `Id`, `VisitorId`, `FingerprintHash`, `CoarseFingerprintHash`, `IpHash`, `UnlockedAtUtc`. Unique index on `VisitorId`; indexes on `FingerprintHash` and `CoarseFingerprintHash`.
+
+**Also:** `DELETE /visitor` must delete the unlock row too, or "DELETE DATA" clears local storage and the server immediately re-unlocks on the next lookup — which would break the only practical way to re-test the QR flow (`visitorDataReset.ts`). Rate-limit both new endpoints under the existing `unlock` policy.
+
+#### Shared migration note
+
+`Program.cs` bootstraps the schema with `db.Database.EnsureCreated()`, which creates tables **only when the database is empty**. The hosted Azure SQL database already has `Comments`, so neither `Ratings` nor `VisitorUnlocks` will materialise there on deploy. Before either backend task ships, decide once: adopt EF Core migrations (`dotnet ef migrations add`, `db.Database.Migrate()` on startup) or hand-write the `CREATE TABLE` statements against Azure SQL. Migrations are the right call now that the schema has started moving — `EnsureCreated` and migrations cannot be mixed, so switching means baselining the existing `Comments` table into an initial migration.
 
 A hidden section unlocked by scanning a QR code displayed on the desktop page. The scan happens on the visitor's phone; the desktop page updates **live** — no refresh — via a realtime push from the backend. The payoff: the visitor scans, and the game menu grows a new entry in front of them.
 
@@ -109,7 +171,7 @@ A hidden section unlocked by scanning a QR code displayed on the desktop page. T
 **Client architecture notes:**
 
 - The classified section component stays mounted like every other section (GSAP needs persistent DOM targets); "locked" is state, not absence. Locked sections are excluded from nav and scroll-intent cycling until unlocked.
-- Unlock state persists in `localStorage` so a returning visitor keeps the section without rescanning.
+- Unlock state persists server-side against the visitor's identity (see the persistence section above); `localStorage` is only the synchronous cache that avoids a locked-state flash on load.
 - The unlock module is a standalone overlay component, not tied to any section's timeline — it can fire regardless of which section is currently active.
 - QR code rendered client-side (small lib or hand-rolled); style it to match the game-menu aesthetic (section color, scanline/frame treatment).
 

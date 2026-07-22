@@ -5,6 +5,7 @@
 //
 // Structure expected per instance: .tw > .tw-text, .tw-caret
 import { gsap } from 'gsap';
+import { keepFullMotion, prefersReducedMotion } from './miscReducedMotion';
 
 export interface TypewriterOptions {
   // Seconds per character while typing (default 0.06 → ~16 chars/s).
@@ -64,6 +65,8 @@ export function createTypewriter(el: HTMLElement, full: string, reverse = false)
 function startBlink(h: Handle, period: number) {
   h.blink?.kill();
   gsap.set(h.caretEl, { opacity: 1 });
+  // A blink at the collapsed time scale is a strobe; hold the caret solid instead.
+  if (prefersReducedMotion.value) { h.blink = null; return; }
   h.blink = gsap.to(h.caretEl, {
     opacity: 0,
     duration: period,
@@ -85,7 +88,9 @@ export function playType(h: Handle, opts?: TypewriterOptions): Promise<void> {
   startBlink(h, o.caretBlink);
   const state = { i: 0 };
   return new Promise(resolve => {
-    h.tween = gsap.to(state, {
+    // Carved out of reduced motion: the typing IS the content here, and a line that
+    // appears fully formed says nothing. See TASKS.md's reduced-motion exceptions.
+    h.tween = keepFullMotion(gsap.to(state, {
       i: h.full.length,
       duration: h.full.length * o.speed,
       delay: o.delay,
@@ -98,7 +103,7 @@ export function playType(h: Handle, opts?: TypewriterOptions): Promise<void> {
         if (!o.holdCaret) stopBlink(h);
         resolve();
       },
-    });
+    }));
   });
 }
 
@@ -109,6 +114,8 @@ export function playClear(h: Handle, opts?: TypewriterOptions): Promise<void> {
   startBlink(h, o.caretBlink);
   const state = { i: h.textEl.textContent?.length ?? h.full.length };
   return new Promise(resolve => {
+    // Not carved out of reduced motion the way typing is: the backspace is an exit,
+    // and letting it run in real time would leave text on a section already gone.
     h.tween = gsap.to(state, {
       i: 0,
       duration: state.i * o.clearSpeed,

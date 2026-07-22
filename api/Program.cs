@@ -276,4 +276,10 @@ admin.MapDelete("/{id:int}", async (int id, CommentsDbContext db) =>
     return Results.NoContent();
 });
 
+admin.MapDelete("/", async (CommentsDbContext db) =>
+{
+    await db.Comments.ExecuteDeleteAsync();
+    return Results.NoContent();
+});
+
 app.Run();
