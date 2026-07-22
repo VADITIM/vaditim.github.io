@@ -24,8 +24,9 @@ export async function loadComments(): Promise<void> {
       fetch(`${API_BASE_URL}/comments/mine`, { credentials: 'include' }),
     ])
     if (!listResponse.ok) throw new Error(`Comments list responded ${listResponse.status}`)
+    if (!mineResponse.ok) throw new Error(`Own comment responded ${mineResponse.status}`)
     comments.value = await listResponse.json()
-    ownComment.value = mineResponse.ok ? await mineResponse.json() : null
+    ownComment.value = await mineResponse.json()
     isCommentsUnavailable.value = false
     isCommentsLoaded.value = true
   } catch (error) {

@@ -112,14 +112,16 @@ comments.MapGet("/", async (CommentsDbContext db) =>
     return Results.Ok(visible);
 }).RequireRateLimiting("read-comments");
 
+// "No comment yet" is the normal case for a first-time visitor, so it answers 200 with a null
+// body rather than 404 — a 404 here is indistinguishable from a real error in the browser console.
 comments.MapGet("/mine", async (HttpContext http, CommentsDbContext db) =>
 {
     var visitorId = http.GetExistingVisitorId();
     if (visitorId is null)
-        return Results.NotFound();
+        return Results.Ok<CommentOutput?>(null);
 
     var comment = await db.Comments.FirstOrDefaultAsync(comment => comment.VisitorId == visitorId);
-    return comment is null ? Results.NotFound() : Results.Ok(CommentOutput.From(comment));
+    return Results.Ok(comment is null ? null : CommentOutput.From(comment));
 }).RequireRateLimiting("read-comments");
 
 comments.MapPost("/", async (CommentInput input, HttpContext http, CommentsDbContext db) =>

@@ -61,8 +61,9 @@
         <div ref="tiltWrapRef" class="sb-tilt-wrap">
           <div ref="tiltRef" class="sb-tilt">
             <div class="sb-tilt-frame"></div>
-            <img v-if="!isClassifiedUnlocked && unlockQrDataUrl" :src="unlockQrDataUrl" class="sb-tilt-qr" alt="Scan to unlock the classified section" draggable="false" />
-            <div v-else class="sb-tilt-wow">WOW!</div>
+            <!-- Both stay mounted so the unlock can cross-fade them; visibility is GSAP's. -->
+            <img v-show="unlockQrDataUrl" ref="qrRef" :src="unlockQrDataUrl" class="sb-tilt-qr" alt="Scan to unlock the classified section" draggable="false" />
+            <div ref="wowRef" class="sb-tilt-wow">WOW!</div>
             <div class="sb-tilt-chip">2026</div>
             <div class="sb-tilt-name">SCAN ME?</div>
           </div>
@@ -74,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-  import { onBeforeUnmount, onMounted, ref } from 'vue'
+  import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
   import { gsap } from 'gsap'
   import { currentSection } from '@modules/sectionsCore'
   import { getSectionIndexById } from '@modules/sectionLookup'
@@ -99,6 +100,8 @@
   const magClicks = ref(0)
   const tiltWrapRef = ref<HTMLElement | null>(null)
   const tiltRef = ref<HTMLElement | null>(null)
+  const qrRef = ref<HTMLElement | null>(null)
+  const wowRef = ref<HTMLElement | null>(null)
   const gravRef = ref<HTMLElement | null>(null)
 
   const sbIndex = getSectionIndexById('sandbox')
@@ -236,6 +239,32 @@
         gsap.to(ul, { scaleX: 0, transformOrigin: 'left center', duration: 0.3, ease: 'power3.in', overwrite: 'auto' })
       })
     })
+  }
+
+  // ── tilt card face: QR ⇄ payoff ──
+  // The QR and the "WOW!" share one slot; these mirror the CSS transform so GSAP
+  // can add scale/opacity on top without fighting it.
+  const FACE_BASE = { xPercent: -50, yPercent: -50, z: 70 }
+
+  function setTiltFace(isUnlocked: boolean, isAnimated: boolean) {
+    const qr = qrRef.value, wow = wowRef.value
+    if (!qr || !wow) return
+
+    const incoming = isUnlocked ? wow : qr
+    const outgoing = isUnlocked ? qr : wow
+
+    if (!isAnimated) {
+      gsap.set(incoming, { ...FACE_BASE, opacity: 1, scale: 1 })
+      gsap.set(outgoing, { ...FACE_BASE, opacity: 0, scale: 0.6 })
+      return
+    }
+
+    const swap = gsap.timeline({ defaults: { overwrite: 'auto' } })
+    swap.to(outgoing, { opacity: 0, scale: 0.6, duration: 0.24, ease: 'power2.in' }, 0)
+    swap.fromTo(incoming,
+      { opacity: 0, scale: 0.6 },
+      { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(2.2)' },
+      0.2)
   }
 
   // ── tilt parallax card ──
