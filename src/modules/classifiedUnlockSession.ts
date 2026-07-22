@@ -116,7 +116,9 @@ async function rotateSession(): Promise<void> {
   unlockQrDataUrl.value = await QRCode.toDataURL(unlockUrl.toString(), {
     margin: 1,
     width: 512,
-    color: { dark: '#000000ff', light: '#ffffffff' },
+    // White modules on a fully transparent quiet zone, so the code sits on the
+    // card's own dark surface instead of a white tile punched out of it.
+    color: { dark: '#ffffffff', light: '#00000000' },
   })
 
   await subscribe()

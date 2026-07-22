@@ -62,8 +62,10 @@
           <div ref="tiltRef" class="sb-tilt">
             <div class="sb-tilt-frame"></div>
             <!-- Both stay mounted so the unlock can cross-fade them; visibility is GSAP's. -->
-            <img v-show="unlockQrDataUrl" ref="qrRef" :src="unlockQrDataUrl" class="sb-tilt-qr" alt="Scan to unlock the classified section" draggable="false" />
-            <div ref="wowRef" class="sb-tilt-wow">WOW!</div>
+            <div class="sb-tilt-face">
+              <img v-show="unlockQrDataUrl" ref="qrRef" :src="unlockQrDataUrl" class="sb-tilt-qr" alt="Scan to unlock the classified section" draggable="false" />
+              <div ref="wowRef" class="sb-tilt-wow">WOW!</div>
+            </div>
             <div class="sb-tilt-chip">2026</div>
             <div class="sb-tilt-name">SCAN ME?</div>
           </div>
@@ -86,6 +88,8 @@
   import { isClassifiedUnlocked } from '@modules/sectionsClassifiedUnlock'
   import { unlockQrDataUrl } from '@modules/classifiedUnlockSession'
   import { prefersReducedMotion } from '@modules/miscReducedMotion'
+  import { isLiteMode } from '@modules/miscAnimationMode'
+  import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback'
 
 
   const LIST_ITEMS = ['NEBULA UI', 'HELIX', 'PULSE', 'ARCADE']
@@ -243,9 +247,9 @@
   }
 
   // ── tilt card face: QR ⇄ payoff ──
-  // The QR and the "WOW!" share one slot; these mirror the CSS transform so GSAP
-  // can add scale/opacity on top without fighting it.
-  const FACE_BASE = { xPercent: -50, yPercent: -50, z: 70 }
+  // The QR and the "WOW!" share one grid cell (`.sb-tilt-face` centres them), so
+  // GSAP only owns the parallax depth plus the swap's scale/opacity.
+  const FACE_BASE = { z: 70 }
 
   watch(isClassifiedUnlocked, (isUnlocked) => setTiltFace(isUnlocked, true))
 
@@ -747,6 +751,12 @@
     const eyebrow = eyebrowRef.value
     const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
     gsap.killTweensOf([eyebrow, ...windows, ...glyphs.map((glyph) => glyph.element)])
+
+    if (isLiteMode.value) {
+      playLiteLeave([eyebrow, ...windows, ...glyphs.map((glyph) => glyph.element)])
+      return
+    }
+
     glyphs.forEach((glyph, index) => {
       gsap.set(glyph.element, { x: glyph.x, y: glyph.y, rotation: glyph.rot })   // seed GSAP with the live physics position + spin
       gsap.to(glyph.element, { y: glyph.y - sectionRect()!.height * 0.7, opacity: 0, duration: 0.3, ease: 'power3.in', delay: index * 0.02, overwrite: 'auto' })
@@ -773,6 +783,18 @@
     glyphs.forEach((glyph) => { glyph.x = glyph.hx; glyph.y = glyph.hy; glyph.vx = 0; glyph.vy = 0; glyph.rot = 0; glyph.vr = 0 })
 
     gsap.killTweensOf([eyebrow, ...windows, ...items, button, ...chars])
+
+    // Sandbox's own reveal is what the lite fallback was modelled on, so lite mode
+    // keeps it — minus the glyph drop-in and the physics release that follows it.
+    if (isLiteMode.value) {
+      gsap.set(chars, { x: (index) => glyphs[index].hx, y: (index) => glyphs[index].hy, opacity: 1, scale: 1, rotation: 0 })
+      gsap.set(items, { opacity: 1, x: 0 })
+      gsap.set(button, { opacity: 1, scale: 1 })
+      playLiteEnter([eyebrow, ...windows])
+      resetParticles()
+      return
+    }
+
     gsap.set(eyebrow, { y: -20, opacity: 0 })
     gsap.set(windows, { opacity: 0, y: 36, scale: 0.96 })
     gsap.set(items, { opacity: 0, x: -40 })
@@ -802,7 +824,9 @@
 
   onMounted(() => {
     initList()
-    initTilt()
+    // Pointer-driven parallax is a per-move transform on a 3D layer; in lite mode
+    // the card simply sits flat.
+    if (!isLiteMode.value) initTilt()
     setTiltFace(isClassifiedUnlocked.value, false)
     initParticles()
     initGlyphs()
@@ -848,6 +872,9 @@
       })
     }
 
+    // The zero-g window stays interactive in lite mode (it is the window's whole
+    // point), but the title glyphs never come loose, so the physics half of the
+    // loop has nothing to do.
     rafId = requestAnimationFrame(loop)
 
     stopSectionWatch = onSectionStatesChange((meta) => {
@@ -1072,16 +1099,27 @@
     transform: translateZ(20px);
   }
 
+  // Centring lives here, not on the two faces themselves: GSAP owns their
+  // transforms, and a `translate(-50%, -50%)` in CSS would be parsed into px
+  // offsets and then stacked on top of GSAP's own centring — the source of the
+  // occasional off-centre QR. Grid keeps both faces in one cell, overlapping.
+  .sb-tilt-face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transform-style: preserve-3d;
+    pointer-events: none;
+  }
+
   // QR code parallax layer; sits highest on the Z axis so it floats most
   // prominently above the card face as it tilts. Rendered as-is from the PNG.
   .sb-tilt-qr {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+    grid-area: 1 / 1;
     width: 56%;
     height: 56%;
     image-rendering: pixelated;
-    transform: translate(-50%, -50%) translateZ(70px);
+    transform: translateZ(70px);
     pointer-events: none;
     user-select: none;
   }
@@ -1090,11 +1128,9 @@
   // tilt parallax and layout stay identical, just a payoff instead of a code.
   // Hidden until `setTiltFace` decides — otherwise it flashes before GSAP runs.
   .sb-tilt-wow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+    grid-area: 1 / 1;
     opacity: 0;
-    transform: translate(-50%, -50%) translateZ(70px);
+    transform: translateZ(70px);
     font-family: 'Wosker';
     font-size: 42px;
     color: #5bfd5b;

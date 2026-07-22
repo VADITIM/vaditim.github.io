@@ -8,6 +8,8 @@
 // per-frame shadows or filters are needed. The render loop only runs while
 // the helix is visible (or fading), so off-section cost is zero.
 
+import { isLiteMode } from './miscAnimationMode'
+
 // ── geometry (mirrors the old .proj-strand CSS) ──
 const STRAND_SPACING = 44
 const ROTATION_PERIOD_SECONDS = 9
@@ -213,6 +215,14 @@ function ensureLoopRunning() {
 // ── public API ──
 
 export function initializeProjectHelixCanvas(canvas: HTMLCanvasElement): () => void {
+  // A full-viewport canvas repainting every dot every frame is the single most
+  // expensive thing on the page without hardware acceleration; lite mode drops
+  // it entirely. `canvasElement` stays null, so show/hide/ripple are no-ops too.
+  if (isLiteMode.value) {
+    canvas.style.display = 'none'
+    return () => {}
+  }
+
   canvasElement = canvas
   renderingContext = canvas.getContext('2d')
   dotSprite = buildDotSprite(1)

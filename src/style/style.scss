@@ -66,3 +66,26 @@ body {
   padding: 0;
   width: 100vw;
 }
+// ── lite mode ──
+// Set on <html> by `miscAnimationMode` when the visitor opts out of hardware
+// acceleration. The JS half drops loops and heavy reveals; this half drops the
+// paint-bound decoration that has no JS to guard: endless keyframes, blurs, and
+// the large shadows/glows that force a repaint of everything under them.
+html.is-lite-mode {
+  .sc-glitch-word {
+    animation: none;
+  }
+
+  .module-display-hue {
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    will-change: auto !important;
+  }
+}

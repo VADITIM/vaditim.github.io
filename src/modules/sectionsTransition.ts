@@ -2,6 +2,8 @@ import { gsap } from 'gsap'
 import { onSectionStatesChange, type SectionTransitionMeta } from '@modules/sectionsStateMachine'
 import { SECTIONS } from '@modules/sectionsRegistry'
 import { prefersReducedMotion } from '@modules/miscReducedMotion'
+import { isLiteMode } from '@modules/miscAnimationMode'
+import { LITE_ENTER_GATE } from '@modules/animationLiteFallback'
 
 /**
  * Section-swap "Section Cut" transition.
@@ -121,8 +123,13 @@ const SECTION_ENTER_GATE = 1.4
 
 export let SECTION_ENTER_DELAY = 0
 
+/**
+ * Lite mode skips the shutter overlay entirely (see `App.vue`), so there is no
+ * curtain to wait out; its gate is owned by `animationLiteFallback` and is just
+ * long enough for the outgoing section's leave to finish.
+ */
 export function activateSectionEnterGate() {
-  SECTION_ENTER_DELAY = SECTION_ENTER_GATE
+  SECTION_ENTER_DELAY = isLiteMode.value ? LITE_ENTER_GATE : SECTION_ENTER_GATE
 }
 
 let activeTimeline: gsap.core.Timeline | null = null

@@ -118,6 +118,8 @@
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
   import { rippleProjectHelix } from '@modules/miscProjectHelixCanvas'
   import { keepFullMotion } from '@modules/miscReducedMotion'
+  import { isLiteMode } from '@modules/miscAnimationMode'
+  import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback'
 
   const projectCount = projects.length
   const projectsIndex = getSectionIndexById('projects')
@@ -361,10 +363,25 @@
     labelRequestToken++
 
     feedTl?.kill()
-    gsap.killTweensOf([eyebrow, panel, ...cards])
+    gsap.killTweensOf([eyebrow, panel, fanRef.value, ...cards])
     gsap.set(eyebrow, { y: -20, opacity: 0 })
     gsap.set(panel, { opacity: 0, y: 40, scale: 0.96 })
     gsap.set(cards, { xPercent: -50, yPercent: -50, x: 0, y: 180, opacity: 0, scale: 0.7, rotation: 0, rotationX: 0, rotationY: 0 })
+
+    // Lite: the cards snap straight to their laid-out fan — the arrangement is
+    // information, the per-card flight in is not — and the fan arrives as one
+    // element, so the reveal costs a single tween instead of one per card.
+    if (isLiteMode.value) {
+      cards.forEach((card) => {
+        const offset = fanOffset(Number(card.getAttribute('data-i')))
+        fanStyle(card, offset)
+        gsap.set(card, { ...fanTarget(offset), transformOrigin: 'center bottom' })
+      })
+      playLiteEnter([eyebrow, panel, fanRef.value])
+      playHeadingReveal(SECTION_ENTER_DELAY)
+      playSubReveal(SECTION_ENTER_DELAY + 0.1)
+      return
+    }
 
     // Wait for the section-cut curtain to fully close before fanning the feed in,
     // so the reveal happens behind the curtain rather than alongside it.
@@ -398,9 +415,17 @@
     // Invalidate any pending centerOn label sequence so it can't reveal text
     // after the section has left.
     labelRequestToken++
-    gsap.killTweensOf([eyebrow, panel, ...cards])
+    gsap.killTweensOf([eyebrow, panel, fanRef.value, ...cards])
     playHeadingLeave()
     playSubLeave()
+
+    // The fan leaves as one element too, so the cards keep the transforms that
+    // encode their positions; the next enter re-lays them out from scratch.
+    if (isLiteMode.value) {
+      playLiteLeave([eyebrow, panel, fanRef.value])
+      return
+    }
+
     gsap.to(eyebrow, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     gsap.to(panel, { opacity: 0, y: 40, scale: 0.96, duration: 0.24, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(cards, { opacity: 0, y: 180, scale: 0.7, duration: 0.18, ease: 'power3.in', overwrite: 'auto' })
@@ -438,7 +463,7 @@
   onMounted(() => {
     layoutFan(false)
     initDrag()
-    initCardTilt()
+    if (!isLiteMode.value) initCardTilt()
 
     stopSectionWatch = onSectionStatesChange((meta) => {
       if (meta.isLeavingSection(projectsIndex)) playLeave()

@@ -2,9 +2,12 @@
 // Pattern" in CLAUDE.md. Used by any component rendering a set of `.pc-label`
 // elements (structure: .pc-label > .pc-label-inner > .pc-label-text, .pc-label-bar).
 import { gsap } from 'gsap';
+import { isLiteMode } from './miscAnimationMode';
+import { hideLiteLabels, playLiteLabelEnter, playLiteLabelLeave } from './animationLiteFallback';
 
 // Initial hidden state; bar collapsed, text clipped away.
 export function hideLabels(labelEls: HTMLElement[]) {
+  if (isLiteMode.value) return hideLiteLabels(labelEls);
   labelEls.forEach(label => {
     gsap.set(label.querySelector('.pc-label-text'), { clipPath: 'inset(0 100% 0 0)' });
     gsap.set(label.querySelector('.pc-label-bar'), { scaleX: 0, x: '0%', opacity: 1, transformOrigin: 'left center' });
@@ -37,6 +40,7 @@ export function buildLabelReveal(label: HTMLElement): gsap.core.Timeline {
 // top-left corner (top-left first, bottom-right last); see "Label Reveal
 // Pattern" in CLAUDE.md.
 export function playLabelReveals(labelEls: HTMLElement[], startAt: number) {
+  if (isLiteMode.value) return playLiteLabelEnter(labelEls);
   const vh = window.innerHeight;
   const vw = window.innerWidth;
   labelEls.forEach(label => {
@@ -55,6 +59,7 @@ export function playLabelReveals(labelEls: HTMLElement[], startAt: number) {
 // Leave fires immediately (no delay), snappier than enter; labels re-collapse
 // without re-running the positional stagger.
 export function playLabelLeave(labelEls: HTMLElement[]) {
+  if (isLiteMode.value) return playLiteLabelLeave(labelEls);
   labelEls.forEach(label => {
     const text = label.querySelector('.pc-label-text');
     const bar = label.querySelector('.pc-label-bar');

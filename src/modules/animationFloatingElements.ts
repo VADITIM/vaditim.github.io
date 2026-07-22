@@ -1,6 +1,7 @@
 import { gsap } from 'gsap'
 import { currentSection } from '@modules/sectionsCore'
 import { prefersReducedMotion } from './miscReducedMotion'
+import { isLiteMode } from './miscAnimationMode'
 import { onSectionStatesChange } from './sectionsStateMachine'
 
 gsap.defaults({ immediateRender: false })
@@ -13,7 +14,9 @@ export function createFloatingAnimation(selector: string, options: {
 } = {}) {
   // An endless drift is pure ambience, and under the reduced-motion time scale it
   // would shake rather than drift. Leave the elements resting where they are.
-  if (prefersReducedMotion.value) return
+  // Lite mode drops it for the same reason it drops every other endless tween:
+  // it holds a composited layer forever and reads as pure decoration.
+  if (prefersReducedMotion.value || isLiteMode.value) return
 
   const {
     amplitude = 20, 

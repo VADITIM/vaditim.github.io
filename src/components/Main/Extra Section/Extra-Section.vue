@@ -17,6 +17,27 @@
       <!-- LEFT · comments (live, backed by the comments API) -->
       <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments" caption="one message per visitor · stored for everyone">
         <template #label>01 · COMMENTS</template>
+
+        <div class="ex-info" tabindex="0" role="note" aria-label="How the guestbook identifies you">
+          <span class="ex-info-mark" aria-hidden="true">i</span>
+          <div class="ex-info-card">
+            <div class="ex-info-title">HOW ONE-PER-VISITOR WORKS</div>
+            <p class="ex-info-text">
+              A single request resolves your session, so your comment, your rating and the
+              classified unlock can never disagree about who you are.
+            </p>
+            <p class="ex-info-text">
+              You are recognised by a cookie first. If it is gone, a fingerprint built from your
+              GPU, screen, timezone and locale finds you again — and a coarser one, paired with a
+              hashed IP, still matches you across browsers on the same machine.
+            </p>
+            <p class="ex-info-text">
+              Your message is stored against that identity, so sending again edits the one you
+              already left instead of adding a second. It deters double-posting; it is not a login.
+            </p>
+          </div>
+        </div>
+
         <TransitionGroup
           tag="div"
           class="ex-comment-list"
@@ -139,6 +160,8 @@
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
+  import { isLiteMode } from '@modules/miscAnimationMode'
+  import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback'
   import LabelSet from '@components/Misc/Label-Set.vue'
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
@@ -263,6 +286,12 @@
       contactEl = contactPanelRef.value?.element ?? null
     gsap.killTweensOf([eyebrowRef.value, commentsEl, ratingEl, contactEl])
 
+    if (isLiteMode.value) {
+      playLiteEnter([eyebrowRef.value, commentsEl, contactEl, ratingEl])
+      sheetRef.value?.reveal(SECTION_ENTER_DELAY + 0.35)
+      return
+    }
+
     const timeline = gsap.timeline({ delay: SECTION_ENTER_DELAY })
     timeline.fromTo(eyebrowRef.value, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.1)
     timeline.fromTo(commentsEl, { x: '-28vw', opacity: 0 }, { x: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.3)' }, 0.18)
@@ -276,6 +305,13 @@
       ratingEl = ratingPanelRef.value?.element ?? null,
       contactEl = contactPanelRef.value?.element ?? null
     gsap.killTweensOf([eyebrowRef.value, commentsEl, ratingEl, contactEl])
+
+    if (isLiteMode.value) {
+      playLiteLeave([eyebrowRef.value, commentsEl, contactEl, ratingEl])
+      sheetRef.value?.hide()
+      return
+    }
+
     gsap.to(eyebrowRef.value, { y: -20, opacity: 0, duration: 0.22, ease: 'power3.in', overwrite: 'auto' })
     gsap.to(commentsEl, { x: '-28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
     gsap.to(contactEl, { x: '28vw', opacity: 0, duration: 0.28, ease: 'power2.in', overwrite: 'auto' })
@@ -358,6 +394,80 @@
   }
 
   // ── comments skeleton ──
+  // Sits in the panel's top-right corner, opposite ModuleDisplay's own label.
+  // The card opens downward and stays inside the panel, which clips overflow.
+  .ex-info {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 6;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #3a3a3a;
+    border-radius: 50%;
+    color: #6a6a6a;
+    cursor: help;
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--accent);
+      border-color: var(--accent);
+      outline: none;
+    }
+  }
+
+  .ex-info-mark {
+    font-family: 'Mono';
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .ex-info-card {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(300px, 70vw);
+    padding: 12px 14px;
+    background: #141414;
+    border: 1px solid #2c2c2c;
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .ex-info:hover .ex-info-card,
+  .ex-info:focus-visible .ex-info-card {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .ex-info-title {
+    margin-bottom: 8px;
+    font-family: 'Audiowide';
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .ex-info-text {
+    margin: 0 0 8px;
+    font-family: 'Mono';
+    font-size: 10px;
+    line-height: 1.6;
+    color: #8a8a8a;
+    text-align: left;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
   .ex-comment-list {
     flex: 1;
     min-height: 0;

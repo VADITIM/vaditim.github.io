@@ -40,6 +40,8 @@
   import { hideLabels, playLabelReveals, playLabelLeave } from '@modules/miscLabelReveal';
   import ModuleDisplay from '@components/Misc/Module-Display.vue';
   import { prefersReducedMotion } from '@modules/miscReducedMotion';
+  import { isLiteMode } from '@modules/miscAnimationMode';
+  import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback';
 
   gsap.defaults({ immediateRender: false });
 
@@ -229,7 +231,7 @@
   function startIdleBob() {
     if (!root.value) return;
     // An endless bob is ambience; at the reduced-motion time scale it would judder.
-    if (prefersReducedMotion.value) return;
+    if (prefersReducedMotion.value || isLiteMode.value) return;
     root.value.querySelectorAll<HTMLElement>('.pc-scene').forEach(scene => {
       gsap.to(scene, {
         y: gsap.utils.random(6, 11),
@@ -250,6 +252,17 @@
   function playAll() {
     const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module-display')) : [];
     gsap.killTweensOf(boxes);
+
+    // Lite: the boxes still arrive, but the cubes are simply there rather than
+    // raining in face by face — that build is dozens of 3D layers in flight.
+    if (isLiteMode.value) {
+      playLiteEnter(boxes);
+      cubeEls.forEach((cube) => gsap.set(cube.querySelectorAll('.pc-face-anim'), { opacity: 1, x: 0, y: 0, rotationZ: 0 }));
+      gsap.set(shadowEls, { opacity: 0.85, scaleX: 1 });
+      playLabelReveals(nameEls, SECTION_ENTER_DELAY);
+      return;
+    }
+
     gsap.fromTo(boxes,
       { opacity: 0, y: 36, scale: 0.96 },
       { opacity: 1, y: 0, scale: 1, duration: BOX_REVEAL_DURATION, stagger: BOX_REVEAL_STAGGER, ease: 'back.out(1.6)', delay: SECTION_ENTER_DELAY });
@@ -319,7 +332,8 @@
   function playLeave() {
     const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module-display')) : [];
     gsap.killTweensOf(boxes);
-    gsap.to(boxes, { y: '60vh', opacity: 0, duration: 0.22, stagger: 0.035, ease: 'power3.in', overwrite: 'auto' });
+    if (isLiteMode.value) playLiteLeave(boxes);
+    else gsap.to(boxes, { y: '60vh', opacity: 0, duration: 0.22, stagger: 0.035, ease: 'power3.in', overwrite: 'auto' });
 
     gsap.killTweensOf(shadowEls);
     gsap.to(shadowEls, { opacity: 0, scaleX: 0.5, duration: 0.22, ease: 'power2.in', overwrite: 'auto' });

@@ -5,7 +5,7 @@
       <HardwareAccelerationNotice />
       <StartSection v-if="showLoadingPage && !hardwareNoticeActive" />
       <template v-if="!hardwareNoticeActive">
-        <MagneticDots :isDisabled="activeProjectIndex !== null" />
+        <MagneticDots v-if="!isLiteMode" :isDisabled="activeProjectIndex !== null" />
         <SectionCoverSlice />
         <div
           v-for="(section, i) in SECTIONS"
@@ -14,8 +14,11 @@
         >
           <component :is="section.component" />
         </div>
-        <SectionTransition />
+        <!-- The shutter/label overlay is skipped wholesale in lite mode; the slice
+             backgrounds still carry the transition. -->
+        <SectionTransition v-if="!isLiteMode" />
         <Navigator />
+        <SettingsPanel />
         <ClassifiedUnlockPopup />
       </template>
     </template>
@@ -51,6 +54,7 @@
   import MagneticDots from '@components/Misc/Magnetic-Dots.vue';
   import SectionTransition from '@components/Misc/Section-Transition.vue';
   import ClassifiedUnlockPopup from '@components/Misc/Classified-Unlock-Popup.vue';
+  import SettingsPanel from '@components/Misc/Settings-Panel.vue';
   import UnlockScanSplash from '@components/Misc/Unlock-Scan-Splash.vue';
 
   import { hardwareNoticeActive } from '@modules/miscHardwareNotice';
@@ -60,8 +64,10 @@
   import { startUnlockSession, stopUnlockSession } from '@modules/classifiedUnlockSession';
   import { recordHeatmapVisit } from '@modules/miscHeatmap';
   import { initializeReducedMotion } from '@modules/miscReducedMotion';
+  import { applyLiteModeClass, isLiteMode } from '@modules/miscAnimationMode';
 
   setSectionCount(SECTIONS.length);
+  applyLiteModeClass();
 
   document.documentElement.style.setProperty('--section-color', LOADING_COLOR);
   onSectionChange((current) => {

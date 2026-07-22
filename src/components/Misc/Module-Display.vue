@@ -17,6 +17,7 @@
 <script setup lang="ts">
   import { onMounted, onBeforeUnmount, ref } from 'vue';
   import { gsap } from 'gsap';
+  import { isLiteMode } from '@modules/miscAnimationMode';
 
   const props = withDefaults(defineProps<{
     label?: string;
@@ -45,7 +46,9 @@
   onMounted(() => {
     if (!root.value) return;
     const element = root.value;
-    const glow = element.querySelector<HTMLElement>('.module-display-hue');
+    // The hue ring is hidden outright in lite mode (see style.scss), so tracking
+    // the pointer for it would be per-move work for nothing.
+    const glow = isLiteMode.value ? null : element.querySelector<HTMLElement>('.module-display-hue');
     if (glow) {
       const onMove = (event: MouseEvent) => {
         const bounds = element.getBoundingClientRect();
@@ -183,9 +186,10 @@
     bottom: 12px;
     left: 0;
     right: 0;
+    transform: translateY(55%);
     text-align: center;
     font-family: 'Mono';
-    font-size: 10px;
+    font-size: 12px;
     color: #4a4a4a;
     pointer-events: none;
     z-index: 4;

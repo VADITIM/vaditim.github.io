@@ -84,6 +84,21 @@ Every text element (headings, labels, captions, static copy) must use this revea
 
 **Positional stagger — top-left first, bottom-right last:** each label's start delay is a single scalar derived from its distance from the top-left corner (combine `top%` and effective `left%`). Two labels at equal height but different `x` are never simultaneous — the more left one fires first. Never the reverse order, never perfectly synced across different positions. On leave, labels re-collapse **without** the positional stagger (leave is instant per the asymmetry rule).
 
+## Lite Mode (hardware acceleration off)
+
+`miscAnimationMode.ts` owns the visitor's choice (`animationMode`, `isLiteMode`), made in the hardware-acceleration notice ("DONE!" vs "CONTINUE WITHOUT.") and changeable later in `Settings-Panel.vue`. It persists to `localStorage['animation-mode']` and is read as handlers register — changing it reloads the page rather than switching live.
+
+- **`animationLiteFallback.ts` is the single definition of lite motion.** Components choose *which* elements fall back; the module decides how they move. Never write a lite-only duration, ease or delay anywhere else.
+- **The substitute pair** is `playLiteEnter` / `playLiteLeave`: `opacity` + `y: 18` only (no `scale`, `force3D: false` — an extra composited layer costs rather than saves without acceleration), `power2.out` at `SECTION_ENTER_DELAY`, and its exact reverse `power2.in` at `0`. Every generic element falls back to it.
+- **Leave finishes before the next section's enter starts.** `LITE_ENTER_GATE` (exported from `animationLiteFallback.ts`, consumed by `activateSectionEnterGate`) is the lite leave duration plus a gap, so the two sections never animate against each other.
+- **Labels have no lite branch to write** — `hideLabels` / `playLabelReveals` / `playLabelLeave` in `miscLabelReveal.ts` route to the lite pair themselves. The bar sweep (clip-path + scaling bar) and its positional stagger are dropped: the stagger trailed ~2.4s behind the swap and the clip-path was the priciest paint on the page. `buildLabelReveal` is untouched (loading page).
+- **Registering a new animated element means registering it in the lite path too.** A missing lite branch strands content exactly like a missing leave animation.
+- **Unique animations stay**, simplified: the Perks crystal, the Perks name typewriter, Projects info modules and heading reveals, Pong, the heatmap, the Sandbox zero-g window, the Logs cubes. What goes is the ambience around them.
+- **Dropped in lite:** `Section-Transition.vue` (the shutter/label overlay), `Magnetic-Dots`, the Projects helix canvas, floating drift (`animationFloatingElements`), the Logs idle bob and per-face cube build, the Sandbox title physics and tilt parallax, the Projects card tilt, the Classified per-word glitch, and the `.module-display-hue` pointer glow. CSS-side, `html.is-lite-mode` (in `style.scss`) kills `backdrop-filter`, `box-shadow`, `text-shadow` and `will-change`.
+- **Section slices stay** — every section still needs its background (see below).
+- **`SECTION_ENTER_DELAY` drops to `LITE_ENTER_GATE` (0.36s)** in lite, because there is no curtain to wait out; only the slices cover the swap.
+- **The loading page is untouched** — `Start-Section.vue` / `Start-Transition.vue` run in full regardless of mode.
+
 ## Breakpoints
 
 Defined in the animation handler as `breakpoints`:
