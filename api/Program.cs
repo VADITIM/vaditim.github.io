@@ -69,6 +69,9 @@ using (var scope = app.Services.CreateScope())
 app.UseCors();
 app.UseRateLimiter();
 
+// Container Apps probes this; without a route here '/' 404s and the replica is killed as unhealthy.
+app.MapGet("/", () => Results.Ok("ok"));
+
 var comments = app.MapGroup("/comments");
 
 comments.MapGet("/", async (CommentsDbContext db) =>
