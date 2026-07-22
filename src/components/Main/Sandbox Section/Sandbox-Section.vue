@@ -246,6 +246,8 @@
   // can add scale/opacity on top without fighting it.
   const FACE_BASE = { xPercent: -50, yPercent: -50, z: 70 }
 
+  watch(isClassifiedUnlocked, (isUnlocked) => setTiltFace(isUnlocked, true))
+
   function setTiltFace(isUnlocked: boolean, isAnimated: boolean) {
     const qr = qrRef.value, wow = wowRef.value
     if (!qr || !wow) return
@@ -795,6 +797,7 @@
   onMounted(() => {
     initList()
     initTilt()
+    setTiltFace(isClassifiedUnlocked.value, false)
     initParticles()
     initGlyphs()
     resolveCornerSlices()
@@ -1053,7 +1056,6 @@
     transform-style: preserve-3d;
     will-change: transform;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
-    cursor: pointer;
   }
 
   .sb-tilt-frame {
@@ -1080,10 +1082,12 @@
 
   // Replaces the QR image once the section is unlocked; same slot/depth so the
   // tilt parallax and layout stay identical, just a payoff instead of a code.
+  // Hidden until `setTiltFace` decides — otherwise it flashes before GSAP runs.
   .sb-tilt-wow {
     position: absolute;
     top: 50%;
     left: 50%;
+    opacity: 0;
     transform: translate(-50%, -50%) translateZ(70px);
     font-family: 'Wosker';
     font-size: 42px;
