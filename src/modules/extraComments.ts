@@ -24,9 +24,11 @@ export async function loadComments(): Promise<void> {
       fetch(`${API_BASE_URL}/comments/mine`, { credentials: 'include' }),
     ])
     if (!listResponse.ok) throw new Error(`Comments list responded ${listResponse.status}`)
-    if (!mineResponse.ok) throw new Error(`Own comment responded ${mineResponse.status}`)
+    // 404 is how the API reported "no comment yet" before it switched to 200 + null;
+    // still accepted so the site keeps working against an API that predates the change.
+    if (!mineResponse.ok && mineResponse.status !== 404) throw new Error(`Own comment responded ${mineResponse.status}`)
     comments.value = await listResponse.json()
-    ownComment.value = await mineResponse.json()
+    ownComment.value = mineResponse.ok ? await mineResponse.json() : null
     isCommentsUnavailable.value = false
     isCommentsLoaded.value = true
   } catch (error) {

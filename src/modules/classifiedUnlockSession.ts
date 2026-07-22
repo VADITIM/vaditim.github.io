@@ -26,7 +26,7 @@ export async function startUnlockSession(): Promise<void> {
   connection = new HubConnectionBuilder()
     .withUrl(`${API_BASE_URL}/unlock-hub`)
     .withAutomaticReconnect()
-    .configureLogging(LogLevel.Warning)
+    .configureLogging(LogLevel.None)
     .build()
 
   connection.on('unlocked', () => {
@@ -37,11 +37,15 @@ export async function startUnlockSession(): Promise<void> {
   // A reconnect drops the server-side group membership, so re-subscribe every time.
   connection.onreconnected(() => void subscribe())
 
+  // The QR is drawn from the session id alone, so it must not wait on the hub —
+  // an API that is down or still deploying would otherwise leave the card blank.
+  await rotateSession()
+
   try {
     await connection.start()
-    await rotateSession()
+    await subscribe()
   } catch (error) {
-    console.error('[unlock] hub connection failed', error)
+    console.warn('[unlock] hub unreachable; the QR will not unlock anything yet', error)
   }
 }
 
@@ -71,7 +75,6 @@ export async function claimUnlockFromUrl(): Promise<boolean | null> {
 
 async function rotateSession(): Promise<void> {
   sessionId = createSessionId()
-  await subscribe()
 
   const unlockUrl = new URL(window.location.href)
   unlockUrl.search = `?unlock=${sessionId}`
@@ -82,12 +85,19 @@ async function rotateSession(): Promise<void> {
     color: { dark: '#000000ff', light: '#ffffffff' },
   })
 
+  await subscribe()
   refreshTimer = window.setTimeout(() => void rotateSession(), SESSION_REFRESH_MS)
 }
 
+// Best-effort: a session with nobody subscribed simply can't be claimed, which is
+// the same outcome as a failed scan — never worth breaking the page over.
 async function subscribe(): Promise<void> {
   if (!sessionId || connection?.state !== HubConnectionState.Connected) return
-  await connection.invoke('Subscribe', sessionId)
+  try {
+    await connection.invoke('Subscribe', sessionId)
+  } catch (error) {
+    console.warn('[unlock] subscribe failed', error)
+  }
 }
 
 function createSessionId(): string {
