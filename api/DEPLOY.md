@@ -72,7 +72,7 @@ throws on startup if either is missing.
 | `ConnectionStrings__CommentsDb` | the Azure SQL connection string | Double underscore is how .NET nests config keys |
 | `IpHashSalt` | a fresh random string | Salts the stored IP hashes; changing it later orphans existing dedupe data |
 | `AdminApiKey` | a fresh random string | Sent as the `X-Admin-Key` header on `/admin/comments/*` |
-| `FrontendOrigin` | `https://vaditim.github.io` | CORS allow-list; must match the site origin exactly, no trailing slash |
+| `FrontendOrigin` | `https://vaditim.github.io` | CORS allow-list; must match the site origin exactly, no trailing slash. Comma-separate to add more (e.g. `https://vaditim.github.io,http://localhost:5173` to debug the live API from `npm run dev`) |
 
 Store `ConnectionStrings__CommentsDb`, `IpHashSalt` and `AdminApiKey` as Container App **secrets**
 and reference them, rather than as plain environment values.

@@ -12,7 +12,9 @@
       "PowerShell(jq *)",
       "PowerShell(npm run typecheck)",
       "Bash(dotnet --list-sdks)",
-      "Bash(az account *)"
+      "Bash(az account *)",
+      "Bash(find /c/Users/vadim -maxdepth 3 -iname \"Untitled-1*\" 2>/dev/null; find /c/Users/vadim/source/PORTFOLIO25 -iname \"*.sql\" 2>/dev/null)",
+      "Read(//c/Users/vadim/**)"
     ]
   }
 }

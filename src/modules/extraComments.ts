@@ -15,6 +15,7 @@ export const comments = ref<CommentEntry[]>([])
 export const ownComment = ref<CommentEntry | null>(null)
 export const submitState = ref<CommentSubmitState>('idle')
 export const isCommentsLoaded = ref(false)
+export const isCommentsUnavailable = ref(false)
 
 export async function loadComments(): Promise<void> {
   try {
@@ -22,11 +23,15 @@ export async function loadComments(): Promise<void> {
       fetch(`${API_BASE_URL}/comments/`, { credentials: 'include' }),
       fetch(`${API_BASE_URL}/comments/mine`, { credentials: 'include' }),
     ])
-    if (listResponse.ok) comments.value = await listResponse.json()
+    if (!listResponse.ok) throw new Error(`Comments list responded ${listResponse.status}`)
+    comments.value = await listResponse.json()
     ownComment.value = mineResponse.ok ? await mineResponse.json() : null
+    isCommentsUnavailable.value = false
     isCommentsLoaded.value = true
-  } catch {
-    // API unreachable (offline dev, backend down) — leave the skeleton state.
+  } catch (error) {
+    console.error('[comments] load failed', error)
+    isCommentsUnavailable.value = true
+    isCommentsLoaded.value = true
   }
 }
 

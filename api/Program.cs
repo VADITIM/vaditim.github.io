@@ -9,7 +9,9 @@ using Portfolio.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var frontendOrigin = builder.Configuration["FrontendOrigin"] ?? "http://localhost:5173";
+// Comma-separated so the deployed API can also serve a local dev server during debugging.
+var frontendOrigins = (builder.Configuration["FrontendOrigin"] ?? "http://localhost:5173")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 var ipHashSalt = builder.Configuration["IpHashSalt"] ?? throw new InvalidOperationException("IpHashSalt is not configured.");
 var adminApiKey = builder.Configuration["AdminApiKey"] ?? throw new InvalidOperationException("AdminApiKey is not configured.");
 
@@ -27,7 +29,7 @@ builder.Services.AddDbContext<CommentsDbContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy => policy
-        .WithOrigins(frontendOrigin)
+        .WithOrigins(frontendOrigins)
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials());

@@ -17,13 +17,10 @@
       <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments" caption="one message per visitor · stored for everyone">
         <template #label>01 · COMMENTS</template>
         <div class="ex-comment-list">
-          <div v-if="isCommentsLoaded && comments.length === 0" class="ex-comment">
-            <div class="ex-comment-avatar">?</div>
-            <div class="ex-comment-body">
-              <div class="ex-comment-meta">
-                <span class="ex-comment-name">Nobody yet</span>
-              </div>
-              <div class="ex-comment-text">Be the first to leave a message.</div>
+          <div v-if="isCommentsLoaded && comments.length === 0" class="ex-comment-empty">
+            <div class="ex-comment-empty-title">{{ isCommentsUnavailable ? 'GUESTBOOK OFFLINE' : 'NO MESSAGES YET' }}</div>
+            <div class="ex-comment-empty-text">
+              {{ isCommentsUnavailable ? 'Could not reach the server — try again later.' : 'Be the first to leave one.' }}
             </div>
           </div>
           <div v-for="comment in comments" :key="comment.id" class="ex-comment">
@@ -138,7 +135,7 @@
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import LogsContact from '@components/Main/Logs Section/Contact.vue'
   import DraggableSheet from '@components/Misc/Draggable-Sheet.vue'
-  import { comments, isCommentsLoaded, loadComments, ownComment, submitComment, submitState } from '@modules/extraComments'
+  import { comments, isCommentsLoaded, isCommentsUnavailable, loadComments, ownComment, submitComment, submitState } from '@modules/extraComments'
 
   const EXTRA_LABELS = [
     { text: 'IMPRESSED? // SAY_HI!', pos: { top: '5%', left: '4%' }, stretch: true },
@@ -335,6 +332,30 @@
     font-size: 12px;
     line-height: 1.5;
     color: #8a8a8a;
+  }
+
+  .ex-comment-empty {
+    margin: auto;
+    width: 60%;
+    padding: 18px 16px;
+    text-align: center;
+    border: 1px dashed #2a2a2a;
+    border-radius: 8px;
+    background: rgba(23, 23, 23, 0.6);
+  }
+
+  .ex-comment-empty-title {
+    font-family: 'Audiowide';
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #f09b3a;
+    margin-bottom: 6px;
+  }
+
+  .ex-comment-empty-text {
+    font-family: 'Mono';
+    font-size: 11px;
+    color: #6a6a6a;
   }
 
   .ex-comment-input {
