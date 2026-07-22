@@ -41,6 +41,9 @@
             CLEARANCE: <span class="sc-redact">NONE - SCANNED A STICKER ANYWAY</span><br />
             NOTE: subject persists across sessions. No further action required.
           </p>
+          <button type="button" class="sc-purge" :disabled="isPurging" @click="handlePurgeClick">
+            {{ isPurging ? 'PURGING…' : isPurgeArmed ? 'CONFIRM — THIS CANNOT BE UNDONE' : 'DELETE DATA' }}
+          </button>
         </div>
       </ModuleDisplay>
 
@@ -63,6 +66,7 @@
   import LabelSet from '@components/Misc/Label-Set.vue'
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import PongGame from './Pong-Game.vue'
+  import { deleteAllVisitorData } from '@modules/visitorDataReset'
   import rickrollQr from '@assets/images/rickroll-qr.png'
 
   const CLASSIFIED_LABELS = [
@@ -80,6 +84,20 @@
   const lorePanelRef = ref<HTMLElement | null>(null)
 
   const classifiedIndex = getSectionIndexById('classified')
+
+  // ── purge ──
+  // Two-step so a curious visitor cannot wipe their comment on a single stray click.
+  const isPurgeArmed = ref(false)
+  const isPurging = ref(false)
+
+  function handlePurgeClick() {
+    if (!isPurgeArmed.value) {
+      isPurgeArmed.value = true
+      return
+    }
+    isPurging.value = true
+    void deleteAllVisitorData()
+  }
 
   // ── enter / leave ──
   function playReveal() {
@@ -294,8 +312,39 @@
     text-align: center;
   }
 
+  // Stacks the log text above the purge button; .sc-body alone is a centred row.
+  .sc-log {
+    flex-direction: column;
+  }
+
   .sc-log .sc-note {
     text-align: left;
+  }
+
+  .sc-purge {
+    align-self: center;
+    margin-top: 14px;
+    padding: 8px 14px;
+    font-family: 'Audiowide';
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #b06a6a;
+    background: transparent;
+    border: 1px dashed #4a2a2a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+
+    &:hover {
+      color: #ff6a6a;
+      border-color: #ff6a6a;
+      background: rgba(255, 106, 106, 0.08);
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.5;
+    }
   }
 
   // Black-bar redaction; the text underneath is real and always rendered at

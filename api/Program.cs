@@ -205,6 +205,26 @@ comments.MapDelete("/mine", async (HttpContext http, CommentsDbContext db) =>
     return Results.NoContent();
 });
 
+// Wipes everything the API knows about the caller — their comment and their identity cookie —
+// so the next visit is indistinguishable from a first one. Exposed as the classified section's
+// "DELETE DATA" button; also the only practical way to re-test the single-use QR unlock.
+app.MapDelete("/visitor", async (HttpContext http, CommentsDbContext db) =>
+{
+    var visitorId = http.GetExistingVisitorId();
+    if (visitorId is not null)
+    {
+        var comment = await db.Comments.FirstOrDefaultAsync(comment => comment.VisitorId == visitorId);
+        if (comment is not null)
+        {
+            db.Comments.Remove(comment);
+            await db.SaveChangesAsync();
+        }
+    }
+
+    http.ExpireVisitorCookie();
+    return Results.NoContent();
+}).RequireRateLimiting("unlock");
+
 var admin = app.MapGroup("/admin/comments").AddEndpointFilter(async (context, next) =>
 {
     var http = context.HttpContext;

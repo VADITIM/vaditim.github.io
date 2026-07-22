@@ -24,6 +24,18 @@ public static class VisitorIdentity
         return visitorId;
     }
 
+    /// <summary>
+    /// Deletes the identity cookie. The options must mirror <see cref="GetOrIssueVisitorCookie"/>
+    /// exactly or the browser treats it as a different cookie and keeps the original.
+    /// </summary>
+    public static void ExpireVisitorCookie(this HttpContext http)
+        => http.Response.Cookies.Delete(CookieName, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+        });
+
     public static string? GetExistingVisitorId(this HttpContext http)
         => http.Request.Cookies.TryGetValue(CookieName, out var value) && IsValidVisitorId(value) ? value : null;
 

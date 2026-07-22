@@ -143,6 +143,7 @@ curl -X DELETE -H "X-Admin-Key: <AdminApiKey>" https://<app>/admin/comments/<id>
 | --- | --- |
 | `GET /` | Health probe target. Container Apps kills the replica without it |
 | `GET/POST/PUT/DELETE /comments/*` | Guestbook (see `src/modules/extraComments.ts`) |
+| `DELETE /visitor` | Erases the caller's comment and identity cookie — the "DELETE DATA" button |
 | `GET /admin/comments/*` | Moderation; requires the `X-Admin-Key` header |
 | `/unlock-hub` | SignalR hub the desktop subscribes to while showing its QR |
 | `POST /unlock/{sessionId}` | Called by the phone that scanned the QR; pushes `unlocked` to that session |
@@ -158,6 +159,11 @@ curl -X DELETE -H "X-Admin-Key: <AdminApiKey>" https://<app>/admin/comments/<id>
 4. The endpoint claims the session — **single-use, 15-minute TTL** — and broadcasts `unlocked`
    to the session's group. Expired/replayed/guessed ids all get an identical `404`.
 5. The desktop unlocks the classified section and persists it to `localStorage`.
+
+Because a session is single-use, re-testing the scan means becoming a new visitor. The
+classified section's **DELETE DATA** button does that in one click: `DELETE /visitor` drops the
+comment and expires the identity cookie, local storage is cleared, and the page reloads locked
+again. It doubles as a genuine "erase me" control for visitors.
 
 The desktop rotates its session every 14 minutes so the QR on screen is never past its TTL.
 Nothing here touches the database; state is per-replica memory (hence the single-replica rule).
