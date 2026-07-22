@@ -28,7 +28,7 @@ export async function loadComments(): Promise<void> {
     // still accepted so the site keeps working against an API that predates the change.
     if (!mineResponse.ok && mineResponse.status !== 404) throw new Error(`Own comment responded ${mineResponse.status}`)
     comments.value = await listResponse.json()
-    ownComment.value = mineResponse.ok ? await mineResponse.json() : null
+    ownComment.value = mineResponse.ok ? await readJsonOrNull(mineResponse) : null
     isCommentsUnavailable.value = false
     isCommentsLoaded.value = true
   } catch (error) {
@@ -36,6 +36,12 @@ export async function loadComments(): Promise<void> {
     isCommentsUnavailable.value = true
     isCommentsLoaded.value = true
   }
+}
+
+// Some API versions answer "no comment yet" with a zero-length 200 body, which `.json()` rejects.
+async function readJsonOrNull(response: Response): Promise<CommentEntry | null> {
+  const body = await response.text()
+  return body ? JSON.parse(body) : null
 }
 
 export async function submitComment(name: string, text: string): Promise<void> {

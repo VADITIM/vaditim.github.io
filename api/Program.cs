@@ -117,11 +117,13 @@ comments.MapGet("/", async (CommentsDbContext db) =>
 comments.MapGet("/mine", async (HttpContext http, CommentsDbContext db) =>
 {
     var visitorId = http.GetExistingVisitorId();
-    if (visitorId is null)
-        return Results.Ok<CommentOutput?>(null);
+    var comment = visitorId is null
+        ? null
+        : await db.Comments.FirstOrDefaultAsync(comment => comment.VisitorId == visitorId);
 
-    var comment = await db.Comments.FirstOrDefaultAsync(comment => comment.VisitorId == visitorId);
-    return Results.Ok(comment is null ? null : CommentOutput.From(comment));
+    // Results.Json, not Results.Ok — the latter writes a zero-length body for a null value,
+    // which is not valid JSON for the caller to parse.
+    return Results.Json(comment is null ? null : CommentOutput.From(comment));
 }).RequireRateLimiting("read-comments");
 
 comments.MapPost("/", async (CommentInput input, HttpContext http, CommentsDbContext db) =>

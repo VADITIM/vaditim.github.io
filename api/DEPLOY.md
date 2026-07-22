@@ -9,16 +9,33 @@ need Docker locally.
 1. You push to `dev` with a change under `api/**`.
 2. [`.github/workflows/api-image.yml`](../.github/workflows/api-image.yml) builds `api/Dockerfile`
    on GitHub's runners and pushes `ghcr.io/vaditim/portfolio-api:latest` (plus a `sha-<commit>` tag).
-3. You create a new revision in Azure so it pulls the rebuilt image.
-
-Step 3 is manual: the container is pinned to the `:latest` tag, and Azure does **not** poll a
-tag for changes — an existing revision keeps running the digest it started with. Push, wait for
-the Action to go green, then **Container App → Revisions and replicas → Create new revision →
-Create** (no field changes needed; creating the revision is what re-pulls `latest`).
+3. You point the Container App at the new image's `sha-` tag, which creates a revision.
 
 ```sh
 git push origin dev
 ```
+
+Step 3 is manual. The workflow tags every build twice — `latest` and `sha-<full-commit-sha>` —
+and the Container App is pinned to the **`sha-` tag, not `latest`**, because Azure does not poll
+a tag for changes: an existing revision keeps running the digest it started with, so `latest`
+silently never updates. Pinning also makes "which commit is live" answerable and rollback a
+one-field edit.
+
+After the Action goes green:
+
+- **Container App → Application → Containers → Image and tag**
+- Set it to `vaditim/portfolio-api:sha-<the commit sha you just pushed>`
+  (full 40-char sha, e.g. `sha-e1afcc4a922eebffdc9fae4e68f4b9d9aacce1e7`)
+- **Save as a new revision**
+
+Then confirm the new code is actually serving before trusting it:
+
+```sh
+curl -s -o /dev/null -w "%{http_code}\n" https://<your-container-app>.azurecontainerapps.io/
+```
+
+The old revision keeps answering for a minute or so while the new one starts, so a stale
+response right after saving is expected — poll until it flips.
 
 Watch the run under the repo's **Actions** tab. To rebuild without changing code, use
 **Actions → Build API image → Run workflow** (the `workflow_dispatch` trigger).
@@ -61,7 +78,8 @@ The Container App currently runs Microsoft's sample image. Replace it:
 - **Container → Edit and deploy → your container image**
 - Image source: **Docker Hub or other registries**
 - Registry login server: `ghcr.io`
-- Image and tag: `vaditim/portfolio-api:latest`
+- Image and tag: `vaditim/portfolio-api:sha-<commit sha>` (see "How a deploy happens" — do not
+  use `:latest`, Azure will never re-pull it)
 - Target port: **8080** (the `dotnet/aspnet:8.0` base image listens there)
 
 ### 3. Set production configuration
