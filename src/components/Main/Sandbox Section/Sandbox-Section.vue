@@ -59,9 +59,9 @@
       <ModuleDisplay label-over>
         <template #label>04 · PARALLAX TILT</template>
         <div ref="tiltWrapRef" class="sb-tilt-wrap">
-          <div ref="tiltRef" class="sb-tilt" @click="onTiltClick">
+          <div ref="tiltRef" class="sb-tilt">
             <div class="sb-tilt-frame"></div>
-            <img v-if="!isClassifiedUnlocked" :src="qrSrc" class="sb-tilt-qr" alt="Scan me" draggable="false" />
+            <img v-if="!isClassifiedUnlocked && unlockQrDataUrl" :src="unlockQrDataUrl" class="sb-tilt-qr" alt="Scan to unlock the classified section" draggable="false" />
             <div v-else class="sb-tilt-wow">WOW!</div>
             <div class="sb-tilt-chip">2026</div>
             <div class="sb-tilt-name">SCAN ME?</div>
@@ -82,8 +82,8 @@
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
   import ModuleDisplay from '@components/Misc/Module-Display.vue'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
-  import qrSrc from '@assets/images/rickroll-qr.png'
-  import { triggerClassifiedUnlock, isClassifiedUnlocked } from '@modules/sectionsClassifiedUnlock'
+  import { isClassifiedUnlocked } from '@modules/sectionsClassifiedUnlock'
+  import { unlockQrDataUrl } from '@modules/classifiedUnlockSession'
 
 
   const LIST_ITEMS = ['NEBULA UI', 'HELIX', 'PULSE', 'ARCADE']
@@ -236,13 +236,6 @@
         gsap.to(ul, { scaleX: 0, transformOrigin: 'left center', duration: 0.3, ease: 'power3.in', overwrite: 'auto' })
       })
     })
-  }
-
-  // ── tilt parallax card: placeholder for the real QR-scan unlock (the real
-  //    flow scans this same card's code on a phone; see TASKS.md "Classified
-  //    Section; QR code unlock"). No-op after the first unlock. ──
-  function onTiltClick() {
-    triggerClassifiedUnlock()
   }
 
   // ── tilt parallax card ──

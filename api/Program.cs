@@ -6,6 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Portfolio.Api;
 using Portfolio.Api.Data;
 using Portfolio.Api.Models;
+using Portfolio.Api.Unlock;
+
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,9 @@ builder.Services.AddDbContext<CommentsDbContext>(options =>
     else
         options.UseSqlite(builder.Configuration["SqliteFile"] ?? "Data Source=comments.db");
 });
+
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<UnlockSessionStore>();
 
 builder.Services.AddCors(options =>
 {
@@ -56,6 +62,15 @@ builder.Services.AddRateLimiter(options =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
         }));
+
+    options.AddPolicy("unlock", context => RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(10),
+            QueueLimit = 0,
+        }));
 });
 
 var app = builder.Build();
@@ -71,6 +86,19 @@ app.UseRateLimiter();
 
 // Container Apps probes this; without a route here '/' 404s and the replica is killed as unhealthy.
 app.MapGet("/", () => Results.Ok("ok"));
+
+app.MapHub<UnlockHub>("/unlock-hub");
+
+// Called by the phone after it opens the QR's URL. Claiming is single-use, so a
+// replayed or guessed id gets the same 404 as one that never existed.
+app.MapPost("/unlock/{sessionId}", async (string sessionId, UnlockSessionStore sessionStore, IHubContext<UnlockHub> hub) =>
+{
+    if (!UnlockSessionStore.IsWellFormedSessionId(sessionId) || !sessionStore.TryClaim(sessionId))
+        return Results.NotFound("Session expired — reload the page on the big screen.");
+
+    await hub.Clients.Group(UnlockHub.GroupName(sessionId)).SendAsync("unlocked");
+    return Results.NoContent();
+}).RequireRateLimiting("unlock");
 
 var comments = app.MapGroup("/comments");
 

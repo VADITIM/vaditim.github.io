@@ -9,9 +9,12 @@ need Docker locally.
 1. You push to `dev` with a change under `api/**`.
 2. [`.github/workflows/api-image.yml`](../.github/workflows/api-image.yml) builds `api/Dockerfile`
    on GitHub's runners and pushes `ghcr.io/vaditim/portfolio-api:latest` (plus a `sha-<commit>` tag).
-3. Azure Container Apps pulls the new `latest` and restarts the revision.
+3. You create a new revision in Azure so it pulls the rebuilt image.
 
-That's it — `git push` is the whole deploy command:
+Step 3 is manual: the container is pinned to the `:latest` tag, and Azure does **not** poll a
+tag for changes — an existing revision keeps running the digest it started with. Push, wait for
+the Action to go green, then **Container App → Revisions and replicas → Create new revision →
+Create** (no field changes needed; creating the revision is what re-pulls `latest`).
 
 ```sh
 git push origin dev
@@ -79,6 +82,18 @@ and reference them, rather than as plain environment values.
 
 The schema is created on startup via `EnsureCreated()` — there is no migration step.
 
+### 3b. Pin the app to a single replica (required by the unlock hub)
+
+**Container App → Application → Scale → Scale rule / replica range: min 1, max 1.**
+
+The classified-section unlock (see below) keeps its sessions and its SignalR groups in the
+replica's memory. With two replicas the phone's `POST /unlock/{id}` can land on a different one
+than the desktop's WebSocket, and the push silently goes nowhere. Lifting the cap means adding
+a SignalR backplane (Azure SignalR Service) and moving `UnlockSessionStore` off-process — not
+worth it for the traffic this gets.
+
+Min 1 also removes the scale-to-zero cold start on the first comment load.
+
 ### 4. Rebuild the frontend against the live API
 
 `src/modules/extraComments.ts` reads `VITE_COMMENTS_API_URL` and defaults to `http://localhost:5282`.
@@ -103,6 +118,33 @@ Then post a comment from the live site and remove it again with the admin key:
 curl -H "X-Admin-Key: <AdminApiKey>" https://<app>/admin/comments
 curl -X DELETE -H "X-Admin-Key: <AdminApiKey>" https://<app>/admin/comments/<id>
 ```
+
+## Endpoints
+
+| Route | Purpose |
+| --- | --- |
+| `GET /` | Health probe target. Container Apps kills the replica without it |
+| `GET/POST/PUT/DELETE /comments/*` | Guestbook (see `src/modules/extraComments.ts`) |
+| `GET /admin/comments/*` | Moderation; requires the `X-Admin-Key` header |
+| `/unlock-hub` | SignalR hub the desktop subscribes to while showing its QR |
+| `POST /unlock/{sessionId}` | Called by the phone that scanned the QR; pushes `unlocked` to that session |
+
+### Classified-section unlock flow
+
+1. The desktop mints a 32-hex-char session id client-side, connects to `/unlock-hub`, and calls
+   `Subscribe(sessionId)` — which is what registers the session server-side, so an id nobody is
+   listening on can never be claimed.
+2. It renders a QR for `<site-url>?unlock=<sessionId>` (`qrcode`, generated in the browser).
+3. The phone opens that URL, `Unlock-Scan-Splash.vue` sees the query param and `POST`s to
+   `/unlock/{sessionId}`.
+4. The endpoint claims the session — **single-use, 15-minute TTL** — and broadcasts `unlocked`
+   to the session's group. Expired/replayed/guessed ids all get an identical `404`.
+5. The desktop unlocks the classified section and persists it to `localStorage`.
+
+The desktop rotates its session every 14 minutes so the QR on screen is never past its TTL.
+Nothing here touches the database; state is per-replica memory (hence the single-replica rule).
+
+Rate limit on `POST /unlock/*` is 20 per IP per 10 minutes.
 
 ## Known limitations
 

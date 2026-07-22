@@ -1,5 +1,7 @@
 import { ref } from 'vue'
 
+import { API_BASE_URL } from './apiBaseUrl'
+
 export interface CommentEntry {
   id: number
   name: string
@@ -8,8 +10,6 @@ export interface CommentEntry {
 }
 
 export type CommentSubmitState = 'idle' | 'sending' | 'sent' | 'alreadyPosted' | 'rateLimited' | 'error'
-
-const API_BASE_URL = import.meta.env.VITE_COMMENTS_API_URL ?? 'http://localhost:5282'
 
 export const comments = ref<CommentEntry[]>([])
 export const ownComment = ref<CommentEntry | null>(null)

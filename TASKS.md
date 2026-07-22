@@ -88,7 +88,9 @@ Open questions:
 
 ### Classified Section — QR code unlock (realtime)
 
-**Backend hosting progress:** Azure chosen as host (shared with Comments backend). Azure CLI installed locally, logged in, subscription active (`Azure subscription 1`), resource group `portfolio-rg` created (westeurope). App Service plan creation is **blocked**: new subscriptions start with a 0 VM quota (fraud-prevention hold) — `az appservice plan create` fails with `Operation cannot be completed without additional quota` regardless of region (tried westeurope, northeurope) or OS (Linux, Windows). Also note: westeurope itself separately rejected new App Service customers ("region not accepting new customers"). **Next step:** retry `az appservice plan create --name portfolio-plan --resource-group portfolio-rg --sku F1 --is-linux --location northeurope` after a few hours (quota usually clears automatically), or request a compute quota increase via Azure Portal → Quotas → Compute if it's still blocked after ~24h. Frontend work (this task) proceeds independently in the meantime.
+**Status: unlock mechanic implemented; nav/section-registration half still open.** Hosting is settled (Azure Container Apps, shared with the comments API — App Service was abandoned after the new-subscription VM quota block). The realtime channel is live: `UnlockHub` + `POST /unlock/{sessionId}` in `api/Unlock/`, client in `src/modules/classifiedUnlockSession.ts`, phone splash in `Unlock-Scan-Splash.vue`. Session flow, TTL, single-use claiming and the single-replica constraint are documented in [`api/DEPLOY.md`](api/DEPLOY.md).
+
+**Still to do here:** step 5 below — the confirm button's leave animation, activating the section in the registry, and the nav label sliding in from the right with the list reflowing. `Classified-Unlock-Popup.vue` currently only shows the popup.
 
 A hidden section unlocked by scanning a QR code displayed on the desktop page. The scan happens on the visitor's phone; the desktop page updates **live** — no refresh — via a realtime push from the backend. The payoff: the visitor scans, and the game menu grows a new entry in front of them.
 

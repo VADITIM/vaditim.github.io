@@ -14,10 +14,8 @@ export function unlockClassifiedSection() {
 }
 
 /**
- * Placeholder for the real QR-scan unlock (see TASKS.md "Classified Section; QR
- * code unlock"). Wired to a click for now; swap the call site for the SignalR
- * `unlocked` event handler once the backend lands. No-op if already unlocked
- * so re-triggering (e.g. a second click) never replays the popup.
+ * Called by `classifiedUnlockSession` when the hub pushes `unlocked`. No-op if
+ * already unlocked so a duplicate push never replays the popup.
  */
 export function triggerClassifiedUnlock() {
   if (isClassifiedUnlocked.value) return

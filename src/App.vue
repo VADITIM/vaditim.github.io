@@ -27,6 +27,7 @@
     </template>
 
     <StartTransition :show-loading-page="showLoadingPage" :container-element="container" :is-mobile="isMobile" />
+    <UnlockScanSplash />
 
   </main>
 </template>
@@ -50,11 +51,13 @@
   import MagneticDots from '@components/Misc/Magnetic-Dots.vue';
   import SectionTransition from '@components/Misc/Section-Transition.vue';
   import ClassifiedUnlockPopup from '@components/Misc/Classified-Unlock-Popup.vue';
+  import UnlockScanSplash from '@components/Misc/Unlock-Scan-Splash.vue';
 
   import { hardwareNoticeActive } from '@modules/miscHardwareNotice';
   import { isMobile } from '@modules/miscIsMobile';
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { registerDebugCacheClear } from '@modules/miscDebugCacheClear';
+  import { startUnlockSession, stopUnlockSession } from '@modules/classifiedUnlockSession';
 
   setSectionCount(SECTIONS.length);
 
@@ -75,9 +78,15 @@
 
   const cleanupDebugCacheClear = registerDebugCacheClear();
 
+  // The phone that scans the QR loads this same page; it must not open a session of its own.
+  if (!isMobile.value && !new URLSearchParams(window.location.search).has('unlock')) {
+    void startUnlockSession();
+  }
+
   onBeforeUnmount(() => {
     cleanupSectionLayerStyle();
     cleanupDebugCacheClear();
+    stopUnlockSession();
   });
 
   const tryInitializeApp = () => {
