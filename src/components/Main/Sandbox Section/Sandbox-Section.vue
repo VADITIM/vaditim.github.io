@@ -30,7 +30,7 @@
       </Module>
 
       <!-- WINDOW 2 · hover-focus list -->
-      <Module>
+      <Module class="sb-mod-list">
         <template #label>02 · HOVER - FOCUS - LIST</template>
         <div class="sb-win-body sb-list-body">
           <div
@@ -46,7 +46,7 @@
       </Module>
 
       <!-- WINDOW 3 · zero-g space -->
-      <Module label-over caption="hold and release a force!">
+      <Module label-over caption="hold and release a force!" class="sb-mod-space">
         <template #label>03 · SPACE</template>
         <div ref="gravRef" class="sb-grav"></div>
         <div class="sb-grav-controls">
@@ -972,6 +972,21 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 18px;
+
+    // Phone: drop the hover-list (02) and zero-g (03) windows — they need a
+    // pointer — and stack the two touch-friendly windows in one column.
+    @include allMobile {
+      grid-template-columns: 1fr;
+      top: 22%;
+      gap: 14px;
+    }
+  }
+
+  .sb-mod-list,
+  .sb-mod-space {
+    @include allMobile {
+      display: none;
+    }
   }
 
   .sb-win-body {

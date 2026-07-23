@@ -25,6 +25,31 @@
   @use "@styleVariables" as *;
 
   .logs-labels-desktop-only {
+    // Hidden only on the frozen small-landscape phone path; shown on desktop and
+    // on the vertical (portrait) layout. `vertical` is declared after `allMobile`
+    // in variables.scss, so on a portrait phone (which matches both) it wins.
+    @include allMobile {
+      display: none;
+    }
+    @include vertical {
+      display: block;
+    }
+
+    // Vertical overlay placement: one label up top, the other two flanking the
+    // bottom corners, over the cube stack. inset (!important) overrides the
+    // desktop inline `pos`; values are viewport-proportional.
+    @include vertical {
+      :deep(.pc-label) {
+        &:nth-child(1) { inset: 4vh auto auto 6vw !important; text-align: left; }
+        &:nth-child(2) { inset: auto 6vw 9vh auto !important; text-align: right; }
+        &:nth-child(3) { inset: auto auto 9vh 6vw !important; text-align: left; }
+      }
+    }
+  }
+
+  // Mobile now uses the wireframe cubes (stacked vertically), so the old rotated
+  // card stack is retired on phones too.
+  .cards-mobile-only {
     @include allMobile {
       display: none;
     }

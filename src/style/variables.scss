@@ -58,6 +58,16 @@ $backgroundTransitionTime: 0.3s;
   }
 }
 
+// The vertical layout: any portrait viewport, phone or a 90°-turned desktop.
+// This — not a width breakpoint — is the switch for the vertical version of the
+// app. Sizes inside must be proportional (vw/vh/vmin/%) so one layout scales to
+// every portrait screen size.
+@mixin vertical {
+  @media screen and (orientation: portrait) {
+    @content;
+  }
+}
+
 
 @mixin smallDesktop {
   @media screen and (min-width: #{$small-desktop}) {

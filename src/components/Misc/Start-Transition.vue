@@ -6,7 +6,7 @@
 			</MagneticButton>
 		</div>
 
-		<div v-if="!showLoadingPage && isMobile" class="fullscreen-toggle" @click="ToggleFullscreen" title="Toggle fullscreen">
+		<div v-if="!showLoadingPage && isVertical" class="fullscreen-toggle" @click="ToggleFullscreen" title="Toggle fullscreen">
 			<div class="fullscreen-icon">
 				<img v-if="isFullscreen" :src="minimiseIcon" alt="Exit fullscreen" class="icon-image" />
 				<img v-else :src="fullscreenIcon" alt="Enter fullscreen" class="icon-image" />
@@ -25,7 +25,7 @@
 	interface Props {
 		showLoadingPage: boolean;
 		containerElement: HTMLElement | null;
-		isMobile: boolean;
+		isVertical: boolean;
 	}
 
 	const props = defineProps<Props>();
@@ -43,7 +43,7 @@
 		// is now so the answer is in memory long before they scroll to the Extra section.
 		void resolveVisitorSession();
 
-		if (props.isMobile && props.containerElement) {
+		if (props.isVertical && props.containerElement) {
 			try {
 				if (props.containerElement.requestFullscreen) {
 					await props.containerElement.requestFullscreen();

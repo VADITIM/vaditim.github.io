@@ -260,6 +260,14 @@
     cursor: grab;
     pointer-events: auto;
     @extend .disable-selection;
+
+    // Vertical layout: size the crystal off the smaller viewport dimension so
+    // it's the section's hero yet never overflows width or height. The canvas
+    // drawing resolution is fixed and pointer mapping goes through
+    // getBoundingClientRect, so the CSS size is free to scale (see above).
+    @include vertical {
+      width: min(96vw, 54vh);
+    }
   }
 
   // Pulled out of flow deliberately: the column centres its content, so a panel

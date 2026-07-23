@@ -5,7 +5,7 @@ import {
   releaseVirtualScrollAfterSectionTransition,
   syncVirtualScrollToSection,
 } from './miscVirtualScroll'
-import { isMobile } from './miscIsMobile'
+import { isVertical } from './miscIsVertical'
 import { navigationLockRef, setNavigationLock } from './miscNavigationLock'
 import { activateSectionEnterGate } from './sectionsTransition'
 import { isSectionLocked } from './sectionLookup'
@@ -134,7 +134,7 @@ export function ChangeToSectionID(sectionIndex: number) {
 
   ChangeSection(sectionIndex, previous, direction)
 
-  if (!isMobile.value) {
+  if (!isVertical.value) {
     const sectionHeight = getVirtualSectionHeightPx()
     const targetScroll = sectionIndex * sectionHeight
     window.scrollTo({ top: targetScroll, behavior: 'auto' })
@@ -148,7 +148,7 @@ export function ChangeToSectionID(sectionIndex: number) {
 export function InitializeSectionTracking() {
   UpdateSection()
 
-  if (isMobile.value) return
+  if (isVertical.value) return
 
   window.addEventListener('scroll', UpdateSection, { passive: true })
 }

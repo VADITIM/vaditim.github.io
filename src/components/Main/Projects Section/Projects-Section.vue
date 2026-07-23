@@ -458,6 +458,29 @@
       if (key === 'ArrowLeft') feedPrev()
       else if (key === 'ArrowRight') feedNext()
     })
+
+    // Touch (phone): a horizontal swipe pages projects; a vertical one is left
+    // to the section navigation. Harmless on desktop, where touch never fires.
+    let touchStartX = 0
+    let touchStartY = 0
+    let touching = false
+    on(fan, 'touchstart', (event) => {
+      const touch = (event as TouchEvent).touches[0]
+      touching = true
+      touchStartX = touch.clientX
+      touchStartY = touch.clientY
+    }, { passive: true })
+    on(window, 'touchend', (event) => {
+      if (!touching) return
+      touching = false
+      if (activeProjectIndex.value !== null) return
+      const touch = (event as TouchEvent).changedTouches[0]
+      const distanceX = touch.clientX - touchStartX
+      const distanceY = touch.clientY - touchStartY
+      if (Math.abs(distanceX) < 40 || Math.abs(distanceX) <= Math.abs(distanceY)) return
+      if (distanceX > 0) feedPrev()
+      else feedNext()
+    }, { passive: true })
   }
 
   onMounted(() => {
@@ -829,6 +852,53 @@
     &.active {
       background: #dc143c;
       transform: scale(1.5);
+    }
+  }
+
+  // ── phone: one project at a time, swipe left/right to page (see initDrag's
+  //    touch handlers). The fan collapses to just the active card, and the
+  //    side-by-side info trio stacks into a single column near the top. ──
+  @include allMobile {
+    .proj-info {
+      left: 0;
+      right: 0;
+      top: 8%;
+      width: 100%;
+      padding: 0 5%;
+    }
+
+    .proj-info-grid {
+      grid-template-columns: 1fr;
+      width: 100%;
+      height: auto;
+      gap: 8px;
+
+      :deep(.module-content) {
+        padding: 30px 14px 12px;
+      }
+    }
+
+    .proj-h {
+      font-size: clamp(26px, 8vw, 40px);
+    }
+
+    .proj-sub-desc {
+      max-width: 100%;
+    }
+
+    .proj-fan {
+      bottom: 20%;
+    }
+
+    .proj-card,
+    .proj-card--active {
+      width: min(88vw, 380px);
+      height: min(32vh, 230px);
+    }
+
+    // Only the centred project shows; the neighbours are hidden entirely.
+    .proj-card:not(.proj-card--active) {
+      display: none;
     }
   }
 </style>

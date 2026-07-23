@@ -16,6 +16,8 @@
 </script>
 
 <style scoped lang="scss">
+  @use "@styleVariables" as *;
+
   // Section layer wrappers collapse to 0 height; this re-establishes the
   // full-viewport coordinate space and is what gives the Perks section its
   // 100vh height — every later section compensates its own position with
@@ -41,5 +43,18 @@
     // already keeps the name off the crystal, so it can sit closer to the nav.
     padding: 0 calc(11% + 6vw) 0 3vw;
     pointer-events: none;
+
+    // Vertical layout: stack the crystal above the name as a centred column
+    // filling the portrait viewport. All spacing is viewport-proportional so
+    // the one layout scales to every portrait size; the tall bottom padding
+    // clears the bottom-anchored nav column.
+    // column-reverse puts the name cluster on top and the crystal below it.
+    @include vertical {
+      flex-direction: column-reverse;
+      align-items: center;
+      justify-content: center;
+      gap: 2vh;
+      padding: 6vh 6vw 12vh;
+    }
   }
 </style>

@@ -362,11 +362,6 @@
     font-family: Mono, monospace;
     overflow: hidden;
     pointer-events: none;
-
-    // Desktop-exclusive: the card stack takes over below smallDesktop.
-    @include allMobile {
-      display: none;
-    }
   }
 
   .pc-stage {
@@ -375,6 +370,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    // Vertical layout: a small bottom padding lifts the centred stack just clear
+    // of the bottom nav row while leaving room for the top label overlay.
+    @include vertical {
+      padding-bottom: 8vh;
+    }
   }
 
   .pc-row {
@@ -383,6 +384,21 @@
     justify-content: center;
     gap: clamp(24px, 3vw, 60px);
     flex-wrap: wrap;
+
+    // Phone: stack the cubes in a single vertical column, top to bottom.
+    @include allMobile {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 2vh;
+    }
+
+    // Vertical layout: a centred column of the three cubes, spacing
+    // viewport-proportional so the one stack scales to every portrait size.
+    @include vertical {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 3vh;
+    }
   }
 
   // Overrides the base .module: a fixed 1:1 square (border-box, so padding
@@ -393,6 +409,21 @@
     height: 430px;
     box-sizing: border-box;
     pointer-events: auto;
+
+    // Phone: three cubes have to share one column, so each cell is much shorter;
+    // the cube itself (fixed 210px 3D geometry) is scaled down via .pc-scene.
+    @include allMobile {
+      width: min(80vw, 300px);
+      height: min(26vh, 230px);
+    }
+
+    // Vertical layout: three square (1:1) cells share one column, sized off the
+    // viewport (proportional) and kept short enough that the stack fits one
+    // portrait screen.
+    @include vertical {
+      width: min(82vw, 26vh);
+      height: min(82vw, 26vh);
+    }
   }
 
   // Centers the cube content within the box.
@@ -412,6 +443,20 @@
     perspective: 1100px;
     cursor: grab;
     pointer-events: auto;
+
+    // The cube's 3D size is fixed in JS (FACE_HALF); scale the whole scene to
+    // shrink it on a phone rather than fighting the translateZ geometry.
+    @include allMobile {
+      transform: scale(0.6);
+    }
+
+    // Vertical layout: the cubes are the section's hero, so scale up from the
+    // phone-row 0.6. This scale is the one unitless value here — the 210px 3D
+    // geometry lives in JS (FACE_HALF) and can't be expressed proportionally in
+    // CSS; the cell around it is viewport-sized so the layout still scales.
+    @include vertical {
+      transform: scale(0.72);
+    }
   }
 
   // Elliptical glow floor under each cube; colour injected inline per cube.

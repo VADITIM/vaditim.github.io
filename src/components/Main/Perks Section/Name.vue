@@ -119,14 +119,27 @@
     if (!stageRef.value) return
     const px = event.clientX / window.innerWidth - 0.5
     const py = event.clientY / window.innerHeight - 0.5
-    gsap.to(stageRef.value, {
-      rotationY: -14 + px * -10,
-      rotationX: -6 + py * 10,
-      transformOrigin: 'left center',
-      duration: 0.6,
-      ease: 'power3.out',
-      overwrite: 'auto',
-    })
+    // Vertical: the block is centred, so the tilt must pivot about its centre
+    // with no resting Y bias — it leans symmetrically toward the cursor rather
+    // than hinging off a left edge like the desktop right-side placement does.
+    const isVertical = window.innerHeight > window.innerWidth
+    gsap.to(stageRef.value, isVertical
+      ? {
+          rotationY: px * -14,
+          rotationX: -4 + py * 10,
+          transformOrigin: 'center center',
+          duration: 0.6,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        }
+      : {
+          rotationY: -14 + px * -10,
+          rotationX: -6 + py * 10,
+          transformOrigin: 'left center',
+          duration: 0.6,
+          ease: 'power3.out',
+          overwrite: 'auto',
+        })
   }
 
   function playEnter() {
@@ -246,6 +259,18 @@
     transform-style: preserve-3d;
     transform-origin: left center;
     transform: rotateY(-14deg) rotateX(-6deg);
+
+    // Vertical: centre the block and drop the sideways tilt that (with the
+    // left transform-origin) shoves the name off-screen in portrait.
+    // A definite viewport-proportional width makes the stage — and the band
+    // stretched across it — independent of any child's text: the caption lines
+    // no longer dictate the block width as they type out.
+    @include vertical {
+      align-items: center;
+      width: 86vw;
+      transform-origin: center center;
+      transform: rotateX(-4deg);
+    }
   }
 
   // Two real 3D planes; the main name floats nearest the viewer, the suffix
@@ -282,20 +307,30 @@
     font-size: clamp(6rem, 12vw, 13rem);
     line-height: 1;
     filter: drop-shadow(0.6rem 0.9rem 0.9rem rgba(0, 0, 0, 0.55));
+
+    // Vertical: scale the name off viewport width so it reads as the hero
+    // wordmark at every portrait size, sized to sit within the stage width.
+    @include vertical {
+      font-size: 16.5vw;
+    }
   }
 
-  .name-sub {
-    font-family: 'Mono';
-    font-size: clamp(0.9rem, 1.2vw, 1.4rem);
-    letter-spacing: 5px;
-    opacity: 0.75;
-  }
-
+  .name-sub,
   .name-title {
     font-family: 'Mono';
     font-size: clamp(0.9rem, 1.2vw, 1.4rem);
     letter-spacing: 5px;
     opacity: 0.75;
+
+    // Vertical: scale the suffix lines and their tracking off viewport width;
+    // capped to ~60vw (well under the stage) so they never drive the block
+    // width, with the font trimmed a touch to match.
+    @include vertical {
+      font-size: 2.2vw;
+      letter-spacing: 0.45vw;
+      max-width: 60vw;
+      text-align: center;
+    }
   }
 
   // ── perk slice band (atop the name) ──
@@ -309,14 +344,25 @@
 
     --skew-base: 20px; // horizontal lean of each slice's slanted edges
     --skew: var(--skew-base);
-    --hover-grow: 3;   // height multiplier for a hovered slice
-    --active-grow: calc(var(--hover-grow) * 0.7); // active slice: ~30% shorter than a hover
+    --hover-grow: 2;   // height multiplier for a hovered slice
+    --active-grow: calc(var(--hover-grow) * 1.2); // active slice: ~30% shorter than a hover
     --gap: 8px;        // slanted background gap between adjacent slices
 
     // style.scss rounds every element via `*`; the slices are cut by clip-path,
     // so clear the radius across the band.
     &, * {
       border-radius: 0;
+    }
+
+    // Vertical: band height and the slant/gap geometry all scale off viewport
+    // width so the trapez row stays proportional to the name it caps.
+    @include vertical {
+      height: 6.5vw;
+      width: 80%;
+      justify-self: center;
+      --skew-base: 4vw;
+      --gap: 1.6vw;
+    --hover-grow: 1.2;   // height multiplier for a hovered slice
     }
   }
 
@@ -395,6 +441,11 @@
     font-size: clamp(12px, 1vw, 18px);
     letter-spacing: 3px;
     color: #0e0e0e;
+
+    @include vertical {
+      font-size: 1.8vw;
+      letter-spacing: 0.5vw;
+    }
   }
 
   .perk-slice:hover .perk-slice-shape,

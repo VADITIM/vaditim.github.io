@@ -1,8 +1,14 @@
 import { ref } from 'vue'
 import { currentSection, ChangeToSectionID } from '@modules/sectionsCore'
 import { navigationLockRef } from '@modules/miscNavigationLock'
+import { SECTIONS } from '@modules/sectionsRegistry'
+import { isSectionLocked } from '@modules/sectionLookup'
 
-const MAX_SECTIONS = 3
+// A step is valid only to an in-range, unlocked section — mirrors ChangeToSectionID
+// so a locked entry (e.g. Classified before unlock) is never stepped into.
+const canStepTo = (index: number) =>
+  index >= 0 && index < SECTIONS.length && !isSectionLocked(index)
+
 let DRAG_THRESHOLD = window.innerHeight * 0.3;
 
 const VibrateThreshold = () => {
@@ -52,11 +58,13 @@ function HandleTouchMove(Event: TouchEvent) {
   const currentX = Event.touches[0].clientX
   const deltaY = touchStartY - currentY
   const deltaX = currentX - touchStartX
-  const canDragUp = currentSection.value < MAX_SECTIONS - 1
-  const canDragDown = currentSection.value > 0
+  const canDragUp = canStepTo(currentSection.value + 1)
+  const canDragDown = canStepTo(currentSection.value - 1)
   let offset = deltaY
 
-  if (Math.abs(deltaY) > 5) {
+  // Only a predominantly-vertical swipe counts as section intent; a horizontal
+  // one is left for in-section paging (e.g. Projects swipes between projects).
+  if (Math.abs(deltaY) > 5 && Math.abs(deltaY) >= Math.abs(deltaX)) {
     dragDirection.value = deltaY > 0 ? 'down' : 'up'
   }
 
@@ -83,8 +91,8 @@ function HandleTouchEnd() {
   
   if (dragOffset.value >= DRAG_THRESHOLD && dragDirection.value) {
     const targetSection = dragDirection.value === 'down' ? currentSection.value + 1 : currentSection.value - 1
-    
-    if (targetSection >= 0 && targetSection < MAX_SECTIONS) {
+
+    if (canStepTo(targetSection)) {
       lastDragOffsetY.value = (dragDirection.value === 'down' ? -rawOffset : rawOffset) + popYTransform
       markTransitionAsDragged(true)
       ChangeToSectionID(targetSection)

@@ -1,7 +1,7 @@
 <template>
   <main class="app-container" ref="container">
 
-    <template v-if="!isMobile" >
+    <template v-if="!isVertical" >
       <HardwareAccelerationNotice />
       <StartSection v-if="showLoadingPage && !hardwareNoticeActive" />
       <template v-if="!hardwareNoticeActive">
@@ -25,11 +25,19 @@
 
     <template v-else>
       <StartSection v-if="showLoadingPage" />
+      <div
+        v-for="(section, i) in SECTIONS"
+        :key="section.id"
+        :style="GetSection(i)"
+      >
+        <component :is="section.component" />
+      </div>
       <Navigator />
-      <SectionCoverSlice />
+      <SettingsPanel :revealed="!showLoadingPage" />
+      <ClassifiedUnlockPopup />
     </template>
 
-    <StartTransition :show-loading-page="showLoadingPage" :container-element="container" :is-mobile="isMobile" />
+    <StartTransition :show-loading-page="showLoadingPage" :container-element="container" :is-vertical="isVertical" />
     <UnlockScanSplash />
 
   </main>
@@ -58,7 +66,7 @@
   import UnlockScanSplash from '@components/Misc/Unlock-Scan-Splash.vue';
 
   import { hardwareNoticeActive } from '@modules/miscHardwareNotice';
-  import { isMobile } from '@modules/miscIsMobile';
+  import { isVertical } from '@modules/miscIsVertical';
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { registerDebugCacheClear } from '@modules/miscDebugCacheClear';
   import { startUnlockSession, stopUnlockSession } from '@modules/classifiedUnlockSession';
@@ -74,8 +82,14 @@
     document.documentElement.style.setProperty('--section-color', SECTIONS[current]?.color ?? LOADING_COLOR);
   });
 
+  // Debug: skip the loading intro so vertical-layout iteration doesn't replay it
+  // every reload. DEV-only; production always shows the intro. Flip to false to
+  // see the intro while developing.
+  const SKIP_LOADING_PAGE = import.meta.env.DEV;
+  if (SKIP_LOADING_PAGE) finished.value = true;
+
   const container = ref<HTMLElement | null>(null);
-  const showLoadingPage = ref(true);
+  const showLoadingPage = ref(!SKIP_LOADING_PAGE);
   const hasInitialized = ref(false);
   const sectionHeightVh = 100;
 
@@ -88,7 +102,7 @@
   const cleanupReducedMotion = initializeReducedMotion();
 
   // The phone that scans the QR loads this same page; it must not open a session of its own.
-  if (!isMobile.value && !new URLSearchParams(window.location.search).has('unlock')) {
+  if (!isVertical.value && !new URLSearchParams(window.location.search).has('unlock')) {
     void startUnlockSession();
   }
 
@@ -102,12 +116,12 @@
   });
 
   const tryInitializeApp = () => {
-    if (hasInitialized.value || (!isMobile.value && hardwareNoticeActive.value) || !finished.value) return;
+    if (hasInitialized.value || (!isVertical.value && hardwareNoticeActive.value) || !finished.value) return;
     PageAnimations(SECTIONS);
     hasInitialized.value = true;
     showLoadingPage.value = false;
 
-    if (!isMobile.value) {
+    if (!isVertical.value) {
       InitializeVirtualScroll(SECTIONS.length, sectionHeightVh);
     }
   };

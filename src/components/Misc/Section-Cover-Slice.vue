@@ -26,7 +26,7 @@
   import { activeProjectIndex } from '@modules/sectionsProjects';
   import { finished } from '@modules/sectionsStateMachine';
   import { dragOffset, dragDirection, isDragging, thresholdReached, consumeLastDragOffsetY } from '@modules/miscMobileDragNavigation';
-  import { isMobile } from '@modules/miscIsMobile';
+  import { isVertical } from '@modules/miscIsVertical';
   import { currentSection, previousSection, isTransitioning } from '@modules/sectionsCore';
   import { initializeProjectHelixCanvas } from '@modules/miscProjectHelixCanvas';
 
@@ -67,7 +67,7 @@
       }
     }
 
-    if (isMobile.value && dragDirection.value) {
+    if (isVertical.value && dragDirection.value) {
       const offsetAmount = dragDirection.value === 'down' ? dragOffset.value * -0.5 : dragOffset.value * 0.5
       const scaleAmount = thresholdReached.value ? 1.05 : 1
       const popYTransform = thresholdReached.value ? -10 : 0

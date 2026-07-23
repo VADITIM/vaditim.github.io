@@ -1,24 +1,12 @@
 <template>
-	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isMobile ? 'is-mobile' : 'is-desktop', { 'dragging': isDragging && isMobile }]" :style="dragStyle">
-			<div class="line"></div>
-			<div v-if="isMobile" class="rect-container">
-				<template v-for="(section, index) in SECTIONS" :key="section.id + '-rect'">
-					<div
-						v-if="!isSectionLocked(index)"
-						class="rect"
-						:class="getEntryClasses(index)"
-						:style="getEntryDragStyle(index, 'rect')"
-						@click="onEntryClick(index)"
-					></div>
-				</template>
-			</div>
+	  <div class="content-list-container" :class="[{ active: activeProjectIndex !== null }, isVertical ? 'is-vertical' : 'is-desktop']">
 			<template v-for="(section, index) in SECTIONS" :key="section.id">
 				<Transition :css="false" @enter="onNavEntryEnter">
 					<div
 						v-if="!isSectionLocked(index)"
 						class="section-header-list"
 						:class="[`${section.id}-header-list`, getEntryClasses(index)]"
-						:style="[{ '--accent': section.color }, isMobile ? getEntryDragStyle(index, 'text') : getDesktopEntryStyle(index)]"
+						:style="[{ '--accent': section.color }, getWindowedEntryStyle(index)]"
 						@click="onEntryClick(index)"
 					>
 						<span class="shl-label">{{ section.label }}</span>
@@ -32,94 +20,15 @@
 </template>
 
 <script setup lang="ts">
-	import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
+	import { onMounted, onUnmounted, computed } from 'vue'
 	import { gsap } from 'gsap'
 	import { currentSection, InitializeSectionTracking, cleanupSectionTracking, ChangeToSectionID } from '@modules/sectionsCore'
 	import { SECTIONS } from '@modules/sectionsRegistry'
 	import { isSectionLocked } from '@modules/sectionLookup'
 	import { activeProjectIndex } from '@modules/sectionsProjects'
-	import { isMobile } from '@modules/miscIsMobile'
+	import { isVertical } from '@modules/miscIsVertical'
 	import { navigationLockRef } from '@modules/miscNavigationLock'
-	import { InitializeMobileDragNavigation, CleanupMobileDragNavigation, dragOffset, isDragging, dragDirection, thresholdReached } from '@modules/miscMobileDragNavigation'
-
-	const thresholdAnimating = ref(false)
-	let thresholdAnimTimeout: ReturnType<typeof setTimeout> | null = null
-	const isReturning = ref(false)
-	type EntryType = 'rect' | 'text'
-	const returnEntryTransforms = ref<Record<string, string>>({})
-	const currentEntryTransforms = ref<Record<string, string>>({})
-
-	const ACTIVE_BASE_OFFSET_PX = -9.6
-	const INACTIVE_RECT_SCALE = 0.8
-	const INACTIVE_TEXT_SCALE = 1
-
-	const getEntryKey = (sectionIndex: number, entryType: EntryType) => `${entryType}-${sectionIndex}`
-
-	const getEntryDefaultTransform = (sectionIndex: number, entryType: EntryType) => {
-		const isCurrent = sectionIndex === currentSection.value
-
-		if (entryType === 'rect') {
-			const baseY = isCurrent ? ACTIVE_BASE_OFFSET_PX : 0
-			const baseScale = isCurrent ? 1.1 : INACTIVE_RECT_SCALE
-			const baseRotate = isCurrent ? ' rotate(135deg)' : ''
-			return `translateY(${baseY}px) scale(${baseScale})${baseRotate}`
-		}
-
-		const textY = isCurrent ? ACTIVE_BASE_OFFSET_PX : 0
-		return `translateY(${textY}px) scale(${INACTIVE_TEXT_SCALE})`
-	}
-
-	watch(thresholdReached, () => {
-		thresholdAnimating.value = true
-		if (thresholdAnimTimeout) {
-			clearTimeout(thresholdAnimTimeout)
-		}
-		thresholdAnimTimeout = setTimeout(() => {
-			thresholdAnimating.value = false
-			thresholdAnimTimeout = null
-		}, 180)
-	})
-
-	watch(isDragging, (newVal) => {
-		if (newVal || !isMobile.value) {
-			isReturning.value = false
-			return
-		}
-
-		isReturning.value = true
-		const seededTransforms: Record<string, string> = {}
-		for (let sectionIndex = 0; sectionIndex < SECTIONS.length; sectionIndex++) {
-			const rectKey = getEntryKey(sectionIndex, 'rect')
-			const textKey = getEntryKey(sectionIndex, 'text')
-			seededTransforms[rectKey] = currentEntryTransforms.value[rectKey] ?? getEntryDefaultTransform(sectionIndex, 'rect')
-			seededTransforms[textKey] = currentEntryTransforms.value[textKey] ?? getEntryDefaultTransform(sectionIndex, 'text')
-		}
-		returnEntryTransforms.value = seededTransforms
-
-		requestAnimationFrame(() => {
-			const nextTransforms: Record<string, string> = {}
-			for (let sectionIndex = 0; sectionIndex < SECTIONS.length; sectionIndex++) {
-				nextTransforms[getEntryKey(sectionIndex, 'rect')] = getEntryDefaultTransform(sectionIndex, 'rect')
-				nextTransforms[getEntryKey(sectionIndex, 'text')] = getEntryDefaultTransform(sectionIndex, 'text')
-			}
-			returnEntryTransforms.value = nextTransforms
-		})
-
-		setTimeout(() => {
-			isReturning.value = false
-			returnEntryTransforms.value = {}
-			currentEntryTransforms.value = {}
-		}, 240)
-	}, { flush: 'sync' })
-
-	const dragStyle = computed(() => {
-		if (!isDragging.value || !isMobile.value) return {}
-		
-		return {
-			opacity: 0.8 + dragOffset.value / 500,
-			transition: (thresholdReached.value || thresholdAnimating.value) ? "opacity 0.15s ease-out" : "none"
-		}
-	})
+	import { InitializeMobileDragNavigation, CleanupMobileDragNavigation } from '@modules/miscMobileDragNavigation'
 
 	const getEntryClasses = (sectionIndex: number) => {
 		return {
@@ -127,10 +36,12 @@
 		}
 	}
 
-	// ── desktop: sliding 3-wide window of diamond + index indicators ──
-	// Only three entries are shown at once; the window slides so the active
-	// section stays centred, clamping at the list ends so it always stays full.
-	const DESKTOP_WINDOW_SPACING_REM = 2.9
+	// ── windowed nav: every entry moves as one vertical column anchored on the
+	// current section, which stays centred at 50%. Distance from it drives a
+	// progressive falloff (shrink, fade, bow outward) so the column reads as an
+	// arch with the current section biggest at its apex. Shared by desktop and
+	// mobile — only the container placement and sizes differ (see <style>).
+	const WINDOW_SPACING_REM = 2.9
 
 	const visibleSectionIndices = computed(() =>
 		SECTIONS.map((_, index) => index).filter((index) => !isSectionLocked(index))
@@ -139,7 +50,6 @@
 	const currentVisiblePos = computed(() =>
 		visibleSectionIndices.value.indexOf(currentSection.value)
 	)
-
 
 	// Scale falls off with distance from the current section; shared by the
 	// label/index/marker font-sizes (via --dist-scale, see <style>) and by the
@@ -154,17 +64,15 @@
 		let total = 0
 		for (let step = 1; step <= steps; step++) {
 			const averageScale = (scaleForDistance(step - 1) + scaleForDistance(step)) / 2
-			total += DESKTOP_WINDOW_SPACING_REM * averageScale
+			total += WINDOW_SPACING_REM * averageScale
 		}
 		return relative < 0 ? -total : total
 	}
 
-	// Every entry stays visible and moves as one vertical column, anchored on the
-	// current section so it's always centred at 50%. Distance from the current
-	// section drives a progressive falloff: entries shrink, fade and bow outward
-	// (translateX grows super-linearly) so the column reads as an arch with the
-	// current section biggest at its apex.
-	const getDesktopEntryStyle = (sectionIndex: number) => {
+	const getWindowedEntryStyle = (sectionIndex: number) => {
+		// Mobile is a plain bottom-anchored flex column — no arch, no absolute
+		// transform. CSS owns its layout; the windowing below is desktop-only.
+		if (isVertical.value) return {}
 		const position = visibleSectionIndices.value.indexOf(sectionIndex)
 		if (position === -1) return { opacity: 0, pointerEvents: 'none' as const }
 		const relative = position - currentVisiblePos.value
@@ -179,73 +87,6 @@
 			transform: `translate(calc(${archX}rem + var(--enter-x, 0px)), calc(-50% + ${cumulativeSpacingRem(relative)}rem))`,
 			opacity,
 			zIndex: 10 - distance,
-		}
-	}
-
-	function getTargetSectionIndex() {
-		if (!dragDirection.value) return null
-		const delta = dragDirection.value === 'down' ? 1 : -1
-		const nextSection = currentSection.value + delta
-		if (nextSection < 0 || nextSection >= SECTIONS.length) return null
-		if (isSectionLocked(nextSection)) return null
-		return nextSection
-	}
-
-	const getEntryDragStyle = (sectionIndex: number, entryType: 'rect' | 'text') => {
-		const entryKey = getEntryKey(sectionIndex, entryType)
-
-		if (isReturning.value && isMobile.value) {
-			const returnTransform = returnEntryTransforms.value[entryKey]
-			if (!returnTransform) return {}
-
-			return {
-				transform: returnTransform,
-				transition: 'transform 0.22s ease-out',
-			}
-		}
-
-		if (!isMobile.value || !isDragging.value || !dragDirection.value) return {}
-		const targetSection = getTargetSectionIndex()
-		if (targetSection === null) return {}
-
-		const dragProgressPx = Math.min(dragOffset.value, window.innerHeight * .2)
-		const downMovement = 6 + Math.min(dragProgressPx * 0.05, 22)
-		const upMovement = 6 + Math.min(dragProgressPx * 0.05, 24)
-		const isTarget = sectionIndex === targetSection
-		const sectionMoveY = isTarget ? -upMovement : downMovement
-		const popAmount = (thresholdReached.value || thresholdAnimating.value) ? 8 : 0
-		const targetY = isTarget ? sectionMoveY - popAmount : sectionMoveY
-
-		if (entryType === 'rect') {
-			const isCurrent = sectionIndex === currentSection.value
-			const baseOffsetY = 0
-			const targetScale = isTarget
-				? (INACTIVE_RECT_SCALE + Math.min(dragProgressPx / 1000, 0.12) + (thresholdReached.value ? 0.06 : 0))
-				: INACTIVE_RECT_SCALE
-			const rotate = isCurrent ? ' rotate(135deg)' : ''
-			const useTransition = true
-			const isActiveScalingDown = isCurrent && !isTarget
-			const transitionDuration = isActiveScalingDown ? '0.24s' : '0.14s'
-			const transform = `translateY(${baseOffsetY + targetY}px) scale(${targetScale})${rotate}`
-			currentEntryTransforms.value[entryKey] = transform
-
-			return {
-				transform,
-				transition: useTransition ? `transform ${transitionDuration} cubic-bezier(0.22, 1, 0.36, 1)` : 'none',
-			}
-		}
-
-		const baseTextOffset = 0
-		const textScale = isTarget
-			? (INACTIVE_TEXT_SCALE + Math.min(dragProgressPx / 1400, .08) + (thresholdReached.value ? .04 : .0))
-			: INACTIVE_TEXT_SCALE
-		const useTransition = true
-		const textTransform = `translateY(${baseTextOffset + targetY}px) scale(${textScale})`
-		currentEntryTransforms.value[entryKey] = textTransform
-
-		return {
-			transform: textTransform,
-			transition: useTransition ? 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)' : 'none',
 		}
 	}
 
@@ -267,7 +108,7 @@
 	// transform composes in; the layout's own transform transition is suspended for
 	// the tween so it doesn't chase every frame and smear the landing.
 	const onNavEntryEnter = (element: Element, done: () => void) => {
-		if (isMobile.value) {
+		if (isVertical.value) {
 			gsap.fromTo(element, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.5)', onComplete: done, overwrite: 'auto' })
 			return
 		}
@@ -292,18 +133,14 @@
 
 	onMounted(() => {
 		InitializeSectionTracking()
-		if (isMobile.value) {
+		if (isVertical.value) {
 			InitializeMobileDragNavigation()
 		}
 	})
 
 	onUnmounted(() => {
-		if (thresholdAnimTimeout) {
-			clearTimeout(thresholdAnimTimeout)
-			thresholdAnimTimeout = null
-		}
 		cleanupSectionTracking()
-		if (isMobile.value) {
+		if (isVertical.value) {
 			CleanupMobileDragNavigation()
 		}
 	})
@@ -311,64 +148,6 @@
 
 <style scoped lang="scss">
 	@use "@styleVariables" as *;
-
-	.rect-container {
-		position: absolute;
-		display: grid;
-		grid-template-columns: repeat(v-bind('SECTIONS.length'), 1fr);
-		justify-items: center;
-		align-items: center;
-		top: -3.2rem;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-	}
-
-	.rect {
-		display: flex;
-		flex-direction: row;
-		border: 4px solid white;
-		border-radius: 10px;
-		width: 3rem;
-		height: 3rem;
-		pointer-events: auto;
-		width: 2rem;
-		height: 2rem;
-		transform: translateY(0) scale(0.8) rotate(0deg);
-
-		transition:
-			.6s all .1s;
-
-		&.active {
-			border-color: $red;
-			transform: translateY(-30%)
-			scale(1.1)
-			rotate(135deg);
-
-			transition:
-				.2s all .1s;
-		}
-
-		&.locked {
-			transform: translateY(20px) scale(.95) rotate(0deg);
-			border: 4px solid rgb(179, 179, 179);
-
-			transition:
-				.6s all .1s;
-		}
-
-		@include tablet {
-			width: 2.5rem;
-			height: 2.5rem;
-			
-			&.active {
-				border-color: $red;
-				transform: translateY(-60%)
-				scale(1.3)
-				rotate(135deg);
-		}
-		}
-	}
 
 	.content-list-container {
 		@extend .disable-selection;
@@ -380,15 +159,11 @@
 
 		transition:
 			.5s ease all;
-
-		&.dragging {
-			transition: none;
-		}
 	}
 
-	// ── desktop: sliding 3-wide window of diamond + index indicators ──
-	// Entries are absolutely positioned and moved by an inline translateY so the
-	// window slides as the section changes (see getDesktopEntryStyle).
+	// ── desktop windowed layout: entries are absolutely positioned and moved by
+	// an inline transform so the column slides as the section changes
+	// (see getWindowedEntryStyle).
 	.content-list-container.is-desktop {
 		display: block;
 		top: 50%;
@@ -397,6 +172,7 @@
 		bottom: auto;
 		width: auto;
 		height: 0;
+		transform: none;
 		filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
 
 		// slide out of view while a project detail window is open
@@ -407,17 +183,27 @@
 		}
 	}
 
-	.content-list-container.is-mobile {
+	// ── mobile/vertical: a horizontal row centred along the bottom edge; each
+	// entry is its own column (name atop, number below). No arch, no absolute
+	// transform (getWindowedEntryStyle returns {} on mobile).
+	.content-list-container.is-vertical {
 		flex-direction: row;
-		justify-content: space-between;
-		left: 50%;
-		bottom: -2%;
-		width: min(92vw, 23rem);
-		transform: translateX(-50%);
-		perspective: none;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 4vw;
+		top: auto;
+		right: 0;
+		left: 0;
+		bottom: 2.5vh;
+		width: 100%;
+		height: auto;
+		transform: none;
+		filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
 
-		@include mobile {
-			width: min(94vw, 13rem);
+		&.active {
+			opacity: 0;
+			transform: translateY(24px);
+			pointer-events: none;
 		}
 	}
 
@@ -429,18 +215,22 @@
 		transition: .3s all;
 	}
 
-	// ── desktop entry: [index] [diamond marker], right-aligned. Labels are
-	//    dropped here to de-clutter; only the windowed diamonds + numbers show. ──
+	// ── entry: [label] [index] [diamond marker], right-aligned. --dist-scale
+	//    (set inline per entry, see getWindowedEntryStyle) drives real
+	//    font-size/dimensions rather than a transform: scale() on the row, so the
+	//    gap shrinks along with the content instead of looking oversized, and the
+	//    text stays crisp instead of blurring under a CSS scale transform. ──
+	// Desktop-only: the windowed layout absolutely positions each entry.
 	.content-list-container.is-desktop .section-header-list {
 		position: absolute;
 		right: 0;
 		top: 0;
+	}
+
+	.content-list-container.is-desktop .section-header-list,
+	.content-list-container.is-vertical .section-header-list {
 		align-items: center;
 		justify-content: flex-end;
-		// --dist-scale (set inline per entry, see getDesktopEntryStyle) drives real
-		// font-size/dimensions here rather than a transform: scale() on the row, so
-		// the gap shrinks along with the content instead of looking oversized, and
-		// the text stays crisp instead of blurring under a CSS scale transform.
 		gap: calc(0.7rem * var(--dist-scale, 1));
 		color: #6a6a6a;
 		will-change: transform, opacity;
@@ -512,69 +302,23 @@
 		}
 	}
 
-	// the old vertical bar is only used by the mobile layout
-	.content-list-container.is-desktop .line { display: none; }
+	// Mobile/vertical: stack each entry as a column — name on top, number below —
+	// and size proportionally so the row scales to every portrait width. The
+	// diamond marker is dropped; the row reads as labelled columns.
+	.content-list-container.is-vertical .section-header-list {
+		position: relative;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.4vh;
 
-	.content-list-container.is-mobile .shl-index,
-	.content-list-container.is-mobile .shl-marker { display: none; }
+		.shl-label { font-size: 3.2vw; }
+		.shl-index { font-size: 2.2vw; }
+		.shl-marker { display: none; }
 
-	.line {
-		display: flex;
-		position: absolute;
-		width: .4rem;
-		height: 100%;
-		background-color: $black;
-		background-color: rgb(224, 224, 224);
-		border: solid 1px black;
-		border-radius: 5px;
-		top: -2%;
-		left: 0;
-
-		@include allMobile {
-			visibility: hidden;
+		&.active {
+			.shl-label { font-size: 4vw; }
+			.shl-index { font-size: 2.6vw; }
 		}
-
-	}
-
-
-	.content-list-container.is-mobile .section-header-list {
-		@include rotate(0, 0, 0);
-		@include outline(black);
-		flex: 1;
-		width: auto;
-		justify-content: center;
-		text-align: center;
-		height: 3rem;
-		transform: translateY(0);
-
-		@include mobile {
-			margin: 0;
-			padding: 0.4rem 0.25rem;
-			line-height: 1.1rem;
-			font-size: .8rem;
-			padding: 0.35rem 0rem;
-
-			&.active {
-				font-size: 1.1rem;
-				padding: 0.35rem 0rem;
-			}
-		}
-
-		@include tablet {
-			margin: 0;
-			padding: 0.4rem 0.25rem;
-			line-height: 1.1rem;
-			font-size: .8rem;
-			padding: 0.35rem 0rem;
-
-			&.active {
-				font-size: 2rem;
-				padding: 0.35rem 0rem;
-			}
-		}
-	}
-
-	.content-list-container.is-mobile .section-header-list.active {
-		transform: translateY(-0.6rem) scale(1);
 	}
 </style>

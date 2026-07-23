@@ -55,7 +55,6 @@
 	import { finished } from '@modules/sectionsStateMachine';
 	import { ChangeSection } from '@modules/sectionsCore';
 	import { getSectionIndexById } from '@modules/sectionLookup';
-	import { isMobile } from '@modules/miscIsMobile';
 	import { buildLabelReveal, playLabelLeave } from '@modules/miscLabelReveal';
 	import { visitorName } from '@modules/extraComments';
 
@@ -68,7 +67,6 @@
 		if (!finished.value) {
 			// The Perks components (Name / Perks-Node-Graph) hide themselves on
 			// mount, so nothing needs pre-hiding here anymore.
-			if (!isMobile.value) { /* no-op */ }
 		}
 		else {
 			// Transition to the first section (perks) after the loading exit animation completes

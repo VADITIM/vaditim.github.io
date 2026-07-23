@@ -81,6 +81,25 @@ const POP_SPRING_MAX_DT_SECONDS = 0.05 // clamps the integration step after a ta
 // snapping instantly whenever the shell colour changes.
 const CORE_COLOR_TRANSITION_MS = 380
 
+// ── build reveal ──
+// The crystal assembles point by point rather than scaling in as a whole. Each
+// vertex emerges at the previous vertex's position and is pushed out to its own
+// spot, overshooting slightly before it settles (see easeOutBack). EDGE_APPEAR
+// _DELAY_MS after a point settles, the edges joining it to already-settled points
+// light up. The outer shell builds first; the inner cage starts INNER_BUILD
+// _DELAY_MS behind it, and the nucleus glow only lights once the cage is whole.
+const VERTEX_SPAWN_INTERVAL_MS = 85 // gap between successive points emerging
+const VERTEX_PUSH_MS = 240          // how long a point takes to shoot to its spot
+const EDGE_APPEAR_DELAY_MS = 100    // wait after a point settles before its edges light
+const EDGE_FADE_MS = 200
+const INNER_BUILD_DELAY_MS = 1500   // inner cage starts this long after the outer shell
+const NUCLEUS_FADE_MS = 450         // nucleus glow fade-in, begun once the cage is whole
+
+// When a satellite's nearest shell vertex changes (the crystal spins, so the
+// closest anchor shifts), its tether crossfades from the old vertex to the new
+// over this duration instead of snapping instantly to the new position.
+const TETHER_FADE_MS = 400
+
 // ── interaction ──
 const SATELLITE_HIT_RADIUS = 30
 const DRAG_CLICK_THRESHOLD_PIXELS = 6
@@ -146,6 +165,10 @@ let flickerEdgeIndex = -1
 let flickerStartTime = 0
 let nextFlickerAt = 0
 let sparks: Spark[] = []
+// Mobile perf: per-edge/per-vertex canvas shadowBlur is the single most
+// expensive thing this loop does on a phone GPU. Disabled below the desktop
+// breakpoint; the wireframe still reads without the glow.
+let shadowEnabled = true
 let shellColor = CRYSTAL_COLOR
 let flashUntil = 0
 let lastFrameTime = 0
@@ -171,11 +194,20 @@ let revealAnchorTime = 0
 let revealAnchorValue = 0
 let revealStartTime = 0
 
+// ── build reveal timing (see build reveal constants). Set per show(); each shell
+// assembles from its own start time.
+let buildInnerStart = 0
+let buildOuterStart = 0
+
 // ── satellites ──
 let activeCategory: PerkGraphNode | null = null
 let selectedSkill: string | null = null
 let unfoldStartTime = 0
 let satellitePoints: SatellitePoint[] = []
+// Per-skill tether anchor, so a change of nearest vertex can crossfade (see
+// TETHER_FADE_MS) rather than snap. Keyed by skill name; cleared on a category
+// swap so stale anchors never bleed across categories.
+const tetherState = new Map<string, { vertex: number; previousVertex: number; switchedAt: number }>()
 // Canvas-space pointer position while hovering (null when the pointer is off
 // the canvas or mid-drag), used to pull nearby satellites toward the cursor.
 let pointerCanvasX: number | null = null
@@ -258,8 +290,56 @@ function easeOutCubic(progress: number) {
   return 1 - Math.pow(1 - progress, 3)
 }
 
+// Overshoots past 1 mid-way, then settles back — a point shot out with force
+// that slightly overshoots its slot and springs back into place.
+function easeOutBack(progress: number) {
+  const overshoot = 1.9
+  const scaled = overshoot + 1
+  const shifted = progress - 1
+  return 1 + scaled * shifted * shifted * shifted + overshoot * shifted * shifted
+}
+
 function lerp(from: number, to: number, progress: number) {
   return from + (to - from) * progress
+}
+
+// ── build reveal helpers ──
+const BUILD_ORIGIN: Vector3 = [0, 0, 0]
+
+function lerpVector(from: Vector3, to: Vector3, progress: number): Vector3 {
+  return [
+    from[0] + (to[0] - from[0]) * progress,
+    from[1] + (to[1] - from[1]) * progress,
+    from[2] + (to[2] - from[2]) * progress,
+  ]
+}
+
+// Total time for one shell to assemble all its points (last spawn + its push).
+function shellBuildDurationMs() {
+  return (vertices.length - 1) * VERTEX_SPAWN_INTERVAL_MS + VERTEX_PUSH_MS
+}
+
+// A vertex's current model-space position during the build: before its spawn
+// time it isn't visible; then it shoots from the previous vertex's spot (the
+// first from the centre) out to its own over VERTEX_PUSH_MS. Model-space, so the
+// spinning orientation and perspective are applied downstream as normal.
+function shellVertexModel(index: number, shellStart: number, now: number): { position: Vector3; visible: boolean } {
+  const spawnAt = shellStart + index * VERTEX_SPAWN_INTERVAL_MS
+  if (now < spawnAt) return { position: vertices[index], visible: false }
+  // easeOutBack can exceed 1, so the point flies just past its slot (lerpVector
+  // extrapolates) and springs back — the overshoot that sells the "force".
+  const push = easeOutBack(clamp01((now - spawnAt) / VERTEX_PUSH_MS))
+  const from = index === 0 ? BUILD_ORIGIN : vertices[index - 1]
+  return { position: lerpVector(from, vertices[index], push), visible: true }
+}
+
+// An edge lights up EDGE_APPEAR_DELAY_MS after the later of its two endpoints has
+// finished pushing out, then fades in over EDGE_FADE_MS.
+function edgeBuildAlpha(first: number, second: number, shellStart: number, now: number): number {
+  const settleFirst = shellStart + first * VERTEX_SPAWN_INTERVAL_MS + VERTEX_PUSH_MS
+  const settleSecond = shellStart + second * VERTEX_SPAWN_INTERVAL_MS + VERTEX_PUSH_MS
+  const appearAt = Math.max(settleFirst, settleSecond) + EDGE_APPEAR_DELAY_MS
+  return clamp01((now - appearAt) / EDGE_FADE_MS)
 }
 
 // Advances the pop spring by dtSeconds toward target 1. Continuous by
@@ -286,6 +366,16 @@ function armPopSpring(spring: PopSpring, activateAt: number) {
   spring.velocity = 0
   spring.isActive = false
   spring.activateAt = activateAt
+}
+
+// Parks a spring at rest, fully open. The build reveal owns how the crystal
+// appears (per vertex), so the whole-crystal pop must not also scale it from 0 —
+// but the spring stays live so a later category swap can still kick a bounce.
+function primePopSpring(spring: PopSpring) {
+  spring.scale = 1
+  spring.velocity = 0
+  spring.isActive = true
+  spring.activateAt = 0
 }
 
 // ── colour ──
@@ -383,6 +473,14 @@ function drawFrame(now: number) {
 
   const reveal = easeOutCubic(revealAt(now))
   if (reveal <= 0) { lastFrameTime = now; return }
+  // Still inside the show delay, before the build starts: draw nothing yet.
+  // The outer shell builds first, so its start is the earliest thing on screen.
+  if (revealDirection === 'in' && now < buildOuterStart) { lastFrameTime = now; return }
+
+  // Per-shell build progress (0→1); drives the fade-in of the nucleus (with the
+  // inner cage) and the sparks (with the outer shell). 1 once a shell is built.
+  const innerBuildProgress = clamp01((now - buildInnerStart) / shellBuildDurationMs())
+  const outerBuildProgress = clamp01((now - buildOuterStart) / shellBuildDurationMs())
 
   const dtSeconds = lastFrameTime ? Math.min((now - lastFrameTime) / 1000, POP_SPRING_MAX_DT_SECONDS) : 0
   stepPopSpring(outerPopSpring, now, dtSeconds)
@@ -420,7 +518,10 @@ function drawFrame(now: number) {
       scale,
     }
   }
-  const projected = vertices.map(project)
+  // Outer vertices ride the build: each interpolates out from the previous one
+  // until settled, after which shellVertexModel returns its true position.
+  const outerModels = vertices.map((_unused, index) => shellVertexModel(index, buildOuterStart, now))
+  const projected = outerModels.map((model) => project(model.position))
 
   // Inner shell: inherits the drag orientation, plus its own slow
   // counter-rotation so it still reads as a separate layer rather than a
@@ -432,28 +533,50 @@ function drawFrame(now: number) {
       quaternionFromAxis(0.3, 1, 0.2, -now * 0.012),
       orientation,
     ))
-    context.strokeStyle = innerShellColor
+    const innerModels = vertices.map((_unused, index) => shellVertexModel(index, buildInnerStart, now))
     context.lineWidth = 1
     for (const [first, second] of edges) {
-      const start = rotateVectorByQuaternion(innerOrientation, vertices[first])
-      const end = rotateVectorByQuaternion(innerOrientation, vertices[second])
+      const edgeReveal = edgeBuildAlpha(first, second, buildInnerStart, now)
+      if (edgeReveal <= 0) continue
+      const start = rotateVectorByQuaternion(innerOrientation, innerModels[first].position)
+      const end = rotateVectorByQuaternion(innerOrientation, innerModels[second].position)
+      context.globalAlpha = edgeReveal
+      context.strokeStyle = innerShellColor
       context.beginPath()
       context.moveTo(centerX + start[0] * innerRadius, centerY + bob + start[1] * innerRadius)
       context.lineTo(centerX + end[0] * innerRadius, centerY + bob + end[1] * innerRadius)
       context.stroke()
     }
+    // While the cage assembles, mark each emerged point with a faint node dot
+    // that fades out as the edges take over — the settled cage carries no dots,
+    // so the dots only exist to make the points-first build legible.
+    if (innerBuildProgress < 1) {
+      for (let index = 0; index < vertices.length; index++) {
+        if (!innerModels[index].visible) continue
+        const push = clamp01((now - (buildInnerStart + index * VERTEX_SPAWN_INTERVAL_MS)) / VERTEX_PUSH_MS)
+        const point = rotateVectorByQuaternion(innerOrientation, innerModels[index].position)
+        context.globalAlpha = easeOutCubic(push) * (1 - innerBuildProgress)
+        context.fillStyle = innerShellColor
+        context.beginPath()
+        context.arc(centerX + point[0] * innerRadius, centerY + bob + point[1] * innerRadius, 2, 0, Math.PI * 2)
+        context.fill()
+      }
+    }
+    context.globalAlpha = 1
   }
 
   // Outer wireframe; opacity and glow scale smoothly with depth so back edges
   // recede instead of being hard-culled.
   for (const [first, second] of edges) {
+    const edgeReveal = edgeBuildAlpha(first, second, buildOuterStart, now)
+    if (edgeReveal <= 0) continue
     const averageDepth = (projected[first].depth + projected[second].depth) / 2
     const depthFade = 0.3 + 0.7 * ((averageDepth + 1) / 2)
-    context.globalAlpha = depthFade
+    context.globalAlpha = depthFade * edgeReveal
     context.strokeStyle = shellColor
     context.lineWidth = 1 + 0.6 * depthFade
     context.shadowColor = shellColor
-    context.shadowBlur = (isFlashing ? 16 : 8) * depthFade
+    context.shadowBlur = shadowEnabled ? (isFlashing ? 16 : 8) * depthFade : 0
     context.beginPath()
     context.moveTo(projected[first].x, projected[first].y)
     context.lineTo(projected[second].x, projected[second].y)
@@ -464,12 +587,15 @@ function drawFrame(now: number) {
 
   drawIdleFlicker(context, now, projected)
 
-  for (const vertex of projected) {
+  for (let index = 0; index < projected.length; index++) {
+    if (!outerModels[index].visible) continue
+    const vertex = projected[index]
+    const push = clamp01((now - (buildOuterStart + index * VERTEX_SPAWN_INTERVAL_MS)) / VERTEX_PUSH_MS)
     const depthFade = 0.3 + 0.7 * ((vertex.depth + 1) / 2)
-    context.globalAlpha = depthFade
+    context.globalAlpha = depthFade * easeOutCubic(push)
     context.fillStyle = '#fff'
     context.shadowColor = shellColor
-    context.shadowBlur = 8 * depthFade
+    context.shadowBlur = shadowEnabled ? 8 * depthFade : 0
     context.beginPath()
     context.arc(vertex.x, vertex.y, 1.6 + 0.8 * depthFade * vertex.scale, 0, Math.PI * 2)
     context.fill()
@@ -481,7 +607,9 @@ function drawFrame(now: number) {
   // complement and rides the cage's pop rather than the outer shell's reveal.
   // `reveal` still factors in so it collapses with the crystal on leave.
   const pulse = 1 + Math.sin(now / 420) * 0.12
-  const nucleusRadius = NUCLEUS_RADIUS * reveal * popRadius * pulse
+  // The nucleus glow only lights once the inner cage is whole, then fades in.
+  const nucleusReveal = clamp01((now - (buildInnerStart + shellBuildDurationMs())) / NUCLEUS_FADE_MS)
+  const nucleusRadius = NUCLEUS_RADIUS * reveal * popRadius * pulse * nucleusReveal
   if (nucleusRadius > 0) {
     const nucleusGradient = context.createRadialGradient(centerX, centerY + bob, 0, centerX, centerY + bob, nucleusRadius * 2.2)
     nucleusGradient.addColorStop(0, nucleusHotColor)
@@ -498,7 +626,7 @@ function drawFrame(now: number) {
     const sparkX = centerX + Math.cos(spark.angle) * radius * spark.radius
     const sparkDepth = Math.sin(spark.angle)
     const sparkY = centerY + bob + Math.sin(spark.angle) * radius * 0.34 + spark.tilt * radius
-    context.globalAlpha = (0.35 + 0.45 * (sparkDepth + 1) / 2) * reveal
+    context.globalAlpha = (0.35 + 0.45 * (sparkDepth + 1) / 2) * reveal * outerBuildProgress
     context.fillStyle = Math.random() < 0.12 ? accentColor : shellColor
     context.beginPath()
     context.arc(sparkX, sparkY, sparkDepth > 0 ? 2 : 1.3, 0, Math.PI * 2)
@@ -584,15 +712,30 @@ function drawSatellites(
       }
     }
 
-    let nearest = projected[0]
+    let nearestIndex = 0
     let nearestDistance = Infinity
-    for (const vertex of projected) {
+    for (let vertexIndex = 0; vertexIndex < projected.length; vertexIndex++) {
+      const vertex = projected[vertexIndex]
       const distance = (vertex.x - satelliteX) ** 2 + (vertex.y - satelliteY) ** 2
       if (distance < nearestDistance) {
         nearestDistance = distance
-        nearest = vertex
+        nearestIndex = vertexIndex
       }
     }
+
+    // Track the anchor per skill; on a change, keep the old vertex around so the
+    // tether can fade from it to the new one instead of jumping.
+    let tether = tetherState.get(name)
+    if (!tether) {
+      tether = { vertex: nearestIndex, previousVertex: nearestIndex, switchedAt: -Infinity }
+      tetherState.set(name, tether)
+    } else if (nearestIndex !== tether.vertex) {
+      tether.previousVertex = tether.vertex
+      tether.vertex = nearestIndex
+      tether.switchedAt = now
+    }
+    const tetherProgress = clamp01((now - tether.switchedAt) / TETHER_FADE_MS)
+    const nearest = projected[tether.vertex]
 
     // Depth fade combines the tether vertex's true depth with the satellite's
     // own drift, so nodes recede smoothly instead of popping front-to-back.
@@ -601,20 +744,26 @@ function drawSatellites(
     const fade = Math.min(1, depthFade) * unfold
     const isHot = selectedSkill === name
 
-    context.globalAlpha = 0.5 * fade
     context.strokeStyle = activeCategory!.color
     context.lineWidth = 1
     context.setLineDash([4, 4])
-    context.beginPath()
-    context.moveTo(nearest.x, nearest.y)
-    context.lineTo(satelliteX, satelliteY)
-    context.stroke()
+    const drawTether = (vertexIndex: number, alphaScale: number) => {
+      const anchor = projected[vertexIndex]
+      context.globalAlpha = 0.5 * fade * alphaScale
+      context.beginPath()
+      context.moveTo(anchor.x, anchor.y)
+      context.lineTo(satelliteX, satelliteY)
+      context.stroke()
+    }
+    // New anchor fades in; the old one fades out over the same window.
+    drawTether(tether.vertex, tetherProgress)
+    if (tetherProgress < 1) drawTether(tether.previousVertex, 1 - tetherProgress)
     context.setLineDash([])
 
     context.globalAlpha = fade
     context.fillStyle = isHot ? '#fff' : activeCategory!.color
     context.shadowColor = activeCategory!.color
-    context.shadowBlur = (isHot ? 16 : 8) * fade
+    context.shadowBlur = shadowEnabled ? (isHot ? 16 : 8) * fade : 0
     context.beginPath()
     context.arc(satelliteX, satelliteY, isHot ? 7 : 5, 0, Math.PI * 2)
     context.fill()
@@ -688,7 +837,13 @@ export function initializePerkCrystalCanvas(
   renderingContext = canvas.getContext('2d')
   onSkillClick = options.onSkillClick
 
-  const devicePixelRatio = window.devicePixelRatio || 1
+  // Vertical (portrait) layout runs on phones and turned-desktops where the
+  // per-primitive shadowBlur is the loop's dominant cost; disable the glow and
+  // cap the backing store there. A 3x DPR phone would otherwise render an 820*3
+  // canvas every frame; 1.5x stays crisp at the small CSS size.
+  const isVertical = window.innerHeight > window.innerWidth
+  shadowEnabled = !isVertical
+  const devicePixelRatio = isVertical ? Math.min(window.devicePixelRatio || 1, 1.5) : (window.devicePixelRatio || 1)
   canvas.width = CANVAS_WIDTH * devicePixelRatio
   canvas.height = CANVAS_HEIGHT * devicePixelRatio
   renderingContext?.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
@@ -801,10 +956,18 @@ export function initializePerkCrystalCanvas(
 
 export function showPerkCrystal(delaySeconds = 0) {
   const now = performance.now()
-  const revealAt = now + delaySeconds * 1000
-  startRevealLeg('in', now, revealAt)
-  armPopSpring(outerPopSpring, revealAt)
-  armPopSpring(innerPopSpring, revealAt + INNER_POP_ACTIVATE_DELAY_MS)
+  const startAt = now + delaySeconds * 1000
+  // Enter is a per-vertex build, not a whole-crystal grow: hold reveal at full
+  // (anchor 1) so the build alone governs how each point and edge appears. The
+  // reveal machinery is still used on leave to collapse the finished crystal.
+  revealDirection = 'in'
+  revealAnchorValue = 1
+  revealAnchorTime = startAt
+  revealStartTime = startAt
+  buildOuterStart = startAt
+  buildInnerStart = startAt + INNER_BUILD_DELAY_MS
+  primePopSpring(outerPopSpring)
+  primePopSpring(innerPopSpring)
   ensureLoopRunning()
 }
 
@@ -822,6 +985,7 @@ export function setPerkCrystalCategory(category: PerkGraphNode | null) {
   activeCategory = category
   selectedSkill = null
   crystalState = category ? 'active' : 'idle'
+  tetherState.clear()
   const now = performance.now()
   if (!category) {
     setShellColor(CRYSTAL_COLOR, now)
