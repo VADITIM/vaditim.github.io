@@ -24,7 +24,6 @@
     </template>
 
     <template v-else>
-      <StartSection v-if="showLoadingPage" />
       <div
         v-for="(section, i) in SECTIONS"
         :key="section.id"
@@ -82,10 +81,13 @@
     document.documentElement.style.setProperty('--section-color', SECTIONS[current]?.color ?? LOADING_COLOR);
   });
 
-  // Debug: skip the loading intro so vertical-layout iteration doesn't replay it
-  // every reload. DEV-only; production always shows the intro. Flip to false to
-  // see the intro while developing.
-  const SKIP_LOADING_PAGE = import.meta.env.DEV;
+  // The loading intro and the slice backgrounds are horizontal-only. Skipping is
+  // gated purely on orientation: the vertical layout has no loading page, so
+  // `finished` is set immediately and its sections initialise straight away. The
+  // horizontal layout always plays the intro, which is what flips `finished` and
+  // in turn starts the slice-background animations (see Section-Cover-Slice) — so
+  // this must NOT be short-circuited in DEV, or the backgrounds never arrive.
+  const SKIP_LOADING_PAGE = isVertical.value;
   if (SKIP_LOADING_PAGE) finished.value = true;
 
   const container = ref<HTMLElement | null>(null);
