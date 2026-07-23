@@ -1,6 +1,6 @@
 <template>
 	<div v-if="isVisible" class="hardware-acceleration-notice">
-		<ModuleDisplay ref="panelRef" class="han-panel" accent="#DC143C">
+		<Module ref="panelRef" class="han-panel" accent="#DC143C">
 			<template #label>NOTICE</template>
 			<div class="han-content">
 				<div class="han-header">Hardware Acceleration Required</div>
@@ -15,7 +15,7 @@
 				</div>
 				<div class="han-hint">You can change this later in the settings.</div>
 			</div>
-		</ModuleDisplay>
+		</Module>
 	</div>
 </template>
 
@@ -25,10 +25,10 @@
 	import { gsap } from 'gsap';
 	import { hardwareNoticeActive as isVisible } from '@modules/miscHardwareNotice';
 	import { hasChosenAnimationMode, setAnimationMode, type AnimationMode } from '@modules/miscAnimationMode';
-	import ModuleDisplay from '@components/Misc/Module-Display.vue';
+	import Module from '@components/Misc/Module.vue';
 	import MagneticButton from '@components/Misc/Magnetic-Button.vue';
 
-	const panelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null);
+	const panelRef = ref<InstanceType<typeof Module> | null>(null);
 
 	// Reload rather than flip live: animation handlers read the mode as they
 	// register, which has already happened for anything mounted behind the notice.

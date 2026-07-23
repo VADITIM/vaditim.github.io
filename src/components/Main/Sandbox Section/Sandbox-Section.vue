@@ -21,16 +21,16 @@
     <div class="sb-grid">
 
       <!-- WINDOW 1 · magnetic button -->
-      <ModuleDisplay caption="how big can you get it?">
+      <Module caption="how big can you get it?">
         <template #label>01 · MAGNETIC IMPACT</template>
         <div class="sb-win-body">
           <div ref="magCountRef" class="mi-mag-count">{{ magClicks }}</div>
           <MagneticButton ref="magBtnCompRef" class="mi-mag-btn-wrap" :zone="60" :strength="0.4" @click="onHitMeClick">HIT ME!</MagneticButton>
         </div>
-      </ModuleDisplay>
+      </Module>
 
       <!-- WINDOW 2 · hover-focus list -->
-      <ModuleDisplay>
+      <Module>
         <template #label>02 · HOVER - FOCUS - LIST</template>
         <div class="sb-win-body sb-list-body">
           <div
@@ -43,20 +43,20 @@
             <div class="mi-ul"></div>
           </div>
         </div>
-      </ModuleDisplay>
+      </Module>
 
       <!-- WINDOW 3 · zero-g space -->
-      <ModuleDisplay label-over caption="hold and release a force!">
+      <Module label-over caption="hold and release a force!">
         <template #label>03 · SPACE</template>
         <div ref="gravRef" class="sb-grav"></div>
         <div class="sb-grav-controls">
           <MagneticButton type="button" class="sb-grav-btn-wrap" :zone="10" :strength="0.3" @click="addParticle">+</MagneticButton>
           <MagneticButton type="button" class="sb-grav-btn-wrap" :zone="10" :strength="0.3" @click="removeParticle">−</MagneticButton>
         </div>
-      </ModuleDisplay>
+      </Module>
 
       <!-- WINDOW 4 · tilt parallax -->
-      <ModuleDisplay label-over>
+      <Module label-over>
         <template #label>04 · PARALLAX TILT</template>
         <div ref="tiltWrapRef" class="sb-tilt-wrap">
           <div ref="tiltRef" class="sb-tilt">
@@ -70,7 +70,7 @@
             <div class="sb-tilt-name">SCAN ME?</div>
           </div>
         </div>
-      </ModuleDisplay>
+      </Module>
 
     </div>
   </div>
@@ -83,7 +83,7 @@
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
-  import ModuleDisplay from '@components/Misc/Module-Display.vue'
+  import Module from '@components/Misc/Module.vue'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import { isClassifiedUnlocked } from '@modules/sectionsClassifiedUnlock'
   import { unlockQrDataUrl } from '@modules/classifiedUnlockSession'
@@ -749,7 +749,7 @@
     // from wherever they currently sit.
     glyphsReleased = false
     const eyebrow = eyebrowRef.value
-    const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
+    const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module')) : []
     gsap.killTweensOf([eyebrow, ...windows, ...glyphs.map((glyph) => glyph.element)])
 
     if (isLiteMode.value) {
@@ -770,7 +770,7 @@
   // ── enter reveal (adapted from the design's playMicro) ──
   function playReveal() {
     const eyebrow = eyebrowRef.value
-    const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module-display')) : []
+    const windows = rootRef.value ? Array.from(rootRef.value.querySelectorAll<HTMLElement>('.module')) : []
     const items = listItemRefs.value
     const button = magBtnCompRef.value?.element ?? null
     const chars = glyphs.map((glyph) => glyph.element)

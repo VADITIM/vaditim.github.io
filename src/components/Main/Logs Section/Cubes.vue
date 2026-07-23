@@ -4,7 +4,7 @@
     <!-- Cubes, centered -->
     <div class="pc-stage">
       <div class="pc-row">
-        <ModuleDisplay v-for="(cube, ci) in cubes" :key="'cube-' + ci" class="pc-cell" :accent="cube.color">
+        <Module v-for="(cube, ci) in cubes" :key="'cube-' + ci" class="pc-cell" :accent="cube.color">
           <template #label>{{ String(ci + 1).padStart(2, '0') }} · {{ cube.name }}</template>
           <div class="pc-body">
             <div class="pc-scene">
@@ -24,7 +24,7 @@
               </div>
             </div>
           </div>
-        </ModuleDisplay>
+        </Module>
       </div>
     </div>
   </div>
@@ -38,7 +38,7 @@
   import { currentSection } from '@modules/sectionsCore';
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition';
   import { hideLabels, playLabelReveals, playLabelLeave } from '@modules/miscLabelReveal';
-  import ModuleDisplay from '@components/Misc/Module-Display.vue';
+  import Module from '@components/Misc/Module.vue';
   import { prefersReducedMotion } from '@modules/miscReducedMotion';
   import { isLiteMode } from '@modules/miscAnimationMode';
   import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback';
@@ -250,7 +250,7 @@
   // Boxes reveal first (same choreography as the Sandbox module windows), then
   // the cubes build on top of them once they've landed.
   function playAll() {
-    const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module-display')) : [];
+    const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module')) : [];
     gsap.killTweensOf(boxes);
 
     // Lite: the boxes still arrive, but the cubes are simply there rather than
@@ -330,7 +330,7 @@
   // the whole box slides down off screen and fades, carrying the cube with it.
   // No separate per-face fly-out on leave (that's an enter-only flourish now).
   function playLeave() {
-    const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module-display')) : [];
+    const boxes = root.value ? Array.from(root.value.querySelectorAll<HTMLElement>('.module')) : [];
     gsap.killTweensOf(boxes);
     if (isLiteMode.value) playLiteLeave(boxes);
     else gsap.to(boxes, { y: '60vh', opacity: 0, duration: 0.22, stagger: 0.035, ease: 'power3.in', overwrite: 'auto' });
@@ -385,7 +385,7 @@
     flex-wrap: wrap;
   }
 
-  // Overrides the base .module-display: a fixed 1:1 square (border-box, so padding
+  // Overrides the base .module: a fixed 1:1 square (border-box, so padding
   // can't skew the ratio), enlarged to properly contain the bigger cube. The
   // module label keeps its own predetermined top-left position regardless.
   .pc-cell {

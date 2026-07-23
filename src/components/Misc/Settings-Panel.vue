@@ -1,5 +1,6 @@
 <template>
   <button
+    ref="buttonRef"
     type="button"
     class="settings-button"
     :class="{ 'settings-button--open': isOpen }"
@@ -15,7 +16,7 @@
   </button>
 
   <div v-if="isOpen" ref="backdropRef" class="settings-backdrop" @click.self="closeSettings">
-    <ModuleDisplay ref="panelRef" class="settings-panel" accent="#8a8a8a" static-visible>
+    <Module ref="panelRef" class="settings-panel" accent="#8a8a8a" static-visible>
       <template #label>SETTINGS</template>
       <div class="settings-content">
         <div class="settings-row">
@@ -40,16 +41,19 @@
 
         <button type="button" class="settings-save" @click="saveAndClose">SAVE &amp; CLOSE</button>
       </div>
-    </ModuleDisplay>
+    </Module>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { nextTick, onBeforeUnmount, ref } from 'vue'
+  import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
   import { gsap } from 'gsap'
 
-  import ModuleDisplay from '@components/Misc/Module-Display.vue'
+  import Module from '@components/Misc/Module.vue'
   import { animationMode, setAnimationMode, type AnimationMode } from '@modules/miscAnimationMode'
+
+  // Hidden until the loading page hands off, then popped in from its fixed spot.
+  const props = defineProps<{ revealed: boolean }>()
 
   const MODE_OPTIONS: { mode: AnimationMode; label: string }[] = [
     { mode: 'full', label: 'RECOMMENDED' },
@@ -60,7 +64,22 @@
   // Edited freely while open; only committed by SAVE & CLOSE, so clicking the
   // backdrop discards rather than half-applies a mode change.
   const draftMode = ref<AnimationMode>(animationMode.value)
-  const panelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
+  const panelRef = ref<InstanceType<typeof Module> | null>(null)
+  const buttonRef = ref<HTMLButtonElement | null>(null)
+
+  watch(
+    () => props.revealed,
+    (isRevealed) => {
+      const button = buttonRef.value
+      if (!isRevealed || !button) return
+      gsap.fromTo(
+        button,
+        { opacity: 0, scale: 0 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(2.2)' },
+      )
+    },
+    { immediate: true, flush: 'post' },
+  )
 
   function openSettings() {
     draftMode.value = animationMode.value
@@ -119,6 +138,7 @@
     border-radius: 10px;
     color: #6a6a6a;
     cursor: pointer;
+    opacity: 0;   // revealed by the GSAP pop-in once loading finishes
     transition: color 0.25s ease, border-color 0.25s ease;
 
     &:hover,

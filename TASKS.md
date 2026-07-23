@@ -260,7 +260,7 @@ Needs a shared helper (e.g. a `prefersReducedMotion` ref/matchMedia listener in 
 
 ### Perks Section overhaul — DONE
 
-Implemented from the `Perks Section.dc.html` Claude Design prototype (project "Portfolio design system setup"). Superseded the original plan, which called for an Obsidian-style node graph with one Module-Display per perk in a vertical grid — the section now uses the **PERK-CRYSTAL** showpiece instead, and the perks carry **no module chrome** of their own.
+Implemented from the `Perks Section.dc.html` Claude Design prototype (project "Portfolio design system setup"). Superseded the original plan, which called for an Obsidian-style node graph with one Module per perk in a vertical grid — the section now uses the **PERK-CRYSTAL** showpiece instead, and the perks carry **no module chrome** of their own.
 
 Current shape:
 - Left half: a canvas wireframe icosahedron (`miscPerkCrystalCanvas.ts`) — draggable via world-space quaternions like the Logs cubes, with a glowing nucleus, orbiting spark ring, and a counter-rotating inner shell. Deliberately a gem, not a box, so it reads as a sibling of the Logs cubes rather than a copy.
@@ -282,8 +282,8 @@ Both shipped (2026-07-22) — they were already in the tree when the backlog was
 
 All cleared 2026-07-22:
 
-- ~~Projects section: Module-Displays in Module-Display-Projects are not parallax.~~ `ModuleDisplay`'s base `overflow: hidden` forces `transform-style` back to `flat`, which was collapsing every nested `translateZ`. `.proj-card-module` now opts out, and `.module-display-content` carries `preserve-3d` so the 3D chain is unbroken from card to nested module.
-- ~~Projects section: Module-Display border hover should be the section main color.~~ `--accent` now defaults to `var(--section-color)` (App.vue keeps that pointed at the active section) instead of a hardcoded green, so nested modules that pass no `accent` stop glowing green inside a red section; the border picks it up on hover.
+- ~~Projects section: Modules in Module-Projects are not parallax.~~ `Module`'s base `overflow: hidden` forces `transform-style` back to `flat`, which was collapsing every nested `translateZ`. `.proj-card-module` now opts out, and `.module-content` carries `preserve-3d` so the 3D chain is unbroken from card to nested module.
+- ~~Projects section: Module border hover should be the section main color.~~ `--accent` now defaults to `var(--section-color)` (App.vue keeps that pointed at the active section) instead of a hardcoded green, so nested modules that pass no `accent` stop glowing green inside a red section; the border picks it up on hover.
 - ~~Projects section: Project-Name doesn't play its leave animation before showing new content.~~ Already resolved by the `labelRequestToken` sequencing in `centerOn` — the fan moves immediately, the labels run leave → swap → enter as one strict cycle, and a superseded cycle bails instead of queueing. Verified, no change needed.
 - ~~Landing page & Section-Cover-Slices should not use border-radius.~~ Root cause was the global `*, *::before, *::after { border-radius: var(--squircle) }` in `style.scss`, not any local rule; both now opt out explicitly. The mobile-only `30px` corners on the slices were dropped too.
 - ~~Landing page greeting timing.~~ `hold` 0.5s → 1s and `gap` 0.175s → 0.35s in `PlayEnterAnimation`. The copy still reads "Enjoy your experience!" rather than "Explore your experience" — that looked like a paraphrase in the issue, not a requested copy change; say the word and it flips.
@@ -293,7 +293,7 @@ All cleared 2026-07-22:
 Swept 2026-07-22. A codemod expanded `btn` / `el` / `els` / `evt` / `idx` / `tl` / `prev` / `ctx` /
 `dur` across 20 files (word-bounded so hyphenated CSS class names like `.sandbox-tl` and `.mag-btn`
 were never touched), then single-letter locals were expanded by hand in every module and in
-Navigator, Magnetic-Dots, Magnetic-Button, Module-Display, Cubes, Projects-Section,
+Navigator, Magnetic-Dots, Magnetic-Button, Module, Cubes, Projects-Section,
 Project-Detail-Window and Sandbox-Section. Typecheck and build clean after each pass.
 
 Deliberately kept: vector components in the physics and canvas maths (`dx`/`dy`, `nx`/`ny`, `x`/`y`)

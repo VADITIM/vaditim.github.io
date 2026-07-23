@@ -15,28 +15,22 @@
     <div class="ex-grid">
 
       <!-- LEFT · comments (live, backed by the comments API) -->
-      <ModuleDisplay ref="commentsPanelRef" accent="#f09b3a" class="ex-comments" caption="one message per visitor · stored for everyone">
+      <Module ref="commentsPanelRef" accent="#f09b3a" class="ex-comments" caption="one message per visitor · stored for everyone" info-title="HOW ONE-PER-VISITOR WORKS">
         <template #label>01 · COMMENTS</template>
 
-        <div class="ex-info" tabindex="0" role="note" aria-label="How the guestbook identifies you">
-          <span class="ex-info-mark" aria-hidden="true">i</span>
-          <div class="ex-info-card">
-            <div class="ex-info-title">HOW ONE-PER-VISITOR WORKS</div>
-            <p class="ex-info-text">
-              A single request resolves your session, so your comment, your rating and the
-              classified unlock can never disagree about who you are.
-            </p>
-            <p class="ex-info-text">
-              You are recognised by a cookie first. If it is gone, a fingerprint built from your
-              GPU, screen, timezone and locale finds you again — and a coarser one, paired with a
-              hashed IP, still matches you across browsers on the same machine.
-            </p>
-            <p class="ex-info-text">
-              Your message is stored against that identity, so sending again edits the one you
-              already left instead of adding a second. It deters double-posting; it is not a login.
-            </p>
-          </div>
-        </div>
+        <template #info>
+          <p>
+            A single request resolves your session. No Log In, no personal data.
+          </p>
+          <p>
+            You are recognised by a cookie first. If it is gone, a fingerprint built from your
+            GPU, screen, timezone and locale finds you again, paired with a
+            hashed IP, still matches you across browsers on the same machine.
+          </p>
+          <p>
+            This further allows to enforce unique data interaction per visitor, required for other features on this App.
+          </p>
+        </template>
 
         <TransitionGroup
           tag="div"
@@ -90,10 +84,10 @@
           >{{ commentActionLabel }}</MagneticButton>
         </div>
         <div v-if="submitFeedback" class="ex-submit-feedback">{{ submitFeedback }}</div>
-      </ModuleDisplay>
+      </Module>
 
       <!-- MIDDLE · rating (vertical star column, fills bottom-up) -->
-      <ModuleDisplay ref="ratingPanelRef" accent="#f09b3a" class="ex-rating" caption="one rating per visitor">
+      <Module ref="ratingPanelRef" accent="#f09b3a" class="ex-rating" caption="one rating per visitor">
         <template #label>02 · RATING</template>
 
         <svg class="ex-star-defs" aria-hidden="true" focusable="false">
@@ -106,11 +100,13 @@
           </defs>
         </svg>
 
-        <div class="ex-rating-score">
-          <span class="ex-rating-score-value">{{ averageDisplay }}</span>
-          <span class="ex-rating-score-unit">/ 5</span>
+        <div class="ex-rating-readout">
+          <div class="ex-rating-score">
+            <span class="ex-rating-score-value">{{ averageDisplay }}</span>
+            <span class="ex-rating-score-unit">/ 5</span>
+          </div>
+          <div class="ex-rating-votes">{{ voteCountLabel }}</div>
         </div>
-        <div class="ex-rating-votes">{{ voteCountLabel }}</div>
 
         <div class="ex-rating-stars" @mouseleave="hoveredRating = 0">
           <button
@@ -128,15 +124,15 @@
             <svg class="ex-star-glyph" viewBox="0 0 24 24" aria-hidden="true"><path :d="STAR_PATH" /></svg>
           </button>
         </div>
-      </ModuleDisplay>
+      </Module>
 
       <!-- RIGHT · contacts (existing container, repositioned into the panel) -->
-      <ModuleDisplay ref="contactPanelRef" accent="#f09b3a" class="ex-contact">
+      <Module ref="contactPanelRef" accent="#f09b3a" class="ex-contact">
         <template #label>03 · CONTACT</template>
         <div class="ex-contact-host">
           <LogsContact />
         </div>
-      </ModuleDisplay>
+      </Module>
 
     </div>
 
@@ -163,7 +159,7 @@
   import { isLiteMode } from '@modules/miscAnimationMode'
   import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback'
   import LabelSet from '@components/Misc/Label-Set.vue'
-  import ModuleDisplay from '@components/Misc/Module-Display.vue'
+  import Module from '@components/Misc/Module.vue'
   import MagneticButton from '@components/Misc/Magnetic-Button.vue'
   import LogsContact from '@components/Main/Logs Section/Contact.vue'
   import LegalSheet from '@components/Misc/Legal-Sheet.vue'
@@ -178,9 +174,9 @@
 
   const CURRENT_YEAR = new Date().getFullYear()
 
-  // Rendered top-down, so the highest score sits at the top of the column and
-  // the fill grows upwards as the visitor picks a higher rating.
-  const RATING_VALUES = [5, 4, 3, 2, 1]
+  // Rendered left-to-right, so the row fills rightward as the visitor picks a
+  // higher rating.
+  const RATING_VALUES = [1, 2, 3, 4, 5]
   const STAR_PATH = 'M12 2.2 14.95 8.65 22 9.55 16.8 14.4 18.15 21.4 12 17.9 5.85 21.4 7.2 14.4 2 9.55 9.05 8.65Z'
 
   const draftName = ref('')
@@ -271,9 +267,9 @@
 
   const rootRef = ref<HTMLElement | null>(null)
   const eyebrowRef = ref<HTMLElement | null>(null)
-  const commentsPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
-  const ratingPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
-  const contactPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
+  const commentsPanelRef = ref<InstanceType<typeof Module> | null>(null)
+  const ratingPanelRef = ref<InstanceType<typeof Module> | null>(null)
+  const contactPanelRef = ref<InstanceType<typeof Module> | null>(null)
   const sheetRef = ref<InstanceType<typeof LegalSheet> | null>(null)
   const isLegalOpen = ref(false)
 
@@ -384,89 +380,26 @@
     bottom: 12%;
     padding: 0 5%;
     display: grid;
-    grid-template-columns: 2fr .5fr 1fr;
+    // 3×3: comments fills the left 2 columns across all rows; contact takes the
+    // right column's top two rows; rating takes the right column's bottom cell.
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-areas:
+      "comments comments contact"
+      "comments comments contact"
+      "comments comments rating";
     gap: 18px;
 
     @include allMobile {
       grid-template-columns: 1fr;
       grid-template-rows: 1.2fr 0.8fr 1fr;
+      grid-template-areas: none;
     }
   }
 
-  // ── comments skeleton ──
-  // Sits in the panel's top-right corner, opposite ModuleDisplay's own label.
-  // The card opens downward and stays inside the panel, which clips overflow.
-  .ex-info {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    z-index: 6;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #3a3a3a;
-    border-radius: 50%;
-    color: #6a6a6a;
-    cursor: help;
-    transition: color 0.2s, border-color 0.2s;
-
-    &:hover,
-    &:focus-visible {
-      color: var(--accent);
-      border-color: var(--accent);
-      outline: none;
-    }
-  }
-
-  .ex-info-mark {
-    font-family: 'Mono';
-    font-size: 11px;
-    line-height: 1;
-  }
-
-  .ex-info-card {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(300px, 70vw);
-    padding: 12px 14px;
-    background: #141414;
-    border: 1px solid #2c2c2c;
-    border-radius: 8px;
-    opacity: 0;
-    transform: translateY(-6px);
-    pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .ex-info:hover .ex-info-card,
-  .ex-info:focus-visible .ex-info-card {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .ex-info-title {
-    margin-bottom: 8px;
-    font-family: 'Audiowide';
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--accent);
-  }
-
-  .ex-info-text {
-    margin: 0 0 8px;
-    font-family: 'Mono';
-    font-size: 10px;
-    line-height: 1.6;
-    color: #8a8a8a;
-    text-align: left;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
+  .ex-comments { grid-area: comments; }
+  .ex-contact { grid-area: contact; }
+  .ex-rating { grid-area: rating; }
 
   .ex-comment-list {
     flex: 1;
@@ -634,23 +567,37 @@
     height: 0;
   }
 
+  // Horizontal bottom bar: the readout sits at the left, the star row fills the
+  // rest.
+  .ex-rating :deep(.module-content) {
+    flex-direction: row;
+    align-items: center;
+    gap: 0%;
+  }
+
+  .ex-rating-readout {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
   .ex-rating-score {
     display: flex;
     align-items: baseline;
     justify-content: center;
-    gap: 6px;
+    gap: 6px; 
   }
 
   .ex-rating-score-value {
     font-family: 'Audiowide';
-    font-size: 2rem;
+    font-size: 1.7rem;
     letter-spacing: 2px;
     color: #f09b3a;
   }
 
   .ex-rating-score-unit {
     font-family: 'Mono';
-    font-size: 11px;
+    font-size: 15px;
     color: #4a4a4a;
   }
 
@@ -658,16 +605,16 @@
     margin-top: 4px;
     text-align: center;
     font-family: 'Mono';
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 2px;
     color: #6a6a6a;
   }
 
   .ex-rating-stars {
     flex: 1;
-    min-height: 0;
+    min-width: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     gap: 4px;

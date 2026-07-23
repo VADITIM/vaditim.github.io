@@ -18,7 +18,7 @@
              backgrounds still carry the transition. -->
         <SectionTransition v-if="!isLiteMode" />
         <Navigator />
-        <SettingsPanel />
+        <SettingsPanel :revealed="!showLoadingPage" />
         <ClassifiedUnlockPopup />
       </template>
     </template>

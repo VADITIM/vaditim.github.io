@@ -18,7 +18,7 @@ import { prefersReducedMotion } from './miscReducedMotion'
 // shell — that margin, not any CSS gap, was what read as space between the
 // category labels and the crystal.
 const CANVAS_WIDTH = 820
-const CANVAS_HEIGHT = 684
+const CANVAS_HEIGHT = 820
 const CRYSTAL_RADIUS = 195
 const PERSPECTIVE = 390
 const INNER_SHELL_SCALE = 0.45
@@ -29,12 +29,18 @@ const SPARK_COUNT = 14
 // Satellite ring, as multiples of the crystal radius. Kept fairly round rather
 // than wide so an outward-facing skill label still has horizontal room before
 // it reaches the canvas edge.
-const SATELLITE_RING_X = 1.02
-const SATELLITE_RING_Y = 0.96
+const SATELLITE_RING_X = 1.22
+const SATELLITE_RING_Y = 1.22
 const SATELLITE_LABEL_GAP = 6
 const SATELLITE_LABEL_VERTICAL_GAP = 18
 const LABEL_EDGE_PADDING = 8
 const SATELLITE_LABEL_FONT = '15px Mono, monospace'
+// A few skill labels carry more weight than a one-word tag; these render larger
+// and sit a touch further from their node (the tether line is unaffected — it
+// still runs vertex → node). Add names here to emphasise them.
+const EMPHASIZED_LABELS = new Set(['Vivid Motions', 'Seemless Navigation'])
+const SATELLITE_LABEL_FONT_LARGE = '19px Mono, monospace'
+const EMPHASIZED_LABEL_EXTRA_GAP = 9
 // Slow ring drift: enough that the constellation is alive, slow enough that a
 // label the cursor is reaching for doesn't crawl out from under it.
 const SATELLITE_RING_DRIFT = 0.00008
@@ -90,8 +96,15 @@ const MAGNETIC_STRENGTH = 0.7
 const IDLE_VELOCITY_X = 0.03
 const IDLE_VELOCITY_Y = 0.09
 const IDLE_SETTLE_RATE = 0.045
-const CATEGORY_SPIN_KICK_X = -1.2
+const CATEGORY_SPIN_KICK_X = 1.2
 const CATEGORY_SPIN_KICK_Y = 3
+
+// ── idle edge flicker ──
+// A rare single-edge flash — reads as a new connection lighting up between two
+// node points. Idle state only; the active state's own motion covers it.
+const FLICKER_MIN_INTERVAL_MS = 2500
+const FLICKER_MAX_INTERVAL_MS = 7000
+const FLICKER_DURATION_MS = 550
 
 // Reduced motion parks the base rotation at zero: the crystal still renders and
 // still turns under the pointer, it just stops spinning of its own accord.
@@ -115,10 +128,23 @@ let onSkillClick: ((name: string) => void) | null = null
 const listeners: Array<() => void> = []
 
 // ── crystal state ──
+// 'idle': no category selected — slow spin plus the rare edge flicker.
+// 'active': a category is selected — satellites out, no flicker.
+// Dragging overrides motion in either state without being a state of its own.
+type CrystalState = 'idle' | 'active'
+let crystalState: CrystalState = 'idle'
 let orientation: Quaternion = { w: 1, x: 0, y: 0, z: 0 }
 let angularVelocityX = idleSpinX()
 let angularVelocityY = idleSpinY()
+// The idle spin keeps its fixed speed but adopts the direction of the last
+// push — a drag or a category kick — instead of always drifting the same way.
+let idleSignX = 1
+let idleSignY = 1
 let isDragging = false
+// Idle edge flicker (see FLICKER_* above).
+let flickerEdgeIndex = -1
+let flickerStartTime = 0
+let nextFlickerAt = 0
 let sparks: Spark[] = []
 let shellColor = CRYSTAL_COLOR
 let flashUntil = 0
@@ -376,8 +402,8 @@ function drawFrame(now: number) {
       quaternionFromAxis(0, 1, 0, angularVelocityY),
       multiplyQuaternions(quaternionFromAxis(1, 0, 0, angularVelocityX), orientation),
     ))
-    angularVelocityX += (idleSpinX() - angularVelocityX) * IDLE_SETTLE_RATE
-    angularVelocityY += (idleSpinY() - angularVelocityY) * IDLE_SETTLE_RATE
+    angularVelocityX += (idleSpinX() * idleSignX - angularVelocityX) * IDLE_SETTLE_RATE
+    angularVelocityY += (idleSpinY() * idleSignY - angularVelocityY) * IDLE_SETTLE_RATE
   }
 
   const bob = Math.sin(now / 900) * BOB_AMPLITUDE
@@ -436,6 +462,8 @@ function drawFrame(now: number) {
   context.shadowBlur = 0
   context.globalAlpha = 1
 
+  drawIdleFlicker(context, now, projected)
+
   for (const vertex of projected) {
     const depthFade = 0.3 + 0.7 * ((vertex.depth + 1) / 2)
     context.globalAlpha = depthFade
@@ -481,6 +509,45 @@ function drawFrame(now: number) {
   drawSatellites(context, now, centerX, centerY, bob, radius, projected)
 }
 
+// Idle-only: every few seconds one random edge flashes white-hot and fades,
+// with its two endpoint vertices lighting up — a new connection being saved
+// into the node points the crystal's lines meet at.
+function drawIdleFlicker(context: CanvasRenderingContext2D, now: number, projected: ProjectedVertex[]) {
+  if (crystalState !== 'idle' || prefersReducedMotion.value) return
+
+  if (now >= nextFlickerAt) {
+    flickerEdgeIndex = Math.floor(Math.random() * edges.length)
+    flickerStartTime = now
+    nextFlickerAt = now + FLICKER_MIN_INTERVAL_MS + Math.random() * (FLICKER_MAX_INTERVAL_MS - FLICKER_MIN_INTERVAL_MS)
+  }
+
+  const progress = (now - flickerStartTime) / FLICKER_DURATION_MS
+  if (flickerEdgeIndex < 0 || progress >= 1) return
+
+  // Sharp attack, long decay — a spark, not a pulse.
+  const envelope = progress < 0.15 ? progress / 0.15 : 1 - (progress - 0.15) / 0.85
+  const [first, second] = edges[flickerEdgeIndex]
+
+  context.globalAlpha = envelope
+  context.strokeStyle = '#fff'
+  context.lineWidth = 1.6
+  context.shadowColor = shellColor
+  context.shadowBlur = 18 * envelope
+  context.beginPath()
+  context.moveTo(projected[first].x, projected[first].y)
+  context.lineTo(projected[second].x, projected[second].y)
+  context.stroke()
+
+  context.fillStyle = '#fff'
+  for (const vertexIndex of [first, second]) {
+    context.beginPath()
+    context.arc(projected[vertexIndex].x, projected[vertexIndex].y, 3 + 2 * envelope, 0, Math.PI * 2)
+    context.fill()
+  }
+  context.shadowBlur = 0
+  context.globalAlpha = 1
+}
+
 // The selected category's skills unfold as labelled nodes ringing the crystal,
 // each tethered by a dashed line to whichever shell vertex it sits nearest.
 function drawSatellites(
@@ -497,7 +564,6 @@ function drawSatellites(
 
   const unfold = easeOutCubic(clamp01((now - unfoldStartTime) / UNFOLD_DURATION_MS))
   const skills = activeCategory.children
-  context.font = SATELLITE_LABEL_FONT
 
   skills.forEach((name, index) => {
     const angle = -Math.PI / 2 + (index / skills.length) * Math.PI * 2 + now * SATELLITE_RING_DRIFT
@@ -559,15 +625,19 @@ function drawSatellites(
     // makes the label jump the instant a drifting node crosses a threshold, and
     // each bucket clamped against the canvas edge differently, so the jump was
     // several times the text width. Everything below is continuous in `angle`.
+    const isEmphasized = EMPHASIZED_LABELS.has(name)
+    context.font = isEmphasized ? SATELLITE_LABEL_FONT_LARGE : SATELLITE_LABEL_FONT
+    const extraGap = isEmphasized ? EMPHASIZED_LABEL_EXTRA_GAP : 0
+
     context.textAlign = 'left'
     context.fillStyle = isHot ? '#fff' : `${activeCategory!.color}dd`
     const label = name.toUpperCase()
     const labelWidth = context.measureText(label).width
     // -1 → label sits fully left of the node, 0 → centred on it, 1 → fully right.
     const horizontalBias = Math.cos(angle)
-    const labelY = satelliteY + 5 + Math.sin(angle) * SATELLITE_LABEL_VERTICAL_GAP
+    const labelY = satelliteY + 5 + Math.sin(angle) * (SATELLITE_LABEL_VERTICAL_GAP + extraGap)
     const labelX = clampNumber(
-      satelliteX + horizontalBias * (SATELLITE_LABEL_GAP + labelWidth / 2) - labelWidth / 2,
+      satelliteX + horizontalBias * (SATELLITE_LABEL_GAP + extraGap + labelWidth / 2) - labelWidth / 2,
       LABEL_EDGE_PADDING,
       CANVAS_WIDTH - labelWidth - LABEL_EDGE_PADDING,
     )
@@ -632,6 +702,9 @@ export function initializePerkCrystalCanvas(
   armPopSpring(outerPopSpring, initNow)
   armPopSpring(innerPopSpring, initNow)
   lastFrameTime = 0
+  crystalState = 'idle'
+  flickerEdgeIndex = -1
+  nextFlickerAt = initNow + FLICKER_MIN_INTERVAL_MS
   sparks = Array.from({ length: SPARK_COUNT }, (_unused, index) => ({
     angle: (index / SPARK_COUNT) * Math.PI * 2,
     speed: 0.008 + Math.random() * 0.006,
@@ -658,6 +731,9 @@ export function initializePerkCrystalCanvas(
   }
   const handleUp = () => {
     isDragging = false
+    // The idle drift continues in whichever direction the drag pushed last.
+    if (angularVelocityX !== 0) idleSignX = Math.sign(angularVelocityX)
+    if (angularVelocityY !== 0) idleSignY = Math.sign(angularVelocityY)
     canvas.style.cursor = 'grab'
     window.removeEventListener('pointermove', handleMove)
     window.removeEventListener('pointerup', handleUp)
@@ -714,6 +790,7 @@ export function initializePerkCrystalCanvas(
     onSkillClick = null
     activeCategory = null
     selectedSkill = null
+    crystalState = 'idle'
     satellitePoints = []
     revealDirection = 'out'
     revealAnchorValue = 0
@@ -744,11 +821,14 @@ export function hidePerkCrystal() {
 export function setPerkCrystalCategory(category: PerkGraphNode | null) {
   activeCategory = category
   selectedSkill = null
+  crystalState = category ? 'active' : 'idle'
   const now = performance.now()
   if (!category) {
     setShellColor(CRYSTAL_COLOR, now)
     kickPopSpring(outerPopSpring)
     kickPopSpring(innerPopSpring)
+    // Never fire a flicker the instant the satellites collapse.
+    nextFlickerAt = now + FLICKER_MIN_INTERVAL_MS
     return
   }
   unfoldStartTime = now
@@ -756,8 +836,11 @@ export function setPerkCrystalCategory(category: PerkGraphNode | null) {
   kickPopSpring(outerPopSpring)
   kickPopSpring(innerPopSpring)
   flashUntil = now + CATEGORY_FLASH_DURATION_MS
-  angularVelocityY = CATEGORY_SPIN_KICK_Y
-  angularVelocityX = CATEGORY_SPIN_KICK_X
+  // Random spin direction per kick; the idle drift then keeps that direction.
+  idleSignX = Math.random() < 0.5 ? -1 : 1
+  idleSignY = Math.random() < 0.5 ? -1 : 1
+  angularVelocityX = CATEGORY_SPIN_KICK_X * idleSignX
+  angularVelocityY = CATEGORY_SPIN_KICK_Y * idleSignY
   ensureLoopRunning()
 }
 

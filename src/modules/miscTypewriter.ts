@@ -132,6 +132,12 @@ export function playClear(handle: Handle, options?: TypewriterOptions): Promise<
   });
 }
 
+// Swap the target text without animating; the next type()/clear() uses it. Used
+// to retype a line into a different string (see Typewriter.vue retype()).
+export function setTypewriterText(handle: Handle, text: string) {
+  handle.full = text
+}
+
 // Snap to the hidden/empty state with no animation (cold mount / reset).
 export function resetTypewriter(handle: Handle) {
   handle.tween?.kill();

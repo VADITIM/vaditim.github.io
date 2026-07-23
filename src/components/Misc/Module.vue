@@ -2,15 +2,24 @@
   <!-- Reusable panel "window": a box/border frame with a label header,
        section-accent aware. Shared by Sandbox, Extra, and the Logs cubes -
        see CLAUDE.md Current Task 3. -->
-  <div ref="root" class="module-display" :style="[accent ? { '--accent': accent } : {}, staticVisible ? { opacity: 1 } : {}]">
-    <div class="module-display-hue"></div>
-    <div class="module-display-label" :class="{ 'module-display-label--over': labelOver }">
+  <div ref="root" class="module" :style="[accent ? { '--accent': accent } : {}, staticVisible ? { opacity: 1 } : {}]">
+    <div class="module-hue"></div>
+    <div class="module-label" :class="{ 'module-label--over': labelOver }">
       <slot name="label">{{ label }}</slot>
     </div>
-    <div class="module-display-content">
+    <!-- Optional info affordance: a small "i" in the top-right corner that reveals
+         a card on hover/focus. Rendered only when the `info` slot is provided. -->
+    <div v-if="$slots.info" class="module-info" tabindex="0" role="note" :aria-label="infoTitle || 'More information'">
+      <span class="module-info-mark" aria-hidden="true">i</span>
+      <div class="module-info-card">
+        <div v-if="infoTitle" class="module-info-title">{{ infoTitle }}</div>
+        <slot name="info" />
+      </div>
+    </div>
+    <div class="module-content">
       <slot />
     </div>
-    <div v-if="caption" class="module-display-caption">{{ caption }}</div>
+    <div v-if="caption" class="module-caption">{{ caption }}</div>
   </div>
 </template>
 
@@ -27,6 +36,7 @@
     staticVisible?: boolean; // skip the default opacity:0; use when content reveals itself internally rather than via a container-level enter tween
     caption?: string;       // optional hint line pinned to the bottom centre of the box
     animateHeight?: boolean; // smoothly tween the box height when its content's natural height changes (e.g. text re-wrapping) instead of snapping
+    infoTitle?: string;     // heading for the optional info card (also its aria-label); the card body comes from the `info` slot
   }>(), {
     label: '',
     accent: '',
@@ -34,6 +44,7 @@
     staticVisible: false,
     caption: '',
     animateHeight: true,
+    infoTitle: '',
   });
 
   const root = ref<HTMLElement | null>(null);
@@ -48,7 +59,7 @@
     const element = root.value;
     // The hue ring is hidden outright in lite mode (see style.scss), so tracking
     // the pointer for it would be per-move work for nothing.
-    const glow = isLiteMode.value ? null : element.querySelector<HTMLElement>('.module-display-hue');
+    const glow = isLiteMode.value ? null : element.querySelector<HTMLElement>('.module-hue');
     if (glow) {
       const onMove = (event: MouseEvent) => {
         const bounds = element.getBoundingClientRect();
@@ -103,7 +114,7 @@
 </script>
 
 <style scoped lang="scss">
-  .module-display {
+  .module {
     position: relative;
     z-index: 7;
     // Follows the section it is rendered in unless the consumer names a colour;
@@ -130,7 +141,7 @@
   // lights up on hover, but the gradient's final stop keeps everything past the
   // cursor's radius at a low hue so the pointer still has a bright hot spot.
   // `--mx` / `--my` are updated per-box from the pointer on mousemove.
-  .module-display-hue {
+  .module-hue {
     position: absolute;
     inset: 0;
     border-radius: inherit;
@@ -155,7 +166,7 @@
 
   // Predetermined top-left position; absolute so it never shifts when a
   // consumer overrides the box's own padding (e.g. Cubes.vue's `.pc-cell`).
-  .module-display-label {
+  .module-label {
     position: absolute;
     top: 0;
     left: 0;
@@ -173,7 +184,7 @@
     }
   }
 
-  .module-display-content {
+  .module-content {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -181,7 +192,7 @@
     padding: 44px 16px 16px;
   }
 
-  .module-display-caption {
+  .module-caption {
     position: absolute;
     bottom: 12px;
     left: 0;
@@ -193,5 +204,83 @@
     color: #4a4a4a;
     pointer-events: none;
     z-index: 4;
+  }
+
+  // ── optional info affordance ──
+  // Sits in the top-right corner, opposite the label. The card opens downward and
+  // stays inside the box, which clips overflow.
+  .module-info {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    z-index: 6;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #3a3a3a;
+    border-radius: 50%;
+    color: #6a6a6a;
+    cursor: help;
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--accent);
+      border-color: var(--accent);
+      outline: none;
+    }
+  }
+
+  .module-info-mark {
+    font-family: 'Mono';
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .module-info-card {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(500px, 900vw);
+    padding: 12px 14px;
+    background: #141414;
+    border: 1px solid #2c2c2c;
+    border-radius: 8px;
+    text-align: left;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .module-info:hover .module-info-card,
+  .module-info:focus-visible .module-info-card {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .module-info-title {
+    margin-bottom: 8px;
+    font-family: 'Audiowide';
+    font-size: 14px;
+    text-align: end;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  // Slotted body copy carries the consumer's scope, not this one; reach it with
+  // :deep so a plain <p> in the info slot picks up the shared card styling.
+  .module-info-card :deep(p) {
+    margin: 0 0 8px;
+    font-family: 'Mono';
+    font-size: 12px;
+    line-height: 1.6;
+    color: #8a8a8a;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 </style>

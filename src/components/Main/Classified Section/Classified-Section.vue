@@ -23,16 +23,16 @@
       </p>
     </div>
 
-    <ModuleDisplay ref="qrPanelRef" accent="#8a2be2" class="sc-qr-panel" caption="scan at your own risk">
+    <Module ref="qrPanelRef" accent="#8a2be2" class="sc-qr-panel" caption="scan at your own risk">
       <template #label>04 · ARCHIVE</template>
       <div class="sc-qr-body">
         <img :src="rickrollQr" alt="" class="sc-qr-image" />
       </div>
-    </ModuleDisplay>
+    </Module>
 
     <div class="sc-grid">
       <div class="sc-grid-left">
-        <ModuleDisplay ref="panelRef" accent="#8a2be2" class="sc-panel">
+        <Module ref="panelRef" accent="#8a2be2" class="sc-panel">
           <template #label>01 · CLASSIFIED</template>
           <div class="sc-body sc-log">
             <p class="sc-note">
@@ -47,20 +47,30 @@
               {{ isPurging ? 'PURGING…' : isPurgeArmed ? 'CONFIRM — THIS CANNOT BE UNDONE' : 'DELETE DATA' }}
             </button>
           </div>
-        </ModuleDisplay>
+        </Module>
 
-        <ModuleDisplay ref="pongPanelRef" accent="#8a2be2" class="sc-panel" caption="first to nothing. It never ends">
+        <Module ref="pongPanelRef" accent="#8a2be2" class="sc-panel" caption="first to nothing. It never ends">
           <template #label>02 · PONG</template>
           <PongGame ref="pongGameRef" />
-        </ModuleDisplay>
+        </Module>
       </div>
 
-      <ModuleDisplay ref="heatmapPanelRef" accent="#8a2be2" class="sc-panel sc-heatmap-panel" :animate-height="false" caption="one point per visitor, per 6 hours">
+      <Module ref="heatmapPanelRef" accent="#8a2be2" class="sc-panel sc-heatmap-panel" :animate-height="false" caption="one point per visitor, per 6 hours" info-title="HEATMAP INFO">
+        <template #info>
+          <p>
+            The heatmap shows the number of unique visitors to this App over the past year, grouped by day.
+            Each square represents a single day, and the colour intensity indicates how many visitors were recorded on that day.
+          </p>
+          <p>
+            The red square is launch day, and the green square is today. Hover over a square to see the exact date and visitor count.
+          </p>
+
+        </template>
         <template #label>03 · HEATMAP</template>
         <div class="sc-body sc-heatmap-body">
           <TrafficHeatmap />
         </div>
-      </ModuleDisplay>
+      </Module>
     </div>
 
   </div>
@@ -76,7 +86,7 @@
   import { isLiteMode } from '@modules/miscAnimationMode'
   import { playLiteEnter, playLiteLeave } from '@modules/animationLiteFallback'
   import LabelSet from '@components/Misc/Label-Set.vue'
-  import ModuleDisplay from '@components/Misc/Module-Display.vue'
+  import Module from '@components/Misc/Module.vue'
   import PongGame from './Pong-Game.vue'
   import TrafficHeatmap from './Traffic-Heatmap.vue'
   import { deleteAllVisitorData } from '@modules/visitorDataReset'
@@ -91,11 +101,11 @@
 
   const rootRef = ref<HTMLElement | null>(null)
   const eyebrowRef = ref<HTMLElement | null>(null)
-  const panelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
-  const pongPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
+  const panelRef = ref<InstanceType<typeof Module> | null>(null)
+  const pongPanelRef = ref<InstanceType<typeof Module> | null>(null)
   const pongGameRef = ref<InstanceType<typeof PongGame> | null>(null)
-  const heatmapPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
-  const qrPanelRef = ref<InstanceType<typeof ModuleDisplay> | null>(null)
+  const heatmapPanelRef = ref<InstanceType<typeof Module> | null>(null)
+  const qrPanelRef = ref<InstanceType<typeof Module> | null>(null)
   const lorePanelRef = ref<HTMLElement | null>(null)
 
   const classifiedIndex = getSectionIndexById('classified')
@@ -217,10 +227,10 @@
       eyebrowRef.value,
       lorePanelRef.value?.querySelector<HTMLElement>('.sc-lore-text'),
       panelEl?.querySelector<HTMLElement>('.sc-note'),
-      panelEl?.querySelector<HTMLElement>('.module-display-label'),
-      panelEl?.querySelector<HTMLElement>('.module-display-caption'),
-      qrElement?.querySelector<HTMLElement>('.module-display-label'),
-      qrElement?.querySelector<HTMLElement>('.module-display-caption'),
+      panelEl?.querySelector<HTMLElement>('.module-label'),
+      panelEl?.querySelector<HTMLElement>('.module-caption'),
+      qrElement?.querySelector<HTMLElement>('.module-label'),
+      qrElement?.querySelector<HTMLElement>('.module-caption'),
     ])
 
     stopSectionWatch = onSectionStatesChange((meta) => {
@@ -453,7 +463,7 @@
 </style>
 
 <!-- Non-scoped: `.sc-glitch-word` spans are created at runtime (and some live
-     inside ModuleDisplay's own DOM), so they carry no scope attribute and can't
+     inside Module's own DOM), so they carry no scope attribute and can't
      be reached by scoped rules. Per-word timing is randomised inline in JS. -->
 <style lang="scss">
   .sc-glitch-word {

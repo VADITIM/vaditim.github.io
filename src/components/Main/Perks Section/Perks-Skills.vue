@@ -5,26 +5,10 @@
        crystal, and clicking a node opens its detail panel underneath. The
        skills deliberately carry no module chrome of their own — the crystal is
        the frame. -->
-  <div ref="rootRef" class="perk-column">
+  <div class="perk-column">
     <div class="perk-body">
       <div ref="showpieceRef" class="perk-showpiece">
         <canvas ref="canvasRef" class="perk-crystal"></canvas>
-      </div>
-
-      <div class="perk-category-row">
-        <button
-          v-for="perk in perkGraph"
-          :key="perk.id"
-          class="perk-category pc-label--pressable"
-          :class="{ selected: selectedCategory === perk.id }"
-          @click="onCategoryClick(perk)"
-        >
-          <span class="pc-label-inner">
-            <span class="pc-label-text">{{ perk.label.toUpperCase() }}</span>
-            <span class="pc-label-bar"></span>
-          </span>
-          <span class="perk-category-underline"></span>
-        </button>
       </div>
     </div>
 
@@ -32,7 +16,7 @@
          before an enter, so a click during its leave animation can never
          blank or rewrite the text that is still fading out. -->
     <div ref="detailRef" class="perk-detail">
-      <ModuleDisplay
+      <Module
         :label="(displayedSkill ?? '').toUpperCase()"
         :accent="displayedPerk?.color ?? CRYSTAL_ACCENT"
         static-visible
@@ -43,29 +27,26 @@
           <div class="perk-detail-title">{{ displayedSkill }}</div>
           <div class="perk-detail-text">{{ perkInfo[displayedSkill ?? ''] ?? '' }}</div>
         </div>
-      </ModuleDisplay>
+      </Module>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
+  import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
   import { gsap } from 'gsap'
-  import ModuleDisplay from '@components/Misc/Module-Display.vue'
-  import { perkGraph, perkInfo, type PerkGraphNode } from '@modules/sectionsPerksGraph'
+  import Module from '@components/Misc/Module.vue'
+  import { perkGraph, perkInfo, selectedPerkId, type PerkGraphNode } from '@modules/sectionsPerksGraph'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { currentSection } from '@modules/sectionsCore'
   import { finished } from '@modules/sectionsStateMachine'
   import { SECTION_ENTER_DELAY } from '@modules/sectionsTransition'
-  import { hideLabels, buildLabelReveal, playLabelLeave } from '@modules/miscLabelReveal'
   import {
     initializePerkCrystalCanvas,
     showPerkCrystal,
     hidePerkCrystal,
-    setPerkCrystalCategory,
     setPerkCrystalSelectedSkill,
-    PERK_CRYSTAL_REVEAL_DURATION_SECONDS,
   } from '@modules/miscPerkCrystalCanvas'
 
   gsap.defaults({ immediateRender: false })
@@ -73,19 +54,11 @@
   const CRYSTAL_ACCENT = '#7e55dd'
   // Offset from SECTION_ENTER_DELAY; the crystal grows once its container has landed.
   const CRYSTAL_GROW_OFFSET = 0.75
-  // The category headlines only start revealing once the crystal above them has
-  // fully arrived — they read as the crystal's caption, not as a parallel entrance.
-  const CATEGORY_REVEAL_DELAY = SECTION_ENTER_DELAY + CRYSTAL_GROW_OFFSET + PERK_CRYSTAL_REVEAL_DURATION_SECONDS
-  // Left-to-right, matching the label pattern's top-left-first ordering.
-  const CATEGORY_REVEAL_STAGGER = 0.12
-  const CATEGORY_UNDERLINE_DURATION = 0.5
 
-  const rootRef = ref<HTMLElement | null>(null)
   const showpieceRef = ref<HTMLElement | null>(null)
   const canvasRef = ref<HTMLCanvasElement | null>(null)
   const detailRef = ref<HTMLElement | null>(null)
 
-  const selectedCategory = ref<string | null>(null)
   const selectedSkill = ref<string | null>(null)
   // What the panel renders. Diverges from selectedSkill for the length of a
   // leave animation, so outgoing text stays intact while it fades.
@@ -103,14 +76,6 @@
       ? perkGraph.find((perk) => perk.children.includes(displayedSkill.value!)) ?? null
       : null,
   )
-
-  function categoryLabelElements() {
-    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-category .pc-label-inner')] : []
-  }
-
-  function categoryUnderlineElements() {
-    return rootRef.value ? [...rootRef.value.querySelectorAll<HTMLElement>('.perk-category-underline')] : []
-  }
 
   // ── detail panel ──
   function enterDetail() {
@@ -142,21 +107,16 @@
   }
 
   // ── interaction ──
-  function onCategoryClick(perk: PerkGraphNode) {
-    const isClosing = selectedCategory.value === perk.id
+  // The category selection itself lives with the slice band (Name.vue), which
+  // drives the crystal. Here we only react to a category change to close any
+  // open skill detail — a swapped or cleared category invalidates it.
+  watch(selectedPerkId, () => {
+    if (!selectedSkill.value) return
     skillClickToken++
-    if (selectedSkill.value) leaveDetail()
     selectedSkill.value = null
     setPerkCrystalSelectedSkill(null)
-
-    if (isClosing) {
-      selectedCategory.value = null
-      setPerkCrystalCategory(null)
-      return
-    }
-    selectedCategory.value = perk.id
-    setPerkCrystalCategory(perk)
-  }
+    leaveDetail()
+  })
 
   function onSkillNodeClick(name: string) {
     skillClickToken++
@@ -188,9 +148,7 @@
   // ── section enter/leave (Perks content enters from off-screen left) ──
   function playEnter() {
     const showpiece = showpieceRef.value
-    const labels = categoryLabelElements()
-    const underlines = categoryUnderlineElements()
-    gsap.killTweensOf([showpiece, ...underlines])
+    gsap.killTweensOf(showpiece)
 
     resetSelection()
 
@@ -200,58 +158,33 @@
         { opacity: 1, y: 0, scale: 1, duration: 0.6, delay: SECTION_ENTER_DELAY + 0.15, ease: 'back.out(1.6)', overwrite: 'auto' },
       )
     }
-    // Bar-sweep reveal (see the Label Reveal Pattern in CLAUDE.md). The
-    // positional stagger of playLabelReveals doesn't apply here — these sit on
-    // one row at the same height, so the delay is a plain left-to-right step.
-    labels.forEach((label, index) => {
-      buildLabelReveal(label).delay(CATEGORY_REVEAL_DELAY + index * CATEGORY_REVEAL_STAGGER)
-    })
-    underlines.forEach((underline, index) => {
-      gsap.fromTo(underline,
-        { scaleX: 0 },
-        {
-          scaleX: 1,
-          duration: CATEGORY_UNDERLINE_DURATION,
-          // Lands with the bar's collapse, so the rule draws itself in as the text appears.
-          delay: CATEGORY_REVEAL_DELAY + index * CATEGORY_REVEAL_STAGGER + 0.42,
-          ease: 'power3.inOut',
-          overwrite: 'auto',
-        },
-      )
-    })
 
     showPerkCrystal(SECTION_ENTER_DELAY + CRYSTAL_GROW_OFFSET)
   }
 
   function playLeave() {
     const showpiece = showpieceRef.value
-    const underlines = categoryUnderlineElements()
-    gsap.killTweensOf([showpiece, ...underlines])
+    gsap.killTweensOf(showpiece)
 
     resetSelection()
 
     if (showpiece) {
       gsap.to(showpiece, { opacity: 0, y: 36, scale: 0.96, duration: 0.3, ease: 'power2.in', overwrite: 'auto' })
     }
-    playLabelLeave(categoryLabelElements())
-    gsap.to(underlines, { scaleX: 0, duration: 0.3, ease: 'power2.in', overwrite: 'auto' })
 
     hidePerkCrystal()
   }
 
-  // Drop any open category/skill so the section is never re-entered mid-state.
+  // Drop any open skill so the section is never re-entered mid-state. The
+  // category itself is reset by the band (Name.vue) on the same transition.
   function resetSelection() {
     skillClickToken++
-    selectedCategory.value = null
     selectedSkill.value = null
-    setPerkCrystalCategory(null)
     leaveDetail(true)
   }
 
   onMounted(() => {
     gsap.set(showpieceRef.value, { opacity: 0, y: 36, scale: 0.96 })
-    hideLabels(categoryLabelElements())
-    gsap.set(categoryUnderlineElements(), { scaleX: 0 })
     gsap.set(detailRef.value, { y: -28, opacity: 0, scale: 0.94 })
 
     if (canvasRef.value) {
@@ -316,114 +249,17 @@
   }
 
   // Scales with viewport width instead of a fixed px box — CANVAS_WIDTH /
-  // CANVAS_HEIGHT in miscPerkCrystalCanvas.ts (820×684) only fix the drawing
+  // CANVAS_HEIGHT in miscPerkCrystalCanvas.ts (820×820) only fix the drawing
   // resolution and aspect ratio; toCanvasPoint() already maps pointer
   // coordinates through getBoundingClientRect(), so the on-screen CSS size is
   // free to scale as long as this aspect-ratio matches that resolution.
   .perk-crystal {
     width: clamp(400px, 38vw, 1080px);
-    aspect-ratio: 820 / 684;
+    aspect-ratio: 1 / 1;
     height: auto;
     cursor: grab;
     pointer-events: auto;
     @extend .disable-selection;
-  }
-
-  // Category headlines: bare text with an underline rule, no module chrome —
-  // a row underneath the crystal.
-  .perk-category-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(18px, 2vw, 36px);
-    // The crystal canvas reserves empty space below the drawn shape for the
-    // orbit's lowest excursion. Shifted with a transform rather than a negative
-    // margin so the column keeps its height — shrinking it would re-centre the
-    // body and drag the crystal down with it.
-    transform: translateY(clamp(-90px, -6vw, -30px));
-  }
-
-  // Headline text uses the shared bar-sweep reveal (Label Reveal Pattern), so the
-  // button itself carries no opacity animation — the clip-path and the underline
-  // scale are what bring it in.
-  .perk-category {
-    // Section main colour, shared by all three headlines. The per-category hues
-    // in `perkGraph` still drive the crystal and the detail panel, but the
-    // headlines themselves read as one set.
-    --accent: #ffdd1b;
-    position: relative;
-    appearance: none;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0.3em 0.15em 0.45em;
-    font-family: 'Mono';
-    font-weight: 700;
-    font-size: clamp(18px, 1.7vw, 28px);
-    letter-spacing: 4px;
-    color: #e8e8e8;
-    @extend .disable-selection;
-
-    transition:
-      color 0.25s ease,
-      text-shadow 0.25s ease;
-
-    &:hover,
-    &.selected {
-      color: var(--accent);
-      text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent);
-
-      .perk-category-underline {
-        background: var(--accent);
-      }
-    }
-  }
-
-  // Same opt-in as Label-Set's pressable labels: label-pattern text is inert
-  // unless it is wired to an action.
-  .pc-label--pressable {
-    pointer-events: auto;
-    cursor: pointer;
-  }
-
-  .pc-label-inner {
-    position: relative;
-    display: inline-block;
-    overflow: hidden;
-  }
-
-  .pc-label-text {
-    display: block;
-    white-space: pre;
-    clip-path: inset(0 100% 0 0);
-  }
-
-  .pc-label-bar {
-    position: absolute;
-    top: -6%;
-    bottom: -6%;
-    left: 0;
-    width: 100%;
-    background: var(--accent);
-    box-shadow: 0 0 26px var(--accent);
-    transform-origin: left center;
-    transform: scaleX(0);
-  }
-
-  // Replaces the old border-bottom so the rule can be drawn in with the label
-  // instead of sitting there fully formed before the text arrives.
-  .perk-category-underline {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.15);
-    transform-origin: left center;
-    transform: scaleX(0);
-    will-change: transform;
-    transition: background 0.25s ease;
   }
 
   // Pulled out of flow deliberately: the column centres its content, so a panel
@@ -441,7 +277,7 @@
   }
 
   .perk-detail-module {
-    :deep(.module-display-content) {
+    :deep(.module-content) {
       padding: 40px 16px 16px;
     }
   }

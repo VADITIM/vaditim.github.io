@@ -17,6 +17,7 @@
   import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
   import {
     createTypewriter, playType, playClear, resetTypewriter, killTypewriter,
+    setTypewriterText,
     type TypewriterOptions,
   } from '@modules/miscTypewriter';
 
@@ -45,8 +46,23 @@
   function type() { if (handle) return playType(handle, props.options); return Promise.resolve(); }
   function clear() { if (handle) return playClear(handle, props.options); return Promise.resolve(); }
   function reset() { if (handle) resetTypewriter(handle); }
+  // Set the target text with no animation; the caller drives type()/clear().
+  function setText(newText: string) { if (handle) setTypewriterText(handle, newText); }
 
-  defineExpose({ type, clear, reset });
+  // Backspace the current line and retype it as `newText`. A generation guard
+  // discards a stale sequence if retype is called again before this one settles.
+  let retypeGeneration = 0;
+  async function retype(newText: string) {
+    if (!handle) return;
+    const generation = ++retypeGeneration;
+    await clear();
+    if (generation !== retypeGeneration) return;
+    setTypewriterText(handle, newText);
+    if (generation !== retypeGeneration) return;
+    await type();
+  }
+
+  defineExpose({ type, clear, reset, setText, retype });
 
   onMounted(() => {
     if (!root.value) return;

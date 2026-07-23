@@ -165,7 +165,7 @@ function play(meta: SectionTransitionMeta) {
 
   if (activeTimeline) activeTimeline.kill()
   gsap.killTweensOf([...shutters, kicker, heading])
-  gsap.set(shutters, { scaleX: 0 })
+  gsap.set(shutters, { scaleX: 0, scaleY: 1 })
   shutters.forEach((shutter, index) => {
     const barColor = index % 2 === 0 ? accent : accentMuted
     gsap.set(shutter, { backgroundColor: barColor, borderColor: barColor })
@@ -186,7 +186,7 @@ function play(meta: SectionTransitionMeta) {
 
   const timeline = gsap.timeline({
     onComplete: () => {
-      gsap.set(shutters, { scaleX: 0 })
+      gsap.set(shutters, { scaleX: 0, scaleY: 1 })
       gsap.set([kicker, heading], { opacity: 0 })
       activeTimeline = null
     },
@@ -194,7 +194,9 @@ function play(meta: SectionTransitionMeta) {
 
   // Close; sweep the bars across the screen to fully cover the swap.
   const closeStaggers = makeBarStaggers()
-  timeline.to(shutters, { scaleX: 1, duration: CLOSE_DURATION, stagger: (index) => closeStaggers[index], ease: 'power3.in' }, 0)
+  // scaleY grows the closed bars 1% past each edge (about their centre), so the
+  // curtain reads as a swelling transition indicator rather than a flat wipe.
+  timeline.to(shutters, { scaleX: 1, scaleY: 1.02, duration: CLOSE_DURATION, stagger: (index) => closeStaggers[index], ease: 'power3.in' }, 0)
 
   // Flash the incoming section's name on the closed curtain.
   if (kicker) {
@@ -210,7 +212,7 @@ function play(meta: SectionTransitionMeta) {
   if (heading) timeline.to(heading, { opacity: 0, yPercent: -60, duration: 0.4, ease: 'power3.in' }, 0.9)
   if (kicker) timeline.to(kicker, { yPercent: -110, skewY: -2, duration: 0.3, ease: 'power3.in' }, 0.88)
   const openStaggers = makeBarStaggers()
-  timeline.to(shutters, { scaleX: 0, duration: OPEN_DURATION, stagger: (index) => openStaggers[index], ease: 'power3.out' }, OPEN_AT)
+  timeline.to(shutters, { scaleX: 0, scaleY: 1, duration: OPEN_DURATION, stagger: (index) => openStaggers[index], ease: 'power3.out' }, OPEN_AT)
 
   activeTimeline = timeline
 }

@@ -23,31 +23,31 @@
       >
         <!-- static-visible on every nested module: their opacity is governed by
              the outer .proj-card's own GSAP-driven fan opacity, not by
-             ModuleDisplay's own default container-tween reveal. -->
-        <ModuleDisplay :label="`${String(index + 1).padStart(2, '0')} · PROJECT`" accent="#dc143c" :animate-height="false" static-visible class="proj-card-module">
+             Module's own default container-tween reveal. -->
+        <Module :label="`${String(index + 1).padStart(2, '0')} · PROJECT`" accent="#dc143c" :animate-height="false" static-visible class="proj-card-module">
           <div class="proj-card-body">
-            <ModuleDisplay label="" :animate-height="false" static-visible class="proj-card-image">
+            <Module label="" :animate-height="false" static-visible class="proj-card-image">
               <div class="proj-card-img" :style="{ backgroundImage: `url(${project.img})` }"></div>
-            </ModuleDisplay>
-            <ModuleDisplay label="" :animate-height="false" static-visible class="proj-card-tech">
+            </Module>
+            <Module label="" :animate-height="false" static-visible class="proj-card-tech">
               <div class="proj-card-tech-inner">
                 <div class="proj-card-tech-icon"><img :src="project.engine" alt="" /></div>
                 <div class="proj-card-tech-icon"><img :src="project.language" alt="" /></div>
                 <div class="proj-card-tech-icon"><img :src="project.platform" alt="" /></div>
               </div>
-            </ModuleDisplay>
+            </Module>
           </div>
-        </ModuleDisplay>
+        </Module>
       </div>
     </div>
 
     <!-- info window; name / description / year for the centred card.
          The panel enter/leave (container fade) is animated on our own plain
-         DOM ref (infoPanelRef), not on ModuleDisplay's internal exposed element -
+         DOM ref (infoPanelRef), not on Module's internal exposed element -
          so the panel's own tween can never gate or interfere with the name's
          independent label-reveal animation underneath. -->
     <div ref="infoPanelRef" class="proj-info proj-info-grid">
-      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false" class="proj-info-name">
+      <Module accent="#dc143c" static-visible :animate-height="false" class="proj-info-name">
         <template #label>01 · NOW SHOWING</template>
         <div class="proj-info-body">
           <div class="proj-h-wrap">
@@ -63,8 +63,8 @@
             </div>
           </div>
         </div>
-      </ModuleDisplay>
-      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false" class="proj-info-genre">
+      </Module>
+      <Module accent="#dc143c" static-visible :animate-height="false" class="proj-info-genre">
         <template #label>02 · GENRE</template>
         <div class="proj-info-body">
           <div class="proj-sub-wrap">
@@ -74,8 +74,8 @@
             </div>
           </div>
         </div>
-      </ModuleDisplay>
-      <ModuleDisplay accent="#dc143c" static-visible :animate-height="false" class="proj-info-desc">
+      </Module>
+      <Module accent="#dc143c" static-visible :animate-height="false" class="proj-info-desc">
         <template #label>03 · DESCRIPTION</template>
         <div class="proj-info-body">
           <div class="proj-sub-wrap">
@@ -85,7 +85,7 @@
             </div>
           </div>
         </div>
-      </ModuleDisplay>
+      </Module>
     </div>
 
     <!-- controls -->
@@ -111,7 +111,7 @@
   import { projects, activeProjectIndex } from '@modules/sectionsProjects'
   import ProjectDetailWindow from '@components/Main/Projects Section/Project-Detail-Window.vue'
   import LabelSet from '@components/Misc/Label-Set.vue'
-  import ModuleDisplay from '@components/Misc/Module-Display.vue'
+  import Module from '@components/Misc/Module.vue'
   import { currentSection } from '@modules/sectionsCore'
   import { getSectionIndexById } from '@modules/sectionLookup'
   import { onSectionStatesChange } from '@modules/sectionsStateMachine'
@@ -519,7 +519,7 @@
     will-change: transform, opacity;
   }
 
-  // ── info window (ModuleDisplay) ──
+  // ── info window (Module) ──
   .proj-info {
     position: absolute;
     left: 4%;
@@ -538,11 +538,11 @@
     width: min(62vw, 1900px);
     height: min(30vh, 230px);
 
-    :deep(.module-display-content) {
+    :deep(.module-content) {
       padding: 52px 18px 18px;
     }
 
-    :deep(.module-display-label) {
+    :deep(.module-label) {
       font-size: 11px;
       padding: 16px 18px;
     }
@@ -694,19 +694,19 @@
     // flattened and the card tilts as one flat plane instead of layers popping
     // at their own depth.
     transform-style: preserve-3d;
-    // ModuleDisplay clips its content by default, and any overflow other than
+    // Module clips its content by default, and any overflow other than
     // visible forces transform-style back to flat — which is what was killing
     // the parallax. The card's own rounded frame does the clipping instead.
     overflow: visible;
 
-    :deep(.module-display-content) {
+    :deep(.module-content) {
       padding: 32px 8px 8px;
       // Sits between the frame and .proj-card-body in the 3D chain; a flat link
       // anywhere along it collapses every depth below.
       transform-style: preserve-3d;
     }
 
-    :deep(.module-display-label) {
+    :deep(.module-label) {
       font-size: 9px;
       padding: 10px 12px;
       transform: translateZ(45px);
@@ -730,7 +730,7 @@
     transition: flex-basis 0.4s ease;
     transform: translateZ(15px);
 
-    :deep(.module-display-content) {
+    :deep(.module-content) {
       padding: 0;
     }
   }
@@ -754,7 +754,7 @@
     transition: flex-basis 0.4s ease, width 0.4s ease;
     transform: translateZ(35px);
 
-    :deep(.module-display-content) {
+    :deep(.module-content) {
       padding: 8px;
     }
   }
